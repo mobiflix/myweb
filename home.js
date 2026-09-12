@@ -29,7 +29,7 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRES =====
+// ===== GENRES (Documentary removed) =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list' },
   { name: 'Horror', id: 27, container: 'horror-list' },
@@ -39,29 +39,28 @@ const GENRES = [
   { name: 'Drama', id: 18, container: 'drama-list' },
   { name: 'Thriller', id: 53, container: 'thriller-list' },
   { name: 'Fantasy', id: 14, container: 'fantasy-list' },
-  { name: 'Mystery', id: 9648, container: 'mystery-list' },
-  { name: 'Documentary', id: 99, container: 'documentary-list' }
+  { name: 'Mystery', id: 9648, container: 'mystery-list' }
 ];
 
 let currentItem;
 let bannerItem;
 
 let pages = {
-  movie: 1, tv: 1, anime: 1,
+  movie: 1, tv: 1,
   action: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
-  drama: 1, thriller: 1, fantasy: 1, mystery: 1, documentary: 1
+  drama: 1, thriller: 1, fantasy: 1, mystery: 1
 };
 
 let loading = {
-  movie: false, tv: false, anime: false,
+  movie: false, tv: false,
   action: false, horror: false, scifi: false, comedy: false, romance: false,
-  drama: false, thriller: false, fantasy: false, mystery: false, documentary: false
+  drama: false, thriller: false, fantasy: false, mystery: false
 };
 
 let maxPages = {
-  movie: 500, tv: 500, anime: 500,
+  movie: 500, tv: 500,
   action: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
-  drama: 500, thriller: 500, fantasy: 500, mystery: 500, documentary: 500
+  drama: 500, thriller: 500, fantasy: 500, mystery: 500
 };
 
 // ===== FETCH =====
@@ -69,15 +68,6 @@ async function fetchTrending(type, page) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
-}
-
-async function fetchAnime(page) {
-  const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`);
-  const data = await res.json();
-  const filtered = (data.results || []).filter(item =>
-    item.original_language === 'ja' && item.genre_ids && item.genre_ids.includes(16)
-  );
-  return { results: filtered, total_pages: data.total_pages || 1 };
 }
 
 async function fetchByGenre(genreId, page) {
@@ -167,7 +157,6 @@ function changeServer() {
   if (!endpoint) return;
 
   let embedURL = '';
-
   if (endpoint.url.includes('vidsrc.cc/v2')) {
     embedURL = `${endpoint.url}${currentItem.id}`;
   } else if (endpoint.url.includes('vidsrc.me') || endpoint.url.includes('vidsrc.vip')) {
@@ -179,7 +168,6 @@ function changeServer() {
   }
 
   document.getElementById('modal-video').src = embedURL;
-  console.log(`[Player] ${endpoint.name} → ${embedURL}`);
 }
 
 function closeModal() {
@@ -245,9 +233,6 @@ async function loadMore(category) {
     } else if (category === 'tv') {
       result = await fetchTrending('tv', pages[category]);
       containerId = 'tvshows-list';
-    } else if (category === 'anime') {
-      result = await fetchAnime(pages[category]);
-      containerId = 'anime-list';
     }
     if (result && result.results.length > 0) {
       maxPages[category] = result.total_pages;
@@ -282,7 +267,6 @@ function attachScrollListeners() {
   const rows = [
     { id: 'movies-list', category: 'movie' },
     { id: 'tvshows-list', category: 'tv' },
-    { id: 'anime-list', category: 'anime' },
     { id: 'action-list', category: 'action', genre: 28 },
     { id: 'horror-list', category: 'horror', genre: 27 },
     { id: 'scifi-list', category: 'scifi', genre: 878 },
@@ -291,8 +275,7 @@ function attachScrollListeners() {
     { id: 'drama-list', category: 'drama', genre: 18 },
     { id: 'thriller-list', category: 'thriller', genre: 53 },
     { id: 'fantasy-list', category: 'fantasy', genre: 14 },
-    { id: 'mystery-list', category: 'mystery', genre: 9648 },
-    { id: 'documentary-list', category: 'documentary', genre: 99 }
+    { id: 'mystery-list', category: 'mystery', genre: 9648 }
   ];
 
   rows.forEach(row => {
@@ -317,18 +300,15 @@ async function init() {
 
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
-    const animeData = await fetchAnime(1);
 
     maxPages.movie = moviesData.total_pages;
     maxPages.tv = tvData.total_pages;
-    maxPages.anime = animeData.total_pages;
 
     if (moviesData.results.length > 0) {
       displayBanner(moviesData.results[Math.floor(Math.random() * moviesData.results.length)]);
     }
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
-    appendToList(animeData.results, 'anime-list');
 
     // Load genres
     for (let i = 0; i < GENRES.length; i++) {
