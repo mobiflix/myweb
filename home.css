@@ -177,29 +177,25 @@ body {
   border-color: #e50914;
 }
 
+/* ===== HOMEPAGE GRID — 4 PER ROW ===== */
 .list {
-  display: flex; gap: 14px;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   padding: 8px 0 16px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
 }
-.list::-webkit-scrollbar { height: 4px; }
-.list::-webkit-scrollbar-track { background: transparent; }
-.list::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
-.list::-webkit-scrollbar-thumb:hover { background: #e50914; }
 
 .list img {
-  width: 180px; height: 270px;
+  width: 100%;
+  aspect-ratio: 2 / 3;
   object-fit: cover;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.35s;
-  flex-shrink: 0;
   background: #1a1a1a;
 }
 .list img:hover {
-  transform: scale(1.08);
+  transform: scale(1.05);
   box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 30px rgba(229,9,20,0.15);
   z-index: 5;
 }
@@ -255,16 +251,16 @@ body {
   color: #fff;
 }
 
-/* ===== VIEW ALL GRID — 4 PER ROW ON ALL SCREENS ===== */
+/* ===== VIEW ALL GRID — 4 PER ROW ===== */
 .view-all-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columns sa lahat ng screen */
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
 .view-all-grid img {
   width: 100%;
-  aspect-ratio: 2 / 3; /* Maintain poster ratio */
+  aspect-ratio: 2 / 3;
   object-fit: cover;
   border-radius: 8px;
   cursor: pointer;
@@ -391,13 +387,16 @@ body {
 .search-container input::placeholder { color: #666; }
 .search-modal .results {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px; width: 100%; max-width: 900px;
 }
 .search-modal .results img {
-  width: 100%; height: 210px;
-  object-fit: cover; border-radius: 8px;
-  cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
   background: #1a1a1a;
 }
 .search-modal .results img:hover {
@@ -421,7 +420,7 @@ body {
 .footer-links a { color: #888; text-decoration: none; font-size: 14px; transition: color 0.3s; }
 .footer-links a:hover { color: #e50914; }
 
-/* ===== RESPONSIVE (HINDI NA GINAGALAW ANG VIEW ALL GRID) ===== */
+/* ===== RESPONSIVE (HINDI GINAGALAW ANG GRID COLUMNS) ===== */
 @media (max-width: 768px) {
   .navbar { padding: 12px 16px; }
   .logo { font-size: 20px; }
@@ -437,8 +436,10 @@ body {
   .row-header { flex-wrap: wrap; gap: 8px; }
   .row h2 { font-size: 18px; }
   .view-all-btn { font-size: 12px; padding: 5px 12px; }
-  .list { gap: 10px; }
-  .list img { width: 130px; height: 195px; }
+
+  .list, .view-all-grid, .search-modal .results {
+    gap: 10px;
+  }
 
   .view-all-page { padding: 0 16px 30px; }
   .view-all-header h2 { font-size: 20px; }
@@ -452,8 +453,6 @@ body {
   .server-selector { flex-direction: column; align-items: stretch; padding: 12px 16px 0; }
   .server-selector select { max-width: 100%; width: 100%; }
 
-  .search-modal .results { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-  .search-modal .results img { height: 165px; }
   .search-container { padding: 10px 16px; }
   .search-container input { font-size: 15px; }
 
@@ -462,8 +461,11 @@ body {
 
 @media (max-width: 480px) {
   .hero-content h1 { font-size: 22px; }
-  .list img { width: 110px; height: 165px; }
   .modal-body img { width: 100px; }
   .footer-content { font-size: 13px; }
   .footer-links { gap: 12px; }
-                   }
+
+  .list, .view-all-grid, .search-modal .results {
+    gap: 8px;
+  }
+                    }
