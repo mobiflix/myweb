@@ -95,11 +95,36 @@ function displayBanner(item) {
   bannerItem = item;
   const banner = document.getElementById('banner');
   banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path || item.poster_path})`;
+
+  // Title
   document.getElementById('banner-title').textContent = item.title || item.name;
+
+  // Rating
+  const rating = Math.round((item.vote_average || 0) / 2);
+  const ratingEl = document.getElementById('banner-rating');
+  if (ratingEl) ratingEl.innerHTML = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+  // Year
+  const yearEl = document.getElementById('banner-year');
+  if (yearEl) {
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    yearEl.textContent = year || '';
+  }
+
+  // Type
+  const typeEl = document.getElementById('banner-type');
+  if (typeEl) {
+    const type = item.media_type === 'movie' ? 'Movie'
+               : (item.media_type === 'tv' ? 'TV Show' : 'Movie');
+    typeEl.textContent = type;
+  }
+
+  // Description
+  const descEl = document.getElementById('banner-description');
+  if (descEl) descEl.textContent = item.overview || 'No description available.';
 }
 
 function playBanner() { if (bannerItem) showDetails(bannerItem); }
-function showBannerInfo() { if (bannerItem) showDetails(bannerItem); }
 
 function appendToList(items, containerId) {
   const container = document.getElementById(containerId);
@@ -310,7 +335,6 @@ function openViewAll(key) {
 
   loadViewAllBatch();
 
-  // Mobile: i-attach ang touchmove listener para siguradong naglo-load
   setTimeout(function() {
     attachViewAllScroll();
   }, 100);
@@ -379,11 +403,9 @@ function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
 
-  // Tanggalin ang dating listeners
   page.removeEventListener('scroll', viewAllScrollHandler);
   page.removeEventListener('touchmove', viewAllScrollHandler);
 
-  // Scroll handler
   page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
   page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
 }
@@ -402,7 +424,6 @@ function viewAllScrollHandler() {
     const threshold = page.scrollHeight - 300;
 
     if (scrollPos >= threshold) {
-      console.log('[ViewAll] Loading more... (scrollPos:', scrollPos, 'threshold:', threshold, ')');
       loadViewAllBatch();
     }
   }, 150);
