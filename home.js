@@ -29,22 +29,22 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRE MAP =====
+// ===== GENRE MAP (movies only) =====
 const GENRE_MAP = {
   movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
-  action: { name: 'Action', movieId: 28, tvId: 10759, icon: '💥' },
-  horror: { name: 'Horror', movieId: 27, tvId: 9648, icon: '👻' },
-  scifi: { name: 'Sci-Fi', movieId: 878, tvId: 10765, icon: '🚀' },
-  comedy: { name: 'Comedy', movieId: 35, tvId: 35, icon: '😂' },
-  romance: { name: 'Romance', movieId: 10749, tvId: 18, icon: '💕' },
-  drama: { name: 'Drama', movieId: 18, tvId: 18, icon: '🎭' },
-  thriller: { name: 'Thriller', movieId: 53, tvId: 9648, icon: '🕵️' },
-  fantasy: { name: 'Fantasy', movieId: 14, tvId: 10765, icon: '🧙' },
-  mystery: { name: 'Mystery', movieId: 9648, tvId: 9648, icon: '🔍' }
+  action: { name: 'Action', id: 28, icon: '💥' },
+  horror: { name: 'Horror', id: 27, icon: '👻' },
+  scifi: { name: 'Sci-Fi', id: 878, icon: '🚀' },
+  comedy: { name: 'Comedy', id: 35, icon: '😂' },
+  romance: { name: 'Romance', id: 10749, icon: '💕' },
+  drama: { name: 'Drama', id: 18, icon: '🎭' },
+  thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
+  fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
+  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES for home rows =====
+// ===== GENRES for home rows (movies only) =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
   { name: 'Horror', id: 27, container: 'horror-list', key: 'horror' },
@@ -81,10 +81,8 @@ let maxPages = {
 // ===== VIEW ALL STATE =====
 let viewAllState = {
   key: null,
-  moviePage: 1,
-  tvPage: 1,
-  movieMaxPages: 500,
-  tvMaxPages: 500,
+  page: 1,
+  maxPages: 500,
   loading: false,
   hasMore: true,
   initialized: false,
@@ -98,19 +96,10 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// POPULARITY (Movie) — hindi Trending
+// POPULARITY — MOVIES ONLY
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
-  );
-  const data = await res.json();
-  return { results: data.results || [], total_pages: data.total_pages || 1 };
-}
-
-// POPULARITY (TV Show) — hindi Trending
-async function fetchByGenreTV(genreId, page) {
-  const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -167,7 +156,7 @@ function showDetails(item) {
   document.body.style.overflow = 'hidden';
 }
 
-// ===== SERVER DROPDOWN (Server 1, Server 2, ...) =====
+// ===== SERVER DROPDOWN =====
 function populateServerDropdown(item) {
   const select = document.getElementById('server');
   const isMovie = item.media_type === 'movie' || (!item.media_type && item.title);
@@ -255,7 +244,7 @@ function toggleMenu() {
   overlay.classList.toggle('open');
 }
 
-// ===== VIEW ALL PAGE =====
+// ===== VIEW ALL PAGE (MOVIES ONLY) =====
 function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
@@ -267,10 +256,8 @@ function openViewAll(key) {
 
   viewAllState = {
     key: key,
-    moviePage: 1,
-    tvPage: 1,
-    movieMaxPages: 500,
-    tvMaxPages: 500,
+    page: 1,
+    maxPages: 500,
     loading: false,
     hasMore: true,
     initialized: true,
@@ -301,45 +288,17 @@ async function loadViewAllBatch() {
   const grid = document.getElementById('view-all-grid');
 
   try {
-    let movieData = { results: [], total_pages: 1 };
-    let tvData = { results: [], total_pages: 1 };
-
+    let data;
     if (genre.type === 'trending') {
-      const data = await fetchTrending(genre.media, viewAllState.moviePage);
-      if (genre.media === 'movie') {
-        movieData = data;
-      } else {
-        tvData = data;
-      }
-      viewAllState.moviePage += 1;
+      data = await fetchTrending(genre.media, viewAllState.page);
     } else {
-      const moviePromise = fetchByGenreMovie(genre.movieId, viewAllState.moviePage);
-      const tvPromise = fetchByGenreTV(genre.tvId, viewAllState.tvPage);
-
-      const [movieRes, tvRes] = await Promise.all([moviePromise, tvPromise]);
-      movieData = movieRes;
-      tvData = tvRes;
-
-      viewAllState.movieMaxPages = movieData.total_pages;
-      viewAllState.tvMaxPages = tvData.total_pages;
-
-      viewAllState.moviePage += 1;
-      viewAllState.tvPage += 1;
-
-      if (viewAllState.moviePage > viewAllState.movieMaxPages &&
-          viewAllState.tvPage > viewAllState.tvMaxPages) {
-        viewAllState.hasMore = false;
-      }
+      data = await fetchByGenreMovie(genre.id, viewAllState.page);
     }
 
-    const combined = [];
-    const maxLen = Math.max(movieData.results.length, tvData.results.length);
-    for (let i = 0; i < maxLen; i++) {
-      if (movieData.results[i]) combined.push(movieData.results[i]);
-      if (tvData.results[i]) combined.push(tvData.results[i]);
-    }
+    viewAllState.maxPages = data.total_pages;
+    viewAllState.page += 1;
 
-    combined.forEach(item => {
+    data.results.forEach(item => {
       if (!item.poster_path) return;
       if (viewAllState.seenIds.has(item.id)) return;
       viewAllState.seenIds.add(item.id);
@@ -353,18 +312,8 @@ async function loadViewAllBatch() {
       grid.appendChild(img);
     });
 
-    if (genre.type !== 'trending') {
-      if (viewAllState.moviePage > viewAllState.movieMaxPages &&
-          viewAllState.tvPage > viewAllState.tvMaxPages) {
-        viewAllState.hasMore = false;
-      }
-    } else {
-      if (viewAllState.moviePage > movieData.total_pages) {
-        viewAllState.hasMore = false;
-      }
-    }
-
-    if (!viewAllState.hasMore) {
+    if (viewAllState.page > viewAllState.maxPages) {
+      viewAllState.hasMore = false;
       document.getElementById('view-all-end').style.display = 'block';
     }
   } catch (err) {
