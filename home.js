@@ -13,7 +13,7 @@ const MOVIE_ENDPOINTS = [
 
 const SERIES_ENDPOINTS = [
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' },
-  { name: '2Embed', url: 'https://www.2embed.cc/embed/' }
+  { name: '2Embed', url: 'https://www.2embed.cc/embed/tv' }
 ];
 
 // ===== GENRE MAP =====
