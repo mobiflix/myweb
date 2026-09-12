@@ -36,17 +36,17 @@
       <span class="side-menu-close" onclick="toggleMenu()">&times;</span>
     </div>
     <div class="side-menu-links">
-      <a onclick="scrollToGenre('movies-list')">🔥 Trending Movies</a>
-      <a onclick="scrollToGenre('tvshows-list')">📺 Trending TV Shows</a>
-      <a onclick="scrollToGenre('action-list')">💥 Action</a>
-      <a onclick="scrollToGenre('horror-list')">👻 Horror</a>
-      <a onclick="scrollToGenre('scifi-list')">🚀 Sci-Fi</a>
-      <a onclick="scrollToGenre('comedy-list')">😂 Comedy</a>
-      <a onclick="scrollToGenre('romance-list')">💕 Romance</a>
-      <a onclick="scrollToGenre('drama-list')">🎭 Drama</a>
-      <a onclick="scrollToGenre('thriller-list')">🕵️ Thriller</a>
-      <a onclick="scrollToGenre('fantasy-list')">🧙 Fantasy</a>
-      <a onclick="scrollToGenre('mystery-list')">🔍 Mystery</a>
+      <a onclick="openViewAll('movie')">🔥 Trending Movies</a>
+      <a onclick="openViewAll('tv')">📺 Trending TV Shows</a>
+      <a onclick="openViewAll('action')">💥 Action</a>
+      <a onclick="openViewAll('horror')">👻 Horror</a>
+      <a onclick="openViewAll('scifi')">🚀 Sci-Fi</a>
+      <a onclick="openViewAll('comedy')">😂 Comedy</a>
+      <a onclick="openViewAll('romance')">💕 Romance</a>
+      <a onclick="openViewAll('drama')">🎭 Drama</a>
+      <a onclick="openViewAll('thriller')">🕵️ Thriller</a>
+      <a onclick="openViewAll('fantasy')">🧙 Fantasy</a>
+      <a onclick="openViewAll('mystery')">🔍 Mystery</a>
     </div>
   </div>
 
@@ -68,58 +68,106 @@
   <!-- ===== CONTENT ROWS ===== -->
   <div class="content">
     <div class="row">
-      <h2>🔥 Trending Movies</h2>
+      <div class="row-header">
+        <h2>🔥 Trending Movies</h2>
+        <button class="view-all-btn" onclick="openViewAll('movie')">View All →</button>
+      </div>
       <div class="list" id="movies-list"></div>
     </div>
 
     <div class="row">
-      <h2>📺 Trending TV Shows</h2>
+      <div class="row-header">
+        <h2>📺 Trending TV Shows</h2>
+        <button class="view-all-btn" onclick="openViewAll('tv')">View All →</button>
+      </div>
       <div class="list" id="tvshows-list"></div>
     </div>
 
     <div class="row">
-      <h2>💥 Action</h2>
+      <div class="row-header">
+        <h2>💥 Action</h2>
+        <button class="view-all-btn" onclick="openViewAll('action')">View All →</button>
+      </div>
       <div class="list" id="action-list"></div>
     </div>
 
     <div class="row">
-      <h2>👻 Horror</h2>
+      <div class="row-header">
+        <h2>👻 Horror</h2>
+        <button class="view-all-btn" onclick="openViewAll('horror')">View All →</button>
+      </div>
       <div class="list" id="horror-list"></div>
     </div>
 
     <div class="row">
-      <h2>🚀 Sci-Fi</h2>
+      <div class="row-header">
+        <h2>🚀 Sci-Fi</h2>
+        <button class="view-all-btn" onclick="openViewAll('scifi')">View All →</button>
+      </div>
       <div class="list" id="scifi-list"></div>
     </div>
 
     <div class="row">
-      <h2>😂 Comedy</h2>
+      <div class="row-header">
+        <h2>😂 Comedy</h2>
+        <button class="view-all-btn" onclick="openViewAll('comedy')">View All →</button>
+      </div>
       <div class="list" id="comedy-list"></div>
     </div>
 
     <div class="row">
-      <h2>💕 Romance</h2>
+      <div class="row-header">
+        <h2>💕 Romance</h2>
+        <button class="view-all-btn" onclick="openViewAll('romance')">View All →</button>
+      </div>
       <div class="list" id="romance-list"></div>
     </div>
 
     <div class="row">
-      <h2>🎭 Drama</h2>
+      <div class="row-header">
+        <h2>🎭 Drama</h2>
+        <button class="view-all-btn" onclick="openViewAll('drama')">View All →</button>
+      </div>
       <div class="list" id="drama-list"></div>
     </div>
 
     <div class="row">
-      <h2>🕵️ Thriller</h2>
+      <div class="row-header">
+        <h2>🕵️ Thriller</h2>
+        <button class="view-all-btn" onclick="openViewAll('thriller')">View All →</button>
+      </div>
       <div class="list" id="thriller-list"></div>
     </div>
 
     <div class="row">
-      <h2>🧙 Fantasy</h2>
+      <div class="row-header">
+        <h2>🧙 Fantasy</h2>
+        <button class="view-all-btn" onclick="openViewAll('fantasy')">View All →</button>
+      </div>
       <div class="list" id="fantasy-list"></div>
     </div>
 
     <div class="row">
-      <h2>🔍 Mystery</h2>
+      <div class="row-header">
+        <h2>🔍 Mystery</h2>
+        <button class="view-all-btn" onclick="openViewAll('mystery')">View All →</button>
+      </div>
       <div class="list" id="mystery-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW ALL PAGE ===== -->
+  <div class="view-all-page" id="view-all-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeViewAll()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2 id="view-all-title">All Movies</h2>
+    </div>
+    <div class="view-all-grid" id="view-all-grid"></div>
+    <div class="view-all-loading" id="view-all-loading" style="display:none;">
+      <i class="fa fa-spinner fa-spin"></i> Loading more...
+    </div>
+    <div class="view-all-end" id="view-all-end" style="display:none;">
+      🎬 You've reached the end
     </div>
   </div>
 
@@ -165,7 +213,7 @@
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-content">
-      <p>&copy; 2025 MobiFlix. All rights reserved.</p>
+      <p>&copy; 2026 MobiFlix. All rights reserved.</p>
       <div class="footer-links">
         <a href="#">Disclaimer</a>
         <a href="#">About Us</a>
