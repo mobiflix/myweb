@@ -289,15 +289,19 @@ function toggleMenu() {
 }
 
 // ===== VIEW ALL PAGE =====
+let viewAllScrollAttached = false;
+
 function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
+  // Close menu
   const menu = document.getElementById('side-menu');
   const overlay = document.getElementById('menu-overlay');
   if (menu) menu.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
 
+  // Reset state
   viewAllState = {
     key: key,
     page: 1,
@@ -319,9 +323,13 @@ function openViewAll(key) {
   page.classList.add('open');
   page.scrollTop = 0;
   document.body.style.overflow = 'hidden';
-
-  // Ensure scrollable
   page.style.overflowY = 'auto';
+
+  // I-attach ang scroll listener (isang beses lang)
+  if (!viewAllScrollAttached) {
+    attachViewAllScroll();
+    viewAllScrollAttached = true;
+  }
 
   loadViewAllBatch();
 }
@@ -382,12 +390,11 @@ function closeViewAll() {
   viewAllState.seenIds = new Set();
 }
 
-// ===== VIEW ALL SCROLL (fixed) =====
+// ===== VIEW ALL SCROLL (single listener) =====
 function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
 
-  // Scroll listener sa view-all-page
   page.addEventListener('scroll', function() {
     if (!viewAllState.initialized) return;
     if (viewAllState.loading) return;
@@ -395,20 +402,6 @@ function attachViewAllScroll() {
 
     if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
       loadViewAllBatch();
-    }
-  }, { passive: true });
-
-  // Fallback: scroll listener sa document (para sa mobile)
-  document.addEventListener('scroll', function() {
-    if (!viewAllState.initialized) return;
-    if (viewAllState.loading) return;
-    if (!viewAllState.hasMore) return;
-
-    const rect = page.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) {
-      if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
-        loadViewAllBatch();
-      }
     }
   }, { passive: true });
 }
@@ -515,7 +508,6 @@ async function init() {
     }
 
     attachScrollListeners();
-    attachViewAllScroll();
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
