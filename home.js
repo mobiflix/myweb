@@ -29,7 +29,7 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRE MAP (movies only) =====
+// ===== GENRE MAP =====
 const GENRE_MAP = {
   movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
@@ -44,7 +44,7 @@ const GENRE_MAP = {
   mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES for home rows (movies only) =====
+// ===== GENRES for home rows =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
   { name: 'Horror', id: 27, container: 'horror-list', key: 'horror' },
@@ -96,7 +96,6 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// POPULARITY — MOVIES ONLY
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
@@ -186,11 +185,60 @@ function changeServer() {
   document.getElementById('modal-video').src = embedURL;
 }
 
+// ===== CLOSE MODAL (may fullscreen exit) =====
 function closeModal() {
+  // Exit fullscreen muna kung naka-fullscreen
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+
+  // Tapos isara ang modal
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
   document.body.style.overflow = '';
+
+  // Reset ang fullscreen icon
+  const icon = document.getElementById('fullscreen-icon');
+  if (icon) icon.className = 'fa fa-expand';
 }
+
+// ===== FULLSCREEN =====
+function toggleFullscreen() {
+  const wrapper = document.getElementById('player-wrapper');
+  const icon = document.getElementById('fullscreen-icon');
+
+  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+  if (!isFullscreen) {
+    if (wrapper.requestFullscreen) {
+      wrapper.requestFullscreen().catch(function() {});
+    } else if (wrapper.webkitRequestFullscreen) {
+      wrapper.webkitRequestFullscreen();
+    }
+    if (icon) icon.className = 'fa fa-compress';
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+    if (icon) icon.className = 'fa fa-expand';
+  }
+}
+
+// Sync ang icon at back button kapag nagbago ang fullscreen state
+function updateFullscreenUI() {
+  const icon = document.getElementById('fullscreen-icon');
+  const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (icon) icon.className = isFs ? 'fa fa-compress' : 'fa fa-expand';
+}
+
+document.addEventListener('fullscreenchange', updateFullscreenUI);
+document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
 // ===== SEARCH =====
 function openSearchModal() {
@@ -244,7 +292,7 @@ function toggleMenu() {
   overlay.classList.toggle('open');
 }
 
-// ===== VIEW ALL PAGE (MOVIES ONLY) =====
+// ===== VIEW ALL PAGE =====
 function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
@@ -457,51 +505,8 @@ async function init() {
 }
 
 init();
-// ===== FULLSCREEN PLAYER =====
-function toggleFullscreen() {
-  const wrapper = document.getElementById('player-wrapper');
-  const icon = document.getElementById('fullscreen-icon');
 
-  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    // Enter fullscreen
-    if (wrapper.requestFullscreen) {
-      wrapper.requestFullscreen();
-    } else if (wrapper.webkitRequestFullscreen) {
-      wrapper.webkitRequestFullscreen();
-    }
-    if (icon) icon.className = 'fa fa-compress';
-  } else {
-    // Exit fullscreen
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-    if (icon) icon.className = 'fa fa-expand';
-  }
-}
-
-// Sync icon kapag nagbago ang fullscreen state (hal. Esc key)
-document.addEventListener('fullscreenchange', () => {
-  const icon = document.getElementById('fullscreen-icon');
-  if (!icon) return;
-  if (document.fullscreenElement) {
-    icon.className = 'fa fa-compress';
-  } else {
-    icon.className = 'fa fa-expand';
-  }
-});
-
-document.addEventListener('webkitfullscreenchange', () => {
-  const icon = document.getElementById('fullscreen-icon');
-  if (!icon) return;
-  if (document.webkitFullscreenElement) {
-    icon.className = 'fa fa-compress';
-  } else {
-    icon.className = 'fa fa-expand';
-  }
-});
-
+// ===== KEYBOARD =====
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
