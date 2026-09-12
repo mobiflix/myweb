@@ -58,9 +58,14 @@
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <h1 id="banner-title">Loading...</h1>
+      <div class="hero-meta" id="banner-meta">
+        <span class="hero-rating" id="banner-rating"></span>
+        <span class="hero-year" id="banner-year"></span>
+        <span class="hero-type" id="banner-type"></span>
+      </div>
+      <p class="hero-description" id="banner-description"></p>
       <div class="hero-buttons">
         <button class="btn-play" onclick="playBanner()"><i class="fa fa-play"></i> Play</button>
-        <button class="btn-info" onclick="showBannerInfo()"><i class="fa fa-info-circle"></i> More Info</button>
       </div>
     </div>
   </div>
@@ -175,7 +180,6 @@
   <div class="modal" id="modal">
     <div class="modal-content">
 
-      <!-- Back bar sa taas-kaliwa (normal view) -->
       <div class="modal-back-bar">
         <button class="modal-back-btn" onclick="closeModal()">
           <i class="fa fa-arrow-left"></i> Back
@@ -183,7 +187,6 @@
       </div>
 
       <div class="player-wrapper" id="player-wrapper">
-        <!-- Back button na lalabas lang kapag fullscreen -->
         <button class="fs-back-btn" onclick="closeModal()">
           <i class="fa fa-arrow-left"></i> Back
         </button>
