@@ -98,7 +98,6 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// NEWEST TO OLDEST (Movie)
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=primary_release_date.desc`
@@ -107,7 +106,6 @@ async function fetchByGenreMovie(genreId, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// NEWEST TO OLDEST (TV Show)
 async function fetchByGenreTV(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=first_air_date.desc`
@@ -167,6 +165,7 @@ function showDetails(item) {
   document.body.style.overflow = 'hidden';
 }
 
+// ===== SERVER DROPDOWN (Server 1, Server 2, ...) =====
 function populateServerDropdown(item) {
   const select = document.getElementById('server');
   const isMovie = item.media_type === 'movie' || (!item.media_type && item.title);
@@ -176,7 +175,7 @@ function populateServerDropdown(item) {
   endpoints.forEach((ep, i) => {
     const option = document.createElement('option');
     option.value = i;
-    option.textContent = ep.name;
+    option.textContent = 'Server ' + (i + 1);
     select.appendChild(option);
   });
 
@@ -331,7 +330,6 @@ async function loadViewAllBatch() {
       }
     }
 
-    // Combine: alternate movie, tv, movie, tv
     const combined = [];
     const maxLen = Math.max(movieData.results.length, tvData.results.length);
     for (let i = 0; i < maxLen; i++) {
@@ -430,7 +428,6 @@ async function loadMoreGenre(category, genreId, containerId) {
   pages[category] += 1;
 
   try {
-    // Gamitin ang NEWEST TO OLDEST sort
     const data = await fetchByGenreMovie(genreId, pages[category]);
     if (data.results.length > 0) {
       maxPages[category] = data.total_pages;
@@ -478,7 +475,6 @@ async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
 
-    // Trending rows — popularity-based (hindi binabago)
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
 
@@ -491,7 +487,6 @@ async function init() {
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
 
-    // Genre rows — NEWEST TO OLDEST
     for (let i = 0; i < GENRES.length; i++) {
       const genre = GENRES[i];
       try {
