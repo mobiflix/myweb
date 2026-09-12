@@ -6,14 +6,9 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 // ===== ENDPOINTS =====
 const MOVIE_ENDPOINTS = [
   { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
-  { name: 'VidSrc.dev', url: 'https://vidsrc.dev/embed/movie/' },
   { name: '111Movies', url: 'https://111movies.com/movie/' },
-  { name: 'VidJoy', url: 'https://vidjoy.pro/embed/movie/' },
   { name: 'VidSrc.io', url: 'https://vidsrc.io/embed/movie/' },
-  { name: 'VidSrc.cc', url: 'https://vidsrc.cc/v2/embed/movie/' },
-  { name: 'VidSrc.xyz', url: 'https://vidsrc.xyz/embed/movie/' },
-  { name: '2Embed', url: 'https://www.2embed.cc/embed/' },
-  { name: 'MoviesAPI', url: 'https://moviesapi.club/movie/' }
+  { name: '2Embed', url: 'https://www.2embed.cc/embed/' }
 ];
 
 const SERIES_ENDPOINTS = [
