@@ -29,7 +29,7 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRE MAP (movie + tv genre IDs) =====
+// ===== GENRE MAP =====
 const GENRE_MAP = {
   movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
@@ -98,17 +98,19 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
+// NEWEST TO OLDEST (Movie)
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=primary_release_date.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
+// NEWEST TO OLDEST (TV Show)
 async function fetchByGenreTV(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=first_air_date.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -257,13 +259,11 @@ function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
-  // Close menu
   const menu = document.getElementById('side-menu');
   const overlay = document.getElementById('menu-overlay');
   if (menu) menu.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
 
-  // Reset state
   viewAllState = {
     key: key,
     moviePage: 1,
@@ -276,27 +276,20 @@ function openViewAll(key) {
     seenIds: new Set()
   };
 
-  // Set title
   document.getElementById('view-all-title').textContent = (genre.icon || '🎬') + ' ' + genre.name;
 
-  // Clear grid
   const grid = document.getElementById('view-all-grid');
   grid.innerHTML = '';
   document.getElementById('view-all-end').style.display = 'none';
   document.getElementById('view-all-loading').style.display = 'none';
 
-  // Show page
   document.getElementById('view-all-page').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Scroll to top
   document.getElementById('view-all-page').scrollTop = 0;
 
-  // Load first batch
   loadViewAllBatch();
 }
 
-// Load BOTH movies and TV shows at once
 async function loadViewAllBatch() {
   if (viewAllState.loading || !viewAllState.hasMore) return;
 
@@ -311,7 +304,6 @@ async function loadViewAllBatch() {
     let tvData = { results: [], total_pages: 1 };
 
     if (genre.type === 'trending') {
-      // Trending Movies or TV Shows only
       const data = await fetchTrending(genre.media, viewAllState.moviePage);
       if (genre.media === 'movie') {
         movieData = data;
@@ -320,7 +312,6 @@ async function loadViewAllBatch() {
       }
       viewAllState.moviePage += 1;
     } else {
-      // Genre: load both movies AND TV shows
       const moviePromise = fetchByGenreMovie(genre.movieId, viewAllState.moviePage);
       const tvPromise = fetchByGenreTV(genre.tvId, viewAllState.tvPage);
 
@@ -334,14 +325,13 @@ async function loadViewAllBatch() {
       viewAllState.moviePage += 1;
       viewAllState.tvPage += 1;
 
-      // Check kung may more pa
       if (viewAllState.moviePage > viewAllState.movieMaxPages &&
           viewAllState.tvPage > viewAllState.tvMaxPages) {
         viewAllState.hasMore = false;
       }
     }
 
-    // Combine results: alternate movie, tv, movie, tv...
+    // Combine: alternate movie, tv, movie, tv
     const combined = [];
     const maxLen = Math.max(movieData.results.length, tvData.results.length);
     for (let i = 0; i < maxLen; i++) {
@@ -349,7 +339,6 @@ async function loadViewAllBatch() {
       if (tvData.results[i]) combined.push(tvData.results[i]);
     }
 
-    // Append with deduplication
     combined.forEach(item => {
       if (!item.poster_path) return;
       if (viewAllState.seenIds.has(item.id)) return;
@@ -364,7 +353,6 @@ async function loadViewAllBatch() {
       grid.appendChild(img);
     });
 
-    // Check kung may more
     if (genre.type !== 'trending') {
       if (viewAllState.moviePage > viewAllState.movieMaxPages &&
           viewAllState.tvPage > viewAllState.tvMaxPages) {
@@ -379,8 +367,6 @@ async function loadViewAllBatch() {
     if (!viewAllState.hasMore) {
       document.getElementById('view-all-end').style.display = 'block';
     }
-
-    console.log(`[ViewAll] ${viewAllState.key} - Movie page ${viewAllState.moviePage - 1}, TV page ${viewAllState.tvPage - 1}`);
   } catch (err) {
     console.error('[ViewAll]', err);
   } finally {
@@ -397,7 +383,6 @@ function closeViewAll() {
   viewAllState.seenIds = new Set();
 }
 
-// ===== VIEW ALL SCROLL LISTENER =====
 function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
@@ -407,7 +392,6 @@ function attachViewAllScroll() {
     if (viewAllState.loading) return;
     if (!viewAllState.hasMore) return;
 
-    // Kung malapit na sa dulo (500px bago ang dulo)
     if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
       loadViewAllBatch();
     }
@@ -446,6 +430,7 @@ async function loadMoreGenre(category, genreId, containerId) {
   pages[category] += 1;
 
   try {
+    // Gamitin ang NEWEST TO OLDEST sort
     const data = await fetchByGenreMovie(genreId, pages[category]);
     if (data.results.length > 0) {
       maxPages[category] = data.total_pages;
@@ -477,7 +462,7 @@ function attachScrollListeners() {
     const el = document.getElementById(row.id);
     if (!el) return;
     el.addEventListener('scroll', () => {
-      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 200) {
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 300) {
         if (row.genre) {
           loadMoreGenre(row.category, row.genre, row.id);
         } else {
@@ -493,6 +478,7 @@ async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
 
+    // Trending rows — popularity-based (hindi binabago)
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
 
@@ -505,7 +491,7 @@ async function init() {
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
 
-    // Load genres
+    // Genre rows — NEWEST TO OLDEST
     for (let i = 0; i < GENRES.length; i++) {
       const genre = GENRES[i];
       try {
