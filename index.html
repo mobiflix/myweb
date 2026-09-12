@@ -1,31 +1,120 @@
-<!-- ===== DETAILS MODAL ===== -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MyFlix</title>
+  <link rel="stylesheet" href="home.css">
+  <link rel="preload" href="home.css" as="style">
+  <link rel="preload" href="home.js" as="script">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script defer src="home.js"></script>
+</head>
 
-    <!-- 1. PLAYER SA TAAS -->
-    <div class="player-wrapper" style="padding: 0;">
-      <iframe id="modal-video" width="100%" height="480" frameborder="0" allowfullscreen></iframe>
+<body>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo">MYFLIX</a>
+      <div class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="#">Movies</a>
+        <a href="#">TV Shows</a>
+        <a href="#">Anime</a>
+      </div>
     </div>
-
-    <!-- 2. SERVER SELECTOR SA ILALIM NG PLAYER -->
-    <div class="server-selector" style="padding: 16px 28px 0; margin: 0;">
-      <label for="server"><i class="fa fa-server"></i> Server:</label>
-      <select id="server" onchange="changeServer()"></select>
+    <div class="nav-right">
+      <div class="search-box" onclick="openSearchModal()">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search titles..." readonly />
+      </div>
+      <div class="profile-icon"><i class="fa fa-user"></i></div>
     </div>
+  </nav>
 
-    <!-- 3. TITLE AT DESCRIPTION SA PINAKA-BABA -->
-    <div class="modal-body" style="display: flex; gap: 24px; padding: 16px 28px 28px; align-items: flex-start;">
-      <img id="modal-image" src="" alt="" style="width: 140px; border-radius: 10px; flex-shrink: 0;" />
-      <div class="modal-text" style="flex: 1;">
-        <h2 id="modal-title"></h2>
-        <div class="meta-row">
-          <span class="stars" id="modal-rating"></span>
-          <span class="year" id="modal-year"></span>
-          <span class="type-badge" id="modal-type"></span>
-        </div>
-        <p id="modal-description"></p>
+  <!-- ===== HERO BANNER ===== -->
+  <div class="hero" id="banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 id="banner-title">Loading...</h1>
+      <div class="hero-buttons">
+        <button class="btn-play" onclick="playBanner()"><i class="fa fa-play"></i> Play</button>
+        <button class="btn-info" onclick="showBannerInfo()"><i class="fa fa-info-circle"></i> More Info</button>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- ===== CONTENT ROWS ===== -->
+  <div class="content">
+    <div class="row">
+      <h2>🔥 Trending Movies</h2>
+      <div class="list" id="movies-list"></div>
+    </div>
+
+    <div class="row">
+      <h2>📺 Trending TV Shows</h2>
+      <div class="list" id="tvshows-list"></div>
+    </div>
+
+    <div class="row">
+      <h2>🎌 Trending Anime</h2>
+      <div class="list" id="anime-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== DETAILS MODAL ===== -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+
+      <!-- 1. PLAYER SA TAAS -->
+      <div class="player-wrapper" style="padding: 0;">
+        <iframe id="modal-video" width="100%" height="480" frameborder="0" allowfullscreen></iframe>
+      </div>
+
+      <!-- 2. SERVER SELECTOR SA ILALIM NG PLAYER -->
+      <div class="server-selector" style="padding: 16px 28px 0; margin: 0;">
+        <label for="server"><i class="fa fa-server"></i> Server:</label>
+        <select id="server" onchange="changeServer()"></select>
+      </div>
+
+      <!-- 3. TITLE AT DESCRIPTION SA PINAKA-BABA -->
+      <div class="modal-body" style="display: flex; gap: 24px; padding: 16px 28px 28px; align-items: flex-start;">
+        <img id="modal-image" src="" alt="" style="width: 140px; border-radius: 10px; flex-shrink: 0;" />
+        <div class="modal-text" style="flex: 1;">
+          <h2 id="modal-title"></h2>
+          <div class="meta-row">
+            <span class="stars" id="modal-rating"></span>
+            <span class="year" id="modal-year"></span>
+            <span class="type-badge" id="modal-type"></span>
+          </div>
+          <p id="modal-description"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH MODAL ===== -->
+  <div class="search-modal" id="search-modal">
+    <span class="close" onclick="closeSearchModal()">&times;</span>
+    <div class="search-container">
+      <i class="fa fa-search"></i>
+      <input type="text" id="search-input" placeholder="Search for a movie, TV show, or anime..." oninput="searchTMDB()" />
+    </div>
+    <div class="results" id="search-results"></div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 MyFlix. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Disclaimer</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact Us</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
