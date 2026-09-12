@@ -29,19 +29,19 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRE MAP =====
+// ===== GENRE MAP (movie + tv genre IDs) =====
 const GENRE_MAP = {
   movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
-  action: { name: 'Action', id: 28, icon: '💥' },
-  horror: { name: 'Horror', id: 27, icon: '👻' },
-  scifi: { name: 'Sci-Fi', id: 878, icon: '🚀' },
-  comedy: { name: 'Comedy', id: 35, icon: '😂' },
-  romance: { name: 'Romance', id: 10749, icon: '💕' },
-  drama: { name: 'Drama', id: 18, icon: '🎭' },
-  thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
-  fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
-  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
+  action: { name: 'Action', movieId: 28, tvId: 10759, icon: '💥' },
+  horror: { name: 'Horror', movieId: 27, tvId: 9648, icon: '👻' },
+  scifi: { name: 'Sci-Fi', movieId: 878, tvId: 10765, icon: '🚀' },
+  comedy: { name: 'Comedy', movieId: 35, tvId: 35, icon: '😂' },
+  romance: { name: 'Romance', movieId: 10749, tvId: 18, icon: '💕' },
+  drama: { name: 'Drama', movieId: 18, tvId: 18, icon: '🎭' },
+  thriller: { name: 'Thriller', movieId: 53, tvId: 9648, icon: '🕵️' },
+  fantasy: { name: 'Fantasy', movieId: 14, tvId: 10765, icon: '🧙' },
+  mystery: { name: 'Mystery', movieId: 9648, tvId: 9648, icon: '🔍' }
 };
 
 // ===== GENRES for home rows =====
@@ -81,10 +81,14 @@ let maxPages = {
 // ===== VIEW ALL STATE =====
 let viewAllState = {
   key: null,
-  page: 1,
-  maxPages: 1,
+  moviePage: 1,
+  tvPage: 1,
+  movieMaxPages: 500,
+  tvMaxPages: 500,
   loading: false,
-  initialized: false
+  hasMore: true,
+  initialized: false,
+  seenIds: new Set()
 };
 
 // ===== FETCH =====
@@ -94,9 +98,17 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-async function fetchByGenre(genreId, page) {
+async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
+  );
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+async function fetchByGenreTV(genreId, page) {
+  const res = await fetch(
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -241,11 +253,11 @@ function toggleMenu() {
 }
 
 // ===== VIEW ALL PAGE =====
-async function openViewAll(key) {
+function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
-  // Isara ang menu
+  // Close menu
   const menu = document.getElementById('side-menu');
   const overlay = document.getElementById('menu-overlay');
   if (menu) menu.classList.remove('open');
@@ -254,10 +266,14 @@ async function openViewAll(key) {
   // Reset state
   viewAllState = {
     key: key,
-    page: 1,
-    maxPages: 1,
+    moviePage: 1,
+    tvPage: 1,
+    movieMaxPages: 500,
+    tvMaxPages: 500,
     loading: false,
-    initialized: true
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
   };
 
   // Set title
@@ -267,6 +283,7 @@ async function openViewAll(key) {
   const grid = document.getElementById('view-all-grid');
   grid.innerHTML = '';
   document.getElementById('view-all-end').style.display = 'none';
+  document.getElementById('view-all-loading').style.display = 'none';
 
   // Show page
   document.getElementById('view-all-page').classList.add('open');
@@ -275,32 +292,69 @@ async function openViewAll(key) {
   // Scroll to top
   document.getElementById('view-all-page').scrollTop = 0;
 
-  // Load first page
-  await loadViewAllPage();
+  // Load first batch
+  loadViewAllBatch();
 }
 
-async function loadViewAllPage() {
-  if (viewAllState.loading) return;
-  if (viewAllState.page > viewAllState.maxPages) return;
+// Load BOTH movies and TV shows at once
+async function loadViewAllBatch() {
+  if (viewAllState.loading || !viewAllState.hasMore) return;
 
   viewAllState.loading = true;
   document.getElementById('view-all-loading').style.display = 'block';
 
   const genre = GENRE_MAP[viewAllState.key];
-  let result;
+  const grid = document.getElementById('view-all-grid');
 
   try {
+    let movieData = { results: [], total_pages: 1 };
+    let tvData = { results: [], total_pages: 1 };
+
     if (genre.type === 'trending') {
-      result = await fetchTrending(genre.media, viewAllState.page);
+      // Trending Movies or TV Shows only
+      const data = await fetchTrending(genre.media, viewAllState.moviePage);
+      if (genre.media === 'movie') {
+        movieData = data;
+      } else {
+        tvData = data;
+      }
+      viewAllState.moviePage += 1;
     } else {
-      result = await fetchByGenre(genre.id, viewAllState.page);
+      // Genre: load both movies AND TV shows
+      const moviePromise = fetchByGenreMovie(genre.movieId, viewAllState.moviePage);
+      const tvPromise = fetchByGenreTV(genre.tvId, viewAllState.tvPage);
+
+      const [movieRes, tvRes] = await Promise.all([moviePromise, tvPromise]);
+      movieData = movieRes;
+      tvData = tvRes;
+
+      viewAllState.movieMaxPages = movieData.total_pages;
+      viewAllState.tvMaxPages = tvData.total_pages;
+
+      viewAllState.moviePage += 1;
+      viewAllState.tvPage += 1;
+
+      // Check kung may more pa
+      if (viewAllState.moviePage > viewAllState.movieMaxPages &&
+          viewAllState.tvPage > viewAllState.tvMaxPages) {
+        viewAllState.hasMore = false;
+      }
     }
 
-    viewAllState.maxPages = result.total_pages;
+    // Combine results: alternate movie, tv, movie, tv...
+    const combined = [];
+    const maxLen = Math.max(movieData.results.length, tvData.results.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (movieData.results[i]) combined.push(movieData.results[i]);
+      if (tvData.results[i]) combined.push(tvData.results[i]);
+    }
 
-    const grid = document.getElementById('view-all-grid');
-    result.results.forEach(item => {
+    // Append with deduplication
+    combined.forEach(item => {
       if (!item.poster_path) return;
+      if (viewAllState.seenIds.has(item.id)) return;
+      viewAllState.seenIds.add(item.id);
+
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
@@ -310,11 +364,23 @@ async function loadViewAllPage() {
       grid.appendChild(img);
     });
 
-    viewAllState.page += 1;
+    // Check kung may more
+    if (genre.type !== 'trending') {
+      if (viewAllState.moviePage > viewAllState.movieMaxPages &&
+          viewAllState.tvPage > viewAllState.tvMaxPages) {
+        viewAllState.hasMore = false;
+      }
+    } else {
+      if (viewAllState.moviePage > movieData.total_pages) {
+        viewAllState.hasMore = false;
+      }
+    }
 
-    if (viewAllState.page > viewAllState.maxPages) {
+    if (!viewAllState.hasMore) {
       document.getElementById('view-all-end').style.display = 'block';
     }
+
+    console.log(`[ViewAll] ${viewAllState.key} - Movie page ${viewAllState.moviePage - 1}, TV page ${viewAllState.tvPage - 1}`);
   } catch (err) {
     console.error('[ViewAll]', err);
   } finally {
@@ -327,21 +393,26 @@ function closeViewAll() {
   document.getElementById('view-all-page').classList.remove('open');
   document.body.style.overflow = '';
   document.getElementById('view-all-grid').innerHTML = '';
+  viewAllState.initialized = false;
+  viewAllState.seenIds = new Set();
 }
 
-// Infinite scroll sa View All page
-document.addEventListener('DOMContentLoaded', () => {
+// ===== VIEW ALL SCROLL LISTENER =====
+function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
-  if (page) {
-    page.addEventListener('scroll', () => {
-      if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
-        if (viewAllState.initialized && !viewAllState.loading) {
-          loadViewAllPage();
-        }
-      }
-    });
-  }
-});
+  if (!page) return;
+
+  page.addEventListener('scroll', () => {
+    if (!viewAllState.initialized) return;
+    if (viewAllState.loading) return;
+    if (!viewAllState.hasMore) return;
+
+    // Kung malapit na sa dulo (500px bago ang dulo)
+    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
+      loadViewAllBatch();
+    }
+  });
+}
 
 // ===== INFINITE SCROLL (HOME ROWS) =====
 async function loadMore(category) {
@@ -375,7 +446,7 @@ async function loadMoreGenre(category, genreId, containerId) {
   pages[category] += 1;
 
   try {
-    const data = await fetchByGenre(genreId, pages[category]);
+    const data = await fetchByGenreMovie(genreId, pages[category]);
     if (data.results.length > 0) {
       maxPages[category] = data.total_pages;
       appendToList(data.results, containerId);
@@ -438,7 +509,7 @@ async function init() {
     for (let i = 0; i < GENRES.length; i++) {
       const genre = GENRES[i];
       try {
-        const data = await fetchByGenre(genre.id, 1);
+        const data = await fetchByGenreMovie(genre.id, 1);
         appendToList(data.results, genre.container);
       } catch (err) {
         console.error('[MobiFlix] Genre error:', genre.name, err);
@@ -446,6 +517,7 @@ async function init() {
     }
 
     attachScrollListeners();
+    attachViewAllScroll();
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
