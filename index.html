@@ -175,7 +175,7 @@
   <div class="modal" id="modal">
     <div class="modal-content">
 
-      <!-- Back bar sa taas-kaliwa -->
+      <!-- Back bar sa taas-kaliwa (normal view) -->
       <div class="modal-back-bar">
         <button class="modal-back-btn" onclick="closeModal()">
           <i class="fa fa-arrow-left"></i> Back
@@ -183,6 +183,10 @@
       </div>
 
       <div class="player-wrapper" id="player-wrapper">
+        <!-- Back button na lalabas lang kapag fullscreen -->
+        <button class="fs-back-btn" onclick="closeModal()">
+          <i class="fa fa-arrow-left"></i> Back
+        </button>
         <iframe id="modal-video" frameborder="0" allowfullscreen></iframe>
       </div>
 
