@@ -457,6 +457,50 @@ async function init() {
 }
 
 init();
+// ===== FULLSCREEN PLAYER =====
+function toggleFullscreen() {
+  const wrapper = document.getElementById('player-wrapper');
+  const icon = document.getElementById('fullscreen-icon');
+
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    // Enter fullscreen
+    if (wrapper.requestFullscreen) {
+      wrapper.requestFullscreen();
+    } else if (wrapper.webkitRequestFullscreen) {
+      wrapper.webkitRequestFullscreen();
+    }
+    if (icon) icon.className = 'fa fa-compress';
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+    if (icon) icon.className = 'fa fa-expand';
+  }
+}
+
+// Sync icon kapag nagbago ang fullscreen state (hal. Esc key)
+document.addEventListener('fullscreenchange', () => {
+  const icon = document.getElementById('fullscreen-icon');
+  if (!icon) return;
+  if (document.fullscreenElement) {
+    icon.className = 'fa fa-compress';
+  } else {
+    icon.className = 'fa fa-expand';
+  }
+});
+
+document.addEventListener('webkitfullscreenchange', () => {
+  const icon = document.getElementById('fullscreen-icon');
+  if (!icon) return;
+  if (document.webkitFullscreenElement) {
+    icon.className = 'fa fa-compress';
+  } else {
+    icon.className = 'fa fa-expand';
+  }
+});
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
