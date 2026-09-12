@@ -84,7 +84,7 @@ function showDetails(item) {
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview || 'No description available.';
   document.getElementById('modal-image').src = `${IMG_W500}${item.poster_path}`;
-  document.getElementById('modal-backdrop').src = `${IMG_URL}${item.backdrop_path || item.poster_path}`;
+
 
   const rating = Math.round(item.vote_average / 2);
   document.getElementById('modal-rating').innerHTML = '★'.repeat(rating) + '☆'.repeat(5 - rating);
