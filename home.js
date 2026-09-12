@@ -29,7 +29,7 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRES (Documentary removed) =====
+// ===== GENRES =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list' },
   { name: 'Horror', id: 27, container: 'horror-list' },
@@ -219,6 +219,31 @@ async function searchTMDB() {
   }, 300);
 }
 
+// ===== SIDE MENU =====
+function toggleMenu() {
+  const menu = document.getElementById('side-menu');
+  const overlay = document.getElementById('menu-overlay');
+  if (!menu || !overlay) return;
+  menu.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function scrollToGenre(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  // Isara ang menu
+  toggleMenu();
+
+  // Hanapin ang parent na .row at i-scroll
+  const row = el.closest('.row');
+  if (row) {
+    setTimeout(() => {
+      row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+}
+
 // ===== INFINITE SCROLL =====
 async function loadMore(category) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
@@ -332,5 +357,12 @@ async function init() {
 init();
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeModal(); closeSearchModal(); }
+  if (e.key === 'Escape') {
+    closeModal();
+    closeSearchModal();
+    const menu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+    if (menu) menu.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+  }
 });
