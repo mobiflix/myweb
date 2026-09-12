@@ -171,7 +171,7 @@
     </div>
   </div>
 
-  <!-- ===== DETAILS MODAL (may Back button, walang X) ===== -->
+  <!-- ===== DETAILS MODAL ===== -->
   <div class="modal" id="modal">
     <div class="modal-content">
 
@@ -182,13 +182,16 @@
         </button>
       </div>
 
-      <div class="player-wrapper">
+      <div class="player-wrapper" id="player-wrapper">
         <iframe id="modal-video" frameborder="0" allowfullscreen></iframe>
       </div>
 
       <div class="server-selector">
         <label for="server"><i class="fa fa-server"></i> Server:</label>
         <select id="server" onchange="changeServer()"></select>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">
+          <i class="fa fa-expand" id="fullscreen-icon"></i>
+        </button>
       </div>
 
       <div class="modal-body">
