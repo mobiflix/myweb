@@ -319,8 +319,15 @@ function openViewAll(key) {
   page.classList.add('open');
   page.scrollTop = 0;
   document.body.style.overflow = 'hidden';
+  page.style.overflowY = 'auto';
+  page.style.webkitOverflowScrolling = 'touch';
 
   loadViewAllBatch();
+
+  // Mobile: i-attach ang touchmove listener para siguradong naglo-load
+  setTimeout(function() {
+    attachViewAllScroll();
+  }, 100);
 }
 
 async function loadViewAllBatch() {
@@ -379,28 +386,40 @@ function closeViewAll() {
   viewAllState.seenIds = new Set();
 }
 
-// ===== VIEW ALL SCROLL (debounced) =====
+// ===== VIEW ALL SCROLL (mobile-friendly) =====
 let viewAllScrollTimer = null;
 
 function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
 
-  page.addEventListener('scroll', function() {
-    if (!viewAllState.initialized) return;
-    if (viewAllState.loading) return;
-    if (!viewAllState.hasMore) return;
+  // Tanggalin ang dating listeners
+  page.removeEventListener('scroll', viewAllScrollHandler);
+  page.removeEventListener('touchmove', viewAllScrollHandler);
 
-    // Debounce — i-clear ang dating timer
-    clearTimeout(viewAllScrollTimer);
+  // Scroll handler
+  page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
+  page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
+}
 
-    // Mag-load pagkatapos ng 200ms na walang scroll
-    viewAllScrollTimer = setTimeout(function() {
-      if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
-        loadViewAllBatch();
-      }
-    }, 200);
-  }, { passive: true });
+function viewAllScrollHandler() {
+  if (!viewAllState.initialized) return;
+  if (viewAllState.loading) return;
+  if (!viewAllState.hasMore) return;
+
+  const page = document.getElementById('view-all-page');
+  if (!page) return;
+
+  clearTimeout(viewAllScrollTimer);
+  viewAllScrollTimer = setTimeout(function() {
+    const scrollPos = page.scrollTop + page.clientHeight;
+    const threshold = page.scrollHeight - 300;
+
+    if (scrollPos >= threshold) {
+      console.log('[ViewAll] Loading more... (scrollPos:', scrollPos, 'threshold:', threshold, ')');
+      loadViewAllBatch();
+    }
+  }, 150);
 }
 
 // ===== INFINITE SCROLL (HOME ROWS) =====
@@ -505,7 +524,6 @@ async function init() {
     }
 
     attachScrollListeners();
-    attachViewAllScroll();
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
