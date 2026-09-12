@@ -707,3 +707,11 @@ body {
     gap: 12px;
   }
   }
+
+.logo {
+  color: #e50914; /* Pula ang "Mobi" */
+}
+
+.logo span {
+  color: #ffffff; /* Puti ang "Flix" */
+}
