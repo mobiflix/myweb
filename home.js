@@ -98,17 +98,19 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
+// TOP RATED (Movie) – may minimum vote count
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=primary_release_date.desc`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=vote_average.desc&vote_count.gte=100`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
+// TOP RATED (TV Show) – may minimum vote count
 async function fetchByGenreTV(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=first_air_date.desc`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=vote_average.desc&vote_count.gte=100`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
