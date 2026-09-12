@@ -31,7 +31,6 @@ body {
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 32px;
 }
 
 .logo {
@@ -47,28 +46,10 @@ body {
   color: #ffffff;
 }
 
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links a {
-  color: #aaa;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: 0.2s;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-  color: #fff;
-}
-
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .search-box {
@@ -107,11 +88,13 @@ body {
   color: #666;
 }
 
-.profile-icon {
-  width: 34px;
-  height: 34px;
+/* ===== MENU ICON (HAMBURGER) ===== */
+.menu-icon {
+  width: 38px;
+  height: 38px;
   border-radius: 6px;
-  background: #e50914;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,13 +102,96 @@ body {
   transition: 0.2s;
 }
 
-.profile-icon:hover {
-  background: #b20710;
+.menu-icon:hover {
+  background: #e50914;
+  border-color: #e50914;
 }
 
-.profile-icon i {
+.menu-icon i {
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
+}
+
+/* ===== SIDE MENU ===== */
+.side-menu {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 300px;
+  height: 100vh;
+  background: #141414;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 500;
+  transition: right 0.3s cubic-bezier(0.2, 0, 0, 1);
+  overflow-y: auto;
+  padding: 20px 0;
+}
+
+.side-menu.open {
+  right: 0;
+}
+
+.side-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 12px;
+}
+
+.side-menu-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.side-menu-close {
+  color: #888;
+  font-size: 28px;
+  cursor: pointer;
+  transition: 0.2s;
+  line-height: 1;
+}
+
+.side-menu-close:hover {
+  color: #e50914;
+}
+
+.side-menu-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.side-menu-links a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.side-menu-links a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  border-left-color: #e50914;
+}
+
+/* ===== MENU OVERLAY ===== */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 400;
+  display: none;
+  transition: 0.3s;
+}
+
+.menu-overlay.open {
+  display: block;
 }
 
 /* ===== HERO BANNER ===== */
@@ -213,6 +279,7 @@ body {
 /* ===== ROWS ===== */
 .row {
   margin-bottom: 40px;
+  scroll-margin-top: 100px;
 }
 
 .row h2 {
@@ -320,7 +387,7 @@ body {
   background: #e50914;
 }
 
-/* ===== PLAYER (RESPONSIVE 16:9) ===== */
+/* ===== PLAYER ===== */
 .player-wrapper {
   width: 100%;
   position: relative;
@@ -566,11 +633,10 @@ body {
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
   .navbar { padding: 12px 16px; }
-  .nav-left { gap: 16px; }
   .logo { font-size: 20px; }
-  .nav-links { display: none; }
   .search-box { padding: 6px 10px; }
   .search-box input { width: 100px; font-size: 13px; }
+  .menu-icon { width: 34px; height: 34px; }
 
   .hero { height: 60vh; padding: 0 20px 60px; }
   .hero-content h1 { font-size: 28px; }
@@ -594,6 +660,8 @@ body {
   .search-modal .results img { height: 165px; }
   .search-container { padding: 10px 16px; }
   .search-container input { font-size: 15px; }
+
+  .side-menu { width: 260px; right: -280px; }
 }
 
 @media (max-width: 480px) {
@@ -602,4 +670,4 @@ body {
   .modal-body img { width: 100px; }
   .footer-content { font-size: 13px; }
   .footer-links { gap: 12px; }
-    }
+  }
