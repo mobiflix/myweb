@@ -58,11 +58,6 @@
     </div>
 
     <div class="row">
-      <h2>🎌 Trending Anime</h2>
-      <div class="list" id="anime-list"></div>
-    </div>
-
-    <div class="row">
       <h2>💥 Action</h2>
       <div class="list" id="action-list"></div>
     </div>
@@ -106,11 +101,6 @@
       <h2>🔍 Mystery</h2>
       <div class="list" id="mystery-list"></div>
     </div>
-
-    <div class="row">
-      <h2>🎬 Documentary</h2>
-      <div class="list" id="documentary-list"></div>
-    </div>
   </div>
 
   <!-- ===== DETAILS MODAL ===== -->
@@ -118,18 +108,15 @@
     <div class="modal-content">
       <span class="close" onclick="closeModal()">&times;</span>
 
-      <!-- 1. PLAYER SA TAAS -->
       <div class="player-wrapper">
         <iframe id="modal-video" frameborder="0" allowfullscreen></iframe>
       </div>
 
-      <!-- 2. SERVER SELECTOR -->
       <div class="server-selector">
         <label for="server"><i class="fa fa-server"></i> Server:</label>
         <select id="server" onchange="changeServer()"></select>
       </div>
 
-      <!-- 3. TITLE + DESCRIPTION -->
       <div class="modal-body">
         <img id="modal-image" src="" alt="" />
         <div class="modal-text">
@@ -150,7 +137,7 @@
     <span class="close" onclick="closeSearchModal()">&times;</span>
     <div class="search-container">
       <i class="fa fa-search"></i>
-      <input type="text" id="search-input" placeholder="Search for a movie, TV show, or anime..." oninput="searchTMDB()" />
+      <input type="text" id="search-input" placeholder="Search for a movie or TV show..." oninput="searchTMDB()" />
     </div>
     <div class="results" id="search-results"></div>
   </div>
@@ -158,7 +145,7 @@
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-content">
-      <p>&copy; 2025 MobiFlix. All rights reserved.</p>
+      <p>&copy; 2026 MobiFlix. All rights reserved.</p>
       <div class="footer-links">
         <a href="#">Disclaimer</a>
         <a href="#">About Us</a>
