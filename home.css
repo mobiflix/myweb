@@ -298,7 +298,7 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== MODAL BACK BAR ===== */
+/* ===== MODAL BACK BAR (normal view) ===== */
 .modal-back-bar {
   position: absolute;
   top: 12px;
@@ -341,6 +341,38 @@ body {
 @supports not (aspect-ratio: 16 / 9) {
   .player-wrapper { padding-bottom: 56.25%; height: 0; }
   .player-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+}
+
+/* ===== FULLSCREEN BACK BUTTON (hidden by default) ===== */
+.fs-back-btn {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 50;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 60px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.fs-back-btn:hover {
+  background: #e50914;
+  border-color: #e50914;
+}
+
+/* Ipakita lang kapag naka-fullscreen */
+.player-wrapper:fullscreen .fs-back-btn,
+.player-wrapper:-webkit-full-screen .fs-back-btn {
+  display: flex;
 }
 
 /* ===== SERVER SELECTOR (may fullscreen button) ===== */
@@ -506,7 +538,7 @@ body {
   .modal-body img { width: 120px; }
   .modal-text h2 { font-size: 20px; }
   .meta-row { justify-content: center; }
-  .server-selector { padding: 12px 16px 0; gap: 8px; }
+  .server-selector { padding: 12px 16px 0; gap: 8px; flex-wrap: wrap; }
   .server-selector select { max-width: 100%; width: 100%; }
   .fullscreen-btn { width: 36px; height: 36px; }
 
@@ -516,6 +548,7 @@ body {
   .side-menu { width: 260px; right: -280px; }
 
   .modal-back-btn { padding: 6px 14px; font-size: 13px; }
+  .fs-back-btn { padding: 8px 16px; font-size: 13px; top: 14px; left: 14px; }
 }
 
 @media (max-width: 480px) {
@@ -529,4 +562,6 @@ body {
   .server-selector label { font-size: 12px; }
   .server-selector select { font-size: 13px; padding: 6px 10px; }
   .fullscreen-btn { width: 32px; height: 32px; font-size: 12px; }
+
+  .fs-back-btn { padding: 6px 14px; font-size: 12px; top: 10px; left: 10px; }
 }
