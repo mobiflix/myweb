@@ -185,9 +185,8 @@ function changeServer() {
   document.getElementById('modal-video').src = embedURL;
 }
 
-// ===== CLOSE MODAL (may fullscreen exit) =====
+// ===== CLOSE MODAL =====
 function closeModal() {
-  // Exit fullscreen muna kung naka-fullscreen
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
       document.exitFullscreen();
@@ -196,12 +195,10 @@ function closeModal() {
     }
   }
 
-  // Tapos isara ang modal
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
   document.body.style.overflow = '';
 
-  // Reset ang fullscreen icon
   const icon = document.getElementById('fullscreen-icon');
   if (icon) icon.className = 'fa fa-expand';
 }
@@ -230,7 +227,6 @@ function toggleFullscreen() {
   }
 }
 
-// Sync ang icon at back button kapag nagbago ang fullscreen state
 function updateFullscreenUI() {
   const icon = document.getElementById('fullscreen-icon');
   const isFs = document.fullscreenElement || document.webkitFullscreenElement;
@@ -319,9 +315,13 @@ function openViewAll(key) {
   document.getElementById('view-all-end').style.display = 'none';
   document.getElementById('view-all-loading').style.display = 'none';
 
-  document.getElementById('view-all-page').classList.add('open');
+  const page = document.getElementById('view-all-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
   document.body.style.overflow = 'hidden';
-  document.getElementById('view-all-page').scrollTop = 0;
+
+  // Ensure scrollable
+  page.style.overflowY = 'auto';
 
   loadViewAllBatch();
 }
@@ -373,18 +373,22 @@ async function loadViewAllBatch() {
 }
 
 function closeViewAll() {
-  document.getElementById('view-all-page').classList.remove('open');
+  const page = document.getElementById('view-all-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
   document.body.style.overflow = '';
   document.getElementById('view-all-grid').innerHTML = '';
   viewAllState.initialized = false;
   viewAllState.seenIds = new Set();
 }
 
+// ===== VIEW ALL SCROLL (fixed) =====
 function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
 
-  page.addEventListener('scroll', () => {
+  // Scroll listener sa view-all-page
+  page.addEventListener('scroll', function() {
     if (!viewAllState.initialized) return;
     if (viewAllState.loading) return;
     if (!viewAllState.hasMore) return;
@@ -392,7 +396,21 @@ function attachViewAllScroll() {
     if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
       loadViewAllBatch();
     }
-  });
+  }, { passive: true });
+
+  // Fallback: scroll listener sa document (para sa mobile)
+  document.addEventListener('scroll', function() {
+    if (!viewAllState.initialized) return;
+    if (viewAllState.loading) return;
+    if (!viewAllState.hasMore) return;
+
+    const rect = page.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      if (page.scrollTop + page.clientHeight >= page.scrollHeight - 500) {
+        loadViewAllBatch();
+      }
+    }
+  }, { passive: true });
 }
 
 // ===== INFINITE SCROLL (HOME ROWS) =====
