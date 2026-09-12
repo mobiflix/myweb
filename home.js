@@ -17,12 +17,12 @@ const MOVIE_ENDPOINTS = [
 ];
 
 const SERIES_ENDPOINTS = [
+  { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' },
   { name: 'VidLink', url: 'https://vidlink.pro/tv/' },
   { name: 'VidSrc.vip', url: 'https://vidsrc.vip/embed/tv/' },
   { name: '111Movies', url: 'https://111movies.com/tv/' },
   { name: 'VidSrc.dev', url: 'https://vidsrc.dev/embed/tv/' },
   { name: 'VidJoy', url: 'https://vidjoy.pro/embed/tv/' },
-  { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' },
   { name: 'VidSrc.cc', url: 'https://vidsrc.cc/v2/embed/tv/' },
   { name: 'VidSrc.xyz', url: 'https://vidsrc.xyz/embed/tv/' },
   { name: '2Embed', url: 'https://www.2embed.cc/embedtvfull/' },
