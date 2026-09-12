@@ -29,17 +29,32 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
-// ===== GENRES =====
+// ===== GENRE MAP =====
+const GENRE_MAP = {
+  movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
+  tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
+  action: { name: 'Action', id: 28, icon: '💥' },
+  horror: { name: 'Horror', id: 27, icon: '👻' },
+  scifi: { name: 'Sci-Fi', id: 878, icon: '🚀' },
+  comedy: { name: 'Comedy', id: 35, icon: '😂' },
+  romance: { name: 'Romance', id: 10749, icon: '💕' },
+  drama: { name: 'Drama', id: 18, icon: '🎭' },
+  thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
+  fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
+  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
+};
+
+// ===== GENRES for home rows =====
 const GENRES = [
-  { name: 'Action', id: 28, container: 'action-list' },
-  { name: 'Horror', id: 27, container: 'horror-list' },
-  { name: 'Sci-Fi', id: 878, container: 'scifi-list' },
-  { name: 'Comedy', id: 35, container: 'comedy-list' },
-  { name: 'Romance', id: 10749, container: 'romance-list' },
-  { name: 'Drama', id: 18, container: 'drama-list' },
-  { name: 'Thriller', id: 53, container: 'thriller-list' },
-  { name: 'Fantasy', id: 14, container: 'fantasy-list' },
-  { name: 'Mystery', id: 9648, container: 'mystery-list' }
+  { name: 'Action', id: 28, container: 'action-list', key: 'action' },
+  { name: 'Horror', id: 27, container: 'horror-list', key: 'horror' },
+  { name: 'Sci-Fi', id: 878, container: 'scifi-list', key: 'scifi' },
+  { name: 'Comedy', id: 35, container: 'comedy-list', key: 'comedy' },
+  { name: 'Romance', id: 10749, container: 'romance-list', key: 'romance' },
+  { name: 'Drama', id: 18, container: 'drama-list', key: 'drama' },
+  { name: 'Thriller', id: 53, container: 'thriller-list', key: 'thriller' },
+  { name: 'Fantasy', id: 14, container: 'fantasy-list', key: 'fantasy' },
+  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' }
 ];
 
 let currentItem;
@@ -61,6 +76,15 @@ let maxPages = {
   movie: 500, tv: 500,
   action: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
   drama: 500, thriller: 500, fantasy: 500, mystery: 500
+};
+
+// ===== VIEW ALL STATE =====
+let viewAllState = {
+  key: null,
+  page: 1,
+  maxPages: 1,
+  loading: false,
+  initialized: false
 };
 
 // ===== FETCH =====
@@ -147,26 +171,14 @@ function populateServerDropdown(item) {
 
 function changeServer() {
   if (!currentItem) return;
-
   const select = document.getElementById('server');
   const index = parseInt(select.value) || 0;
   const type = select.dataset.type || 'movie';
   const endpoints = type === 'movie' ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
   const endpoint = endpoints[index];
-
   if (!endpoint) return;
 
-  let embedURL = '';
-  if (endpoint.url.includes('vidsrc.cc/v2')) {
-    embedURL = `${endpoint.url}${currentItem.id}`;
-  } else if (endpoint.url.includes('vidsrc.me') || endpoint.url.includes('vidsrc.vip')) {
-    embedURL = `${endpoint.url}${currentItem.id}`;
-  } else if (endpoint.url.includes('2embed.cc/embedtvfull')) {
-    embedURL = `${endpoint.url}${currentItem.id}`;
-  } else {
-    embedURL = `${endpoint.url}${currentItem.id}`;
-  }
-
+  let embedURL = `${endpoint.url}${currentItem.id}`;
   document.getElementById('modal-video').src = embedURL;
 }
 
@@ -228,23 +240,110 @@ function toggleMenu() {
   overlay.classList.toggle('open');
 }
 
-function scrollToGenre(containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
+// ===== VIEW ALL PAGE =====
+async function openViewAll(key) {
+  const genre = GENRE_MAP[key];
+  if (!genre) return;
 
   // Isara ang menu
-  toggleMenu();
+  const menu = document.getElementById('side-menu');
+  const overlay = document.getElementById('menu-overlay');
+  if (menu) menu.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
 
-  // Hanapin ang parent na .row at i-scroll
-  const row = el.closest('.row');
-  if (row) {
-    setTimeout(() => {
-      row.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
+  // Reset state
+  viewAllState = {
+    key: key,
+    page: 1,
+    maxPages: 1,
+    loading: false,
+    initialized: true
+  };
+
+  // Set title
+  document.getElementById('view-all-title').textContent = (genre.icon || '🎬') + ' ' + genre.name;
+
+  // Clear grid
+  const grid = document.getElementById('view-all-grid');
+  grid.innerHTML = '';
+  document.getElementById('view-all-end').style.display = 'none';
+
+  // Show page
+  document.getElementById('view-all-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Scroll to top
+  document.getElementById('view-all-page').scrollTop = 0;
+
+  // Load first page
+  await loadViewAllPage();
+}
+
+async function loadViewAllPage() {
+  if (viewAllState.loading) return;
+  if (viewAllState.page > viewAllState.maxPages) return;
+
+  viewAllState.loading = true;
+  document.getElementById('view-all-loading').style.display = 'block';
+
+  const genre = GENRE_MAP[viewAllState.key];
+  let result;
+
+  try {
+    if (genre.type === 'trending') {
+      result = await fetchTrending(genre.media, viewAllState.page);
+    } else {
+      result = await fetchByGenre(genre.id, viewAllState.page);
+    }
+
+    viewAllState.maxPages = result.total_pages;
+
+    const grid = document.getElementById('view-all-grid');
+    result.results.forEach(item => {
+      if (!item.poster_path) return;
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = () => showDetails(item);
+      grid.appendChild(img);
+    });
+
+    viewAllState.page += 1;
+
+    if (viewAllState.page > viewAllState.maxPages) {
+      document.getElementById('view-all-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[ViewAll]', err);
+  } finally {
+    viewAllState.loading = false;
+    document.getElementById('view-all-loading').style.display = 'none';
   }
 }
 
-// ===== INFINITE SCROLL =====
+function closeViewAll() {
+  document.getElementById('view-all-page').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('view-all-grid').innerHTML = '';
+}
+
+// Infinite scroll sa View All page
+document.addEventListener('DOMContentLoaded', () => {
+  const page = document.getElementById('view-all-page');
+  if (page) {
+    page.addEventListener('scroll', () => {
+      if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+        if (viewAllState.initialized && !viewAllState.loading) {
+          loadViewAllPage();
+        }
+      }
+    });
+  }
+});
+
+// ===== INFINITE SCROLL (HOME ROWS) =====
 async function loadMore(category) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
@@ -341,7 +440,6 @@ async function init() {
       try {
         const data = await fetchByGenre(genre.id, 1);
         appendToList(data.results, genre.container);
-        console.log('[MobiFlix] Loaded:', genre.name, data.results.length);
       } catch (err) {
         console.error('[MobiFlix] Genre error:', genre.name, err);
       }
@@ -360,6 +458,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
     closeSearchModal();
+    closeViewAll();
     const menu = document.getElementById('side-menu');
     const overlay = document.getElementById('menu-overlay');
     if (menu) menu.classList.remove('open');
