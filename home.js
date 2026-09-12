@@ -29,11 +29,40 @@ const SERIES_ENDPOINTS = [
   { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
 ];
 
+// ===== GENRES =====
+const GENRES = [
+  { name: 'Action', id: 28, container: 'action-list' },
+  { name: 'Horror', id: 27, container: 'horror-list' },
+  { name: 'Sci-Fi', id: 878, container: 'scifi-list' },
+  { name: 'Comedy', id: 35, container: 'comedy-list' },
+  { name: 'Romance', id: 10749, container: 'romance-list' },
+  { name: 'Drama', id: 18, container: 'drama-list' },
+  { name: 'Thriller', id: 53, container: 'thriller-list' },
+  { name: 'Fantasy', id: 14, container: 'fantasy-list' },
+  { name: 'Mystery', id: 9648, container: 'mystery-list' },
+  { name: 'Documentary', id: 99, container: 'documentary-list' }
+];
+
 let currentItem;
 let bannerItem;
-let pages = { movie: 1, tv: 1, anime: 1 };
-let loading = { movie: false, tv: false, anime: false };
-let maxPages = { movie: 500, tv: 500, anime: 500 };
+
+let pages = {
+  movie: 1, tv: 1, anime: 1,
+  action: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
+  drama: 1, thriller: 1, fantasy: 1, mystery: 1, documentary: 1
+};
+
+let loading = {
+  movie: false, tv: false, anime: false,
+  action: false, horror: false, scifi: false, comedy: false, romance: false,
+  drama: false, thriller: false, fantasy: false, mystery: false, documentary: false
+};
+
+let maxPages = {
+  movie: 500, tv: 500, anime: 500,
+  action: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
+  drama: 500, thriller: 500, fantasy: 500, mystery: 500, documentary: 500
+};
 
 // ===== FETCH =====
 async function fetchTrending(type, page) {
@@ -51,6 +80,14 @@ async function fetchAnime(page) {
   return { results: filtered, total_pages: data.total_pages || 1 };
 }
 
+async function fetchByGenre(genreId, page) {
+  const res = await fetch(
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
+  );
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
 // ===== DISPLAY =====
 function displayBanner(item) {
   bannerItem = item;
@@ -64,6 +101,7 @@ function showBannerInfo() { if (bannerItem) showDetails(bannerItem); }
 
 function appendToList(items, containerId) {
   const container = document.getElementById(containerId);
+  if (!container) return;
   items.forEach(item => {
     if (!item.poster_path) return;
     const existing = container.querySelector(`img[data-id="${item.id}"]`);
@@ -84,7 +122,6 @@ function showDetails(item) {
   document.getElementById('modal-title').textContent = item.title || item.name;
   document.getElementById('modal-description').textContent = item.overview || 'No description available.';
   document.getElementById('modal-image').src = `${IMG_W500}${item.poster_path}`;
-  
 
   const rating = Math.round(item.vote_average / 2);
   document.getElementById('modal-rating').innerHTML = '★'.repeat(rating) + '☆'.repeat(5 - rating);
@@ -92,20 +129,16 @@ function showDetails(item) {
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
   document.getElementById('modal-year').textContent = year || '—';
 
-  const type = item.media_type === 'movie' ? 'Movie' : (item.media_type === 'tv' ? 'TV Show' : 'Anime');
+  const type = item.media_type === 'movie' ? 'Movie' : (item.media_type === 'tv' ? 'TV Show' : 'Movie');
   document.getElementById('modal-type').textContent = type;
 
-  // Populate server dropdown based on type
   populateServerDropdown(item);
-
-  // Auto-load first server
   changeServer();
 
   document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
 
-// ===== POPULATE SERVER DROPDOWN =====
 function populateServerDropdown(item) {
   const select = document.getElementById('server');
   const isMovie = item.media_type === 'movie' || (!item.media_type && item.title);
@@ -119,17 +152,15 @@ function populateServerDropdown(item) {
     select.appendChild(option);
   });
 
-  // Store endpoints reference
   select.dataset.type = isMovie ? 'movie' : 'tv';
 }
 
-// ===== CHANGE SERVER =====
 function changeServer() {
   if (!currentItem) return;
 
   const select = document.getElementById('server');
   const index = parseInt(select.value) || 0;
-  const type = select.dataset.type || (currentItem.media_type === 'movie' ? 'movie' : 'tv');
+  const type = select.dataset.type || 'movie';
   const endpoints = type === 'movie' ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
   const endpoint = endpoints[index];
 
@@ -137,15 +168,12 @@ function changeServer() {
 
   let embedURL = '';
 
-  // Build URL based on endpoint type
   if (endpoint.url.includes('vidsrc.cc/v2')) {
     embedURL = `${endpoint.url}${currentItem.id}`;
   } else if (endpoint.url.includes('vidsrc.me') || endpoint.url.includes('vidsrc.vip')) {
     embedURL = `${endpoint.url}${currentItem.id}`;
   } else if (endpoint.url.includes('2embed.cc/embedtvfull')) {
     embedURL = `${endpoint.url}${currentItem.id}`;
-  } else if (endpoint.url.includes('vidsrc.net')) {
-    embedURL = `${endpoint.url}${type}/?tmdb=${currentItem.id}`;
   } else {
     embedURL = `${endpoint.url}${currentItem.id}`;
   }
@@ -232,18 +260,51 @@ async function loadMore(category) {
   }
 }
 
+async function loadMoreGenre(category, genreId, containerId) {
+  if (loading[category] || pages[category] >= maxPages[category]) return;
+  loading[category] = true;
+  pages[category] += 1;
+
+  try {
+    const data = await fetchByGenre(genreId, pages[category]);
+    if (data.results.length > 0) {
+      maxPages[category] = data.total_pages;
+      appendToList(data.results, containerId);
+    }
+  } catch (err) {
+    console.error('[Genre]', err);
+  } finally {
+    loading[category] = false;
+  }
+}
+
 function attachScrollListeners() {
   const rows = [
     { id: 'movies-list', category: 'movie' },
     { id: 'tvshows-list', category: 'tv' },
-    { id: 'anime-list', category: 'anime' }
+    { id: 'anime-list', category: 'anime' },
+    { id: 'action-list', category: 'action', genre: 28 },
+    { id: 'horror-list', category: 'horror', genre: 27 },
+    { id: 'scifi-list', category: 'scifi', genre: 878 },
+    { id: 'comedy-list', category: 'comedy', genre: 35 },
+    { id: 'romance-list', category: 'romance', genre: 10749 },
+    { id: 'drama-list', category: 'drama', genre: 18 },
+    { id: 'thriller-list', category: 'thriller', genre: 53 },
+    { id: 'fantasy-list', category: 'fantasy', genre: 14 },
+    { id: 'mystery-list', category: 'mystery', genre: 9648 },
+    { id: 'documentary-list', category: 'documentary', genre: 99 }
   ];
+
   rows.forEach(row => {
     const el = document.getElementById(row.id);
     if (!el) return;
     el.addEventListener('scroll', () => {
       if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 200) {
-        loadMore(row.category);
+        if (row.genre) {
+          loadMoreGenre(row.category, row.genre, row.id);
+        } else {
+          loadMore(row.category);
+        }
       }
     });
   });
@@ -252,6 +313,8 @@ function attachScrollListeners() {
 // ===== INIT =====
 async function init() {
   try {
+    console.log('[MobiFlix] Initializing...');
+
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
     const animeData = await fetchAnime(1);
@@ -266,11 +329,23 @@ async function init() {
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
     appendToList(animeData.results, 'anime-list');
-    attachScrollListeners();
 
-    console.log('[MyFlix] Ready.');
+    // Load genres
+    for (let i = 0; i < GENRES.length; i++) {
+      const genre = GENRES[i];
+      try {
+        const data = await fetchByGenre(genre.id, 1);
+        appendToList(data.results, genre.container);
+        console.log('[MobiFlix] Loaded:', genre.name, data.results.length);
+      } catch (err) {
+        console.error('[MobiFlix] Genre error:', genre.name, err);
+      }
+    }
+
+    attachScrollListeners();
+    console.log('[MobiFlix] Ready.');
   } catch (err) {
-    console.error('[MyFlix] Init error:', err);
+    console.error('[MobiFlix] Init error:', err);
   }
 }
 
