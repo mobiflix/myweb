@@ -16,16 +16,42 @@
   <!-- ===== NAVBAR ===== -->
   <nav class="navbar">
     <div class="nav-left">
-  <a href="index.html" class="logo">Mobi<span>Flix</span></a>
-</div>
+      <a href="index.html" class="logo">Mobi<span>Flix</span></a>
+    </div>
     <div class="nav-right">
       <div class="search-box" onclick="openSearchModal()">
         <i class="fa fa-search"></i>
         <input type="text" placeholder="Search titles..." readonly />
       </div>
-      <div class="profile-icon"><i class="fa fa-user"></i></div>
+      <div class="menu-icon" onclick="toggleMenu()">
+        <i class="fa fa-bars"></i>
+      </div>
     </div>
   </nav>
+
+  <!-- ===== SIDE MENU ===== -->
+  <div class="side-menu" id="side-menu">
+    <div class="side-menu-header">
+      <span class="side-menu-title">🎬 Genres</span>
+      <span class="side-menu-close" onclick="toggleMenu()">&times;</span>
+    </div>
+    <div class="side-menu-links">
+      <a onclick="scrollToGenre('movies-list')">🔥 Trending Movies</a>
+      <a onclick="scrollToGenre('tvshows-list')">📺 Trending TV Shows</a>
+      <a onclick="scrollToGenre('action-list')">💥 Action</a>
+      <a onclick="scrollToGenre('horror-list')">👻 Horror</a>
+      <a onclick="scrollToGenre('scifi-list')">🚀 Sci-Fi</a>
+      <a onclick="scrollToGenre('comedy-list')">😂 Comedy</a>
+      <a onclick="scrollToGenre('romance-list')">💕 Romance</a>
+      <a onclick="scrollToGenre('drama-list')">🎭 Drama</a>
+      <a onclick="scrollToGenre('thriller-list')">🕵️ Thriller</a>
+      <a onclick="scrollToGenre('fantasy-list')">🧙 Fantasy</a>
+      <a onclick="scrollToGenre('mystery-list')">🔍 Mystery</a>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
 
   <!-- ===== HERO BANNER ===== -->
   <div class="hero" id="banner">
@@ -139,7 +165,7 @@
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-content">
-      <p>&copy; 2026 MobiFlix. All rights reserved.</p>
+      <p>&copy; 2025 MobiFlix. All rights reserved.</p>
       <div class="footer-links">
         <a href="#">Disclaimer</a>
         <a href="#">About Us</a>
