@@ -1,21 +1,29 @@
 /* ===== RESET & BASE ===== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #0b0b0b;
   color: #e5e5e5;
   overflow-x: hidden;
+  padding-bottom: 40px;
 }
 
 /* ===== NAVBAR ===== */
 .navbar {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 40px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
   z-index: 100;
   transition: 0.3s;
 }
@@ -63,8 +71,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 8px 14px;
   cursor: pointer;
@@ -72,8 +80,8 @@ body {
 }
 
 .search-box:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .search-box i {
@@ -131,7 +139,7 @@ body {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, #0b0b0b 0%, rgba(11,11,11,0.6) 40%, rgba(11,11,11,0.3) 70%, rgba(11,11,11,0.6) 100%);
+  background: linear-gradient(0deg, #0b0b0b 0%, rgba(11, 11, 11, 0.6) 40%, rgba(11, 11, 11, 0.3) 70%, rgba(11, 11, 11, 0.6) 100%);
   pointer-events: none;
 }
 
@@ -146,7 +154,7 @@ body {
   font-weight: 700;
   color: #fff;
   margin-bottom: 16px;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   line-height: 1.1;
 }
 
@@ -155,7 +163,8 @@ body {
   gap: 12px;
 }
 
-.btn-play, .btn-info {
+.btn-play,
+.btn-info {
   padding: 12px 28px;
   border: none;
   border-radius: 6px;
@@ -179,13 +188,13 @@ body {
 }
 
 .btn-info {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   backdrop-filter: blur(6px);
 }
 
 .btn-info:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
   transform: scale(1.02);
 }
 
@@ -244,14 +253,14 @@ body {
   object-fit: cover;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.35s cubic-bezier(0.2,0,0,1), box-shadow 0.35s;
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.35s;
   flex-shrink: 0;
   background: #1a1a1a;
 }
 
 .list img:hover {
   transform: scale(1.08);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 30px rgba(229,9,20,0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(229, 9, 20, 0.15);
   z-index: 5;
 }
 
@@ -259,7 +268,7 @@ body {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(8px);
   display: none;
   justify-content: center;
@@ -276,31 +285,19 @@ body {
   max-width: 880px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.9);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9);
   animation: modalIn 0.3s ease;
 }
 
 @keyframes modalIn {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.modal-hero {
-  position: relative;
-  height: 300px;
-  overflow: hidden;
-}
-
-.modal-hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.modal-hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.4) 60%, transparent 100%);
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .close {
@@ -315,7 +312,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   z-index: 10;
   transition: 0.2s;
@@ -325,17 +322,91 @@ body {
   background: #e50914;
 }
 
+/* ===== PLAYER (RESPONSIVE 16:9) ===== */
+.player-wrapper {
+  width: 100%;
+  position: relative;
+  background: #000;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+}
+
+.player-wrapper iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  background: #000;
+}
+
+@supports not (aspect-ratio: 16 / 9) {
+  .player-wrapper {
+    padding-bottom: 56.25%;
+    height: 0;
+  }
+  .player-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* ===== SERVER SELECTOR ===== */
+.server-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px 0;
+  margin: 0;
+  background: #141414;
+}
+
+.server-selector label {
+  color: #aaa;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.server-selector select {
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #2a2a2a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s;
+  flex: 1;
+  max-width: 260px;
+}
+
+.server-selector select:hover {
+  border-color: #e50914;
+}
+
+.server-selector select:focus {
+  border-color: #e50914;
+}
+
+/* ===== MODAL BODY (TITLE + DESCRIPTION) ===== */
 .modal-body {
   display: flex;
   gap: 24px;
-  padding: 24px 28px 0;
+  padding: 16px 28px 28px;
   align-items: flex-start;
+  background: #141414;
 }
 
 .modal-body img {
   width: 140px;
   border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
 }
 
@@ -383,62 +454,13 @@ body {
   color: #ccc;
   font-size: 15px;
   line-height: 1.7;
-  margin-bottom: 16px;
-}
-
-.server-selector {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.server-selector label {
-  color: #aaa;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.server-selector select {
-  background: #1a1a1a;
-  color: #fff;
-  border: 1px solid #2a2a2a;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
-  transition: 0.2s;
-}
-
-.server-selector select:hover {
-  border-color: #e50914;
-}
-
-.server-selector select:focus {
-  border-color: #e50914;
-}
-
-.player-wrapper {
-  padding: 0 28px 28px;
-}
-
-.player-wrapper iframe {
-  border-radius: 12px;
-  background: #000;
 }
 
 /* ===== SEARCH MODAL ===== */
 .search-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.95);
+  background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(12px);
   display: none;
   flex-direction: column;
@@ -457,8 +479,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px 22px;
   width: 100%;
@@ -504,13 +526,13 @@ body {
 
 .search-modal .results img:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(229,9,20,0.2);
+  box-shadow: 0 8px 30px rgba(229, 9, 20, 0.2);
 }
 
 /* ===== FOOTER ===== */
 .footer {
   background: #0b0b0b;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   color: #888;
   padding: 40px 20px;
   text-align: center;
@@ -583,7 +605,8 @@ body {
     font-size: 28px;
   }
 
-  .btn-play, .btn-info {
+  .btn-play,
+  .btn-info {
     padding: 10px 20px;
     font-size: 14px;
   }
@@ -610,8 +633,8 @@ body {
     padding: 20px 10px;
   }
 
-  .modal-hero {
-    height: 180px;
+  .modal-content {
+    border-radius: 12px;
   }
 
   .modal-body {
@@ -636,14 +659,12 @@ body {
   .server-selector {
     flex-direction: column;
     align-items: stretch;
+    padding: 12px 16px 0;
   }
 
-  .player-wrapper {
-    padding: 0 16px 16px;
-  }
-
-  .player-wrapper iframe {
-    height: 240px;
+  .server-selector select {
+    max-width: 100%;
+    width: 100%;
   }
 
   .search-modal .results {
@@ -685,4 +706,4 @@ body {
   .footer-links {
     gap: 12px;
   }
-                              }
+  }
