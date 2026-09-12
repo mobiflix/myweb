@@ -6,9 +6,15 @@ let currentItem;
 let bannerItem;
 
 async function fetchTrending(type) {
-  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}`);
-  const data = await res.json();
-  return data.results;
+  let allResults = [];
+  for (let page = 1; page <= 3; page++) {
+    const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
+    const data = await res.json();
+    if (data.results) {
+      allResults = allResults.concat(data.results);
+    }
+  }
+  return allResults;
 }
 
 async function fetchTrendingAnime() {
