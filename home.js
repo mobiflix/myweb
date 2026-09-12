@@ -3,40 +3,43 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
+// ===== ENDPOINTS =====
+const MOVIE_ENDPOINTS = [
+  { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
+  { name: 'VidSrc.dev', url: 'https://vidsrc.dev/embed/movie/' },
+  { name: '111Movies', url: 'https://111movies.com/movie/' },
+  { name: 'VidJoy', url: 'https://vidjoy.pro/embed/movie/' },
+  { name: 'VidSrc.io', url: 'https://vidsrc.io/embed/movie/' },
+  { name: 'VidSrc.cc', url: 'https://vidsrc.cc/v2/embed/movie/' },
+  { name: 'VidSrc.xyz', url: 'https://vidsrc.xyz/embed/movie/' },
+  { name: '2Embed', url: 'https://www.2embed.cc/embed/' },
+  { name: 'MoviesAPI', url: 'https://moviesapi.club/movie/' }
+];
+
+const SERIES_ENDPOINTS = [
+  { name: 'VidLink', url: 'https://vidlink.pro/tv/' },
+  { name: 'VidSrc.vip', url: 'https://vidsrc.vip/embed/tv/' },
+  { name: '111Movies', url: 'https://111movies.com/tv/' },
+  { name: 'VidSrc.dev', url: 'https://vidsrc.dev/embed/tv/' },
+  { name: 'VidJoy', url: 'https://vidjoy.pro/embed/tv/' },
+  { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' },
+  { name: 'VidSrc.cc', url: 'https://vidsrc.cc/v2/embed/tv/' },
+  { name: 'VidSrc.xyz', url: 'https://vidsrc.xyz/embed/tv/' },
+  { name: '2Embed', url: 'https://www.2embed.cc/embedtvfull/' },
+  { name: 'MoviesAPI', url: 'https://moviesapi.club/tv/' }
+];
+
 let currentItem;
 let bannerItem;
+let pages = { movie: 1, tv: 1, anime: 1 };
+let loading = { movie: false, tv: false, anime: false };
+let maxPages = { movie: 500, tv: 500, anime: 500 };
 
-// Track current page per category
-let pages = {
-  movie: 1,
-  tv: 1,
-  anime: 1
-};
-
-// Track loading state per category
-let loading = {
-  movie: false,
-  tv: false,
-  anime: false
-};
-
-// Track max pages (TMDB limit is usually 500 or 1000)
-let maxPages = {
-  movie: 500,
-  tv: 500,
-  anime: 500
-};
-
-// ===== FETCH FUNCTIONS =====
-
+// ===== FETCH =====
 async function fetchTrending(type, page) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
-  return {
-    results: data.results || [],
-    total_pages: data.total_pages || 1,
-    page: data.page || 1
-  };
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
 async function fetchAnime(page) {
@@ -45,15 +48,10 @@ async function fetchAnime(page) {
   const filtered = (data.results || []).filter(item =>
     item.original_language === 'ja' && item.genre_ids && item.genre_ids.includes(16)
   );
-  return {
-    results: filtered,
-    total_pages: data.total_pages || 1,
-    page: data.page || 1
-  };
+  return { results: filtered, total_pages: data.total_pages || 1 };
 }
 
-// ===== DISPLAY FUNCTIONS =====
-
+// ===== DISPLAY =====
 function displayBanner(item) {
   bannerItem = item;
   const banner = document.getElementById('banner');
@@ -61,24 +59,15 @@ function displayBanner(item) {
   document.getElementById('banner-title').textContent = item.title || item.name;
 }
 
-function playBanner() {
-  if (bannerItem) showDetails(bannerItem);
-}
+function playBanner() { if (bannerItem) showDetails(bannerItem); }
+function showBannerInfo() { if (bannerItem) showDetails(bannerItem); }
 
-function showBannerInfo() {
-  if (bannerItem) showDetails(bannerItem);
-}
-
-// Append items (not replace) — para sa infinite scroll
 function appendToList(items, containerId) {
   const container = document.getElementById(containerId);
   items.forEach(item => {
     if (!item.poster_path) return;
-
-    // Skip kung duplicate na
     const existing = container.querySelector(`img[data-id="${item.id}"]`);
     if (existing) return;
-
     const img = document.createElement('img');
     img.src = `${IMG_W500}${item.poster_path}`;
     img.alt = item.title || item.name;
@@ -89,15 +78,7 @@ function appendToList(items, containerId) {
   });
 }
 
-// Reset list (para sa search)
-function resetList(items, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  appendToList(items, containerId);
-}
-
-// ===== MODAL FUNCTIONS =====
-
+// ===== MODAL =====
 function showDetails(item) {
   currentItem = item;
   document.getElementById('modal-title').textContent = item.title || item.name;
@@ -114,25 +95,63 @@ function showDetails(item) {
   const type = item.media_type === 'movie' ? 'Movie' : (item.media_type === 'tv' ? 'TV Show' : 'Anime');
   document.getElementById('modal-type').textContent = type;
 
+  // Populate server dropdown based on type
+  populateServerDropdown(item);
+
+  // Auto-load first server
   changeServer();
+
   document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
 
-function changeServer() {
-  const server = document.getElementById('server').value;
-  const type = (currentItem.media_type === "movie") ? "movie" : "tv";
-  let embedURL = "";
+// ===== POPULATE SERVER DROPDOWN =====
+function populateServerDropdown(item) {
+  const select = document.getElementById('server');
+  const isMovie = item.media_type === 'movie' || (!item.media_type && item.title);
+  const endpoints = isMovie ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
 
-  if (server === "vidsrc.cc") {
-    embedURL = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
-  } else if (server === "vidsrc.me") {
-    embedURL = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
-  } else if (server === "player.videasy.net") {
-    embedURL = `https://player.videasy.net/${type}/${currentItem.id}`;
+  select.innerHTML = '';
+  endpoints.forEach((ep, i) => {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = ep.name;
+    select.appendChild(option);
+  });
+
+  // Store endpoints reference
+  select.dataset.type = isMovie ? 'movie' : 'tv';
+}
+
+// ===== CHANGE SERVER =====
+function changeServer() {
+  if (!currentItem) return;
+
+  const select = document.getElementById('server');
+  const index = parseInt(select.value) || 0;
+  const type = select.dataset.type || (currentItem.media_type === 'movie' ? 'movie' : 'tv');
+  const endpoints = type === 'movie' ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
+  const endpoint = endpoints[index];
+
+  if (!endpoint) return;
+
+  let embedURL = '';
+
+  // Build URL based on endpoint type
+  if (endpoint.url.includes('vidsrc.cc/v2')) {
+    embedURL = `${endpoint.url}${currentItem.id}`;
+  } else if (endpoint.url.includes('vidsrc.me') || endpoint.url.includes('vidsrc.vip')) {
+    embedURL = `${endpoint.url}${currentItem.id}`;
+  } else if (endpoint.url.includes('2embed.cc/embedtvfull')) {
+    embedURL = `${endpoint.url}${currentItem.id}`;
+  } else if (endpoint.url.includes('vidsrc.net')) {
+    embedURL = `${endpoint.url}${type}/?tmdb=${currentItem.id}`;
+  } else {
+    embedURL = `${endpoint.url}${currentItem.id}`;
   }
 
   document.getElementById('modal-video').src = embedURL;
+  console.log(`[Player] ${endpoint.name} → ${embedURL}`);
 }
 
 function closeModal() {
@@ -142,7 +161,6 @@ function closeModal() {
 }
 
 // ===== SEARCH =====
-
 function openSearchModal() {
   document.getElementById('search-modal').style.display = 'flex';
   document.getElementById('search-input').focus();
@@ -185,20 +203,14 @@ async function searchTMDB() {
   }, 300);
 }
 
-// ===== INFINITE SCROLL LOGIC =====
-
-// Load more items kapag naabot ang dulo
+// ===== INFINITE SCROLL =====
 async function loadMore(category) {
-  if (loading[category]) return;
-  if (pages[category] >= maxPages[category]) return;
-
+  if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
   pages[category] += 1;
 
   try {
-    let result;
-    let containerId;
-
+    let result, containerId;
     if (category === 'movie') {
       result = await fetchTrending('movie', pages[category]);
       containerId = 'movies-list';
@@ -209,39 +221,28 @@ async function loadMore(category) {
       result = await fetchAnime(pages[category]);
       containerId = 'anime-list';
     }
-
-    if (result && result.results && result.results.length > 0) {
+    if (result && result.results.length > 0) {
       maxPages[category] = result.total_pages;
       appendToList(result.results, containerId);
-      console.log(`[Infinite] ${category} page ${pages[category]} loaded (${result.results.length} items)`);
     }
   } catch (err) {
-    console.error(`[Infinite] Error loading ${category}:`, err);
+    console.error(err);
   } finally {
     loading[category] = false;
   }
 }
 
-// I-attach ang scroll listeners sa bawat row
 function attachScrollListeners() {
   const rows = [
     { id: 'movies-list', category: 'movie' },
     { id: 'tvshows-list', category: 'tv' },
     { id: 'anime-list', category: 'anime' }
   ];
-
   rows.forEach(row => {
     const el = document.getElementById(row.id);
     if (!el) return;
-
     el.addEventListener('scroll', () => {
-      // Detect kung malapit na sa dulo (right side)
-      const scrollLeft = el.scrollLeft;
-      const scrollWidth = el.scrollWidth;
-      const clientWidth = el.clientWidth;
-
-      // Kung 200px na lang ang natitira bago ang dulo
-      if (scrollLeft + clientWidth >= scrollWidth - 200) {
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 200) {
         loadMore(row.category);
       }
     });
@@ -249,35 +250,25 @@ function attachScrollListeners() {
 }
 
 // ===== INIT =====
-
 async function init() {
   try {
-    console.log('[MyFlix] Initializing...');
-
-    // Load initial data
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
     const animeData = await fetchAnime(1);
 
-    // Set max pages
     maxPages.movie = moviesData.total_pages;
     maxPages.tv = tvData.total_pages;
     maxPages.anime = animeData.total_pages;
 
-    // Display banner
     if (moviesData.results.length > 0) {
       displayBanner(moviesData.results[Math.floor(Math.random() * moviesData.results.length)]);
     }
-
-    // Display initial lists
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
     appendToList(animeData.results, 'anime-list');
-
-    // Attach infinite scroll listeners
     attachScrollListeners();
 
-    console.log('[MyFlix] Initialized. Movies:', moviesData.results.length, '| TV:', tvData.results.length, '| Anime:', animeData.results.length);
+    console.log('[MyFlix] Ready.');
   } catch (err) {
     console.error('[MyFlix] Init error:', err);
   }
@@ -285,10 +276,6 @@ async function init() {
 
 init();
 
-// Close modals on Escape key
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeModal();
-    closeSearchModal();
-  }
+  if (e.key === 'Escape') { closeModal(); closeSearchModal(); }
 });
