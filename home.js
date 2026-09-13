@@ -212,7 +212,7 @@ function closeModal() {
   if (icon) icon.className = 'fa fa-expand';
 }
 
-// ===== FULLSCREEN (LANDSCAPE on mobile) =====
+// ===== FULLSCREEN (LANDSCAPE on mobile, back button hindi natatanggal) =====
 function toggleFullscreen() {
   const wrapper = document.getElementById('player-wrapper');
   const icon = document.getElementById('fullscreen-icon');
@@ -221,14 +221,18 @@ function toggleFullscreen() {
 
   if (!isFullscreen) {
     if (wrapper.requestFullscreen) {
-      wrapper.requestFullscreen().then(() => {
-        // Force landscape on mobile
+      wrapper.requestFullscreen().then(function() {
+        // Force landscape sa mobile
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(() => {});
+          screen.orientation.lock('landscape').catch(function() {});
         }
       }).catch(function() {});
     } else if (wrapper.webkitRequestFullscreen) {
       wrapper.webkitRequestFullscreen();
+      // Force landscape sa iOS
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function() {});
+      }
     }
     if (icon) icon.className = 'fa fa-compress';
   } else {
