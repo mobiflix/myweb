@@ -481,7 +481,7 @@ body {
 
 .player-wrapper {
   width: 100%; position: relative;
-  background: #000; border-radius: 16px;
+  background: #000; border-radius: 16px 16px 0 0;
   overflow: hidden;
 }
 .player-wrapper iframe {
@@ -494,42 +494,23 @@ body {
   .player-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 }
 
-/* ===== FULLSCREEN BACK BUTTON (nasa body, fixed) ===== */
-.fs-back-btn {
-  display: none;
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 2147483647;
-  background: rgba(0,0,0,0.85);
-  border: 1px solid rgba(255,255,255,0.25);
+/* ===== PLAYER HINT ===== */
+.player-hint {
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  padding: 14px 20px 20px;
+  background: #141414;
+  border-radius: 0 0 16px 16px;
+  margin: 0;
+  line-height: 1.5;
+}
+.player-hint i {
+  color: #e50914;
+  margin-right: 4px;
+}
+.player-hint strong {
   color: #fff;
-  padding: 12px 24px;
-  border-radius: 60px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-  align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-}
-.fs-back-btn:hover { background: #e50914; border-color: #e50914; }
-
-/* Ipakita lang kapag naka-fullscreen */
-body.fs-active .fs-back-btn {
-  display: flex !important;
-}
-
-/* ===== FULLSCREEN PLAYER ===== */
-.player-wrapper:fullscreen { border-radius: 0; }
-.player-wrapper:-webkit-full-screen { border-radius: 0; }
-.player-wrapper:fullscreen iframe {
-  height: 100vh; width: 100vw; aspect-ratio: auto;
-}
-.player-wrapper:-webkit-full-screen iframe {
-  height: 100vh; width: 100vw; aspect-ratio: auto;
 }
 
 /* ===== FOOTER ===== */
@@ -598,13 +579,14 @@ body.fs-active .fs-back-btn {
   .search-container input { font-size: 15px; }
 
   .modal-back-btn { padding: 6px 14px; font-size: 13px; }
-  .fs-back-btn { padding: 10px 18px; font-size: 13px; top: 14px; left: 14px; }
 
   .bottom-nav { height: 64px; }
   .bottom-nav-item { font-size: 9px; padding: 6px 4px; }
   .bottom-nav-item i { font-size: 16px; }
 
   .more-list a { font-size: 16px; padding: 14px 16px; }
+
+  .player-hint { font-size: 12px; padding: 12px 16px 16px; }
 }
 
 @media (max-width: 480px) {
@@ -616,5 +598,4 @@ body.fs-active .fs-back-btn {
   .footer-links { gap: 12px; }
   .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .fs-back-btn { padding: 8px 16px; font-size: 12px; top: 10px; left: 10px; }
 }
