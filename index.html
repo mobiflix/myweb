@@ -39,6 +39,15 @@
 
   <!-- ===== CONTENT ROWS ===== -->
   <div class="content">
+
+    <!-- ===== STREAMING PROVIDERS ===== -->
+    <div class="row providers-row">
+      <div class="row-header">
+        <h2>📡 Streaming Providers</h2>
+      </div>
+      <div class="providers-scroll" id="providers-list"></div>
+    </div>
+
     <div class="row">
       <div class="row-header">
         <h2>🔥 Trending Movies</h2>
@@ -147,6 +156,21 @@
       <i class="fa fa-spinner fa-spin"></i> Loading more...
     </div>
     <div class="view-all-end" id="view-all-end" style="display:none;">
+      🎬 You've reached the end
+    </div>
+  </div>
+
+  <!-- ===== PROVIDER PAGE ===== -->
+  <div class="view-all-page" id="provider-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeProviderPage()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2 id="provider-page-title">Provider</h2>
+    </div>
+    <div class="view-all-grid" id="provider-page-grid"></div>
+    <div class="view-all-loading" id="provider-page-loading" style="display:none;">
+      <i class="fa fa-spinner fa-spin"></i> Loading more...
+    </div>
+    <div class="view-all-end" id="provider-page-end" style="display:none;">
       🎬 You've reached the end
     </div>
   </div>
