@@ -35,7 +35,7 @@ const GENRE_MAP = {
   mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES for home rows (Kids nasa ilalim ng Action) =====
+// ===== GENRES for home rows =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
   { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' },
@@ -81,7 +81,27 @@ let viewAllState = {
   seenIds: new Set()
 };
 
-// ===== FETCH (Hollywood US only, digital release only, popularity sort) =====
+// ===== MOVIES PAGE STATE =====
+let moviesPageState = {
+  page: 1,
+  maxPages: 500,
+  loading: false,
+  hasMore: true,
+  initialized: false,
+  seenIds: new Set()
+};
+
+// ===== SERIES PAGE STATE =====
+let seriesPageState = {
+  page: 1,
+  maxPages: 500,
+  loading: false,
+  hasMore: true,
+  initialized: false,
+  seenIds: new Set()
+};
+
+// ===== FETCH =====
 async function fetchTrending(type, page) {
   let url;
   if (type === 'movie') {
@@ -267,8 +287,9 @@ function updateFullscreenUI() {
 document.addEventListener('fullscreenchange', updateFullscreenUI);
 document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
-// ===== SEARCH (Hollywood US only) =====
+// ===== SEARCH =====
 function openSearchModal() {
+  setActiveNav('search');
   const modal = document.getElementById('search-modal');
   modal.classList.add('open');
   modal.scrollTop = 0;
@@ -285,6 +306,7 @@ function closeSearchModal() {
   document.getElementById('search-results').innerHTML = '';
   document.getElementById('search-input').value = '';
   document.body.style.overflow = '';
+  setActiveNav('home');
 }
 
 let searchTimeout;
@@ -299,7 +321,6 @@ async function searchTMDB() {
   searchTimeout = setTimeout(async () => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
     const data = await res.json();
-    // Hollywood US only filter
     const filtered = (data.results || []).filter(function(item) {
       if (item.original_language !== 'en') return false;
       if (!item.poster_path) return false;
@@ -324,24 +345,175 @@ async function searchTMDB() {
   }, 300);
 }
 
-// ===== SIDE MENU =====
-function toggleMenu() {
-  const menu = document.getElementById('side-menu');
-  const overlay = document.getElementById('menu-overlay');
-  if (!menu || !overlay) return;
-  menu.classList.toggle('open');
-  overlay.classList.toggle('open');
+// ===== BOTTOM NAV =====
+function setActiveNav(name) {
+  document.querySelectorAll('.bottom-nav-item').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  const items = document.querySelectorAll('.bottom-nav-item');
+  const map = { home: 0, search: 1, movies: 2, series: 3, more: 4 };
+  if (items[map[name]]) items[map[name]].classList.add('active');
+}
+
+function goHome() {
+  closeViewAll();
+  closeMoviesPage();
+  closeSeriesPage();
+  closeMorePage();
+  closeSearchModal();
+  setActiveNav('home');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openMoviesPage() {
+  setActiveNav('movies');
+  const page = document.getElementById('movies-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  moviesPageState = {
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
+  document.getElementById('movies-page-grid').innerHTML = '';
+  document.getElementById('movies-page-end').style.display = 'none';
+  document.getElementById('movies-page-loading').style.display = 'none';
+
+  loadMoviesPageBatch();
+}
+
+function closeMoviesPage() {
+  document.getElementById('movies-page').classList.remove('open');
+  document.getElementById('movies-page-grid').innerHTML = '';
+  moviesPageState.initialized = false;
+  setActiveNav('home');
+}
+
+async function loadMoviesPageBatch() {
+  if (moviesPageState.loading || !moviesPageState.hasMore) return;
+  moviesPageState.loading = true;
+  document.getElementById('movies-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchTrending('movie', moviesPageState.page);
+    moviesPageState.maxPages = data.total_pages;
+    moviesPageState.page += 1;
+
+    const grid = document.getElementById('movies-page-grid');
+    data.results.forEach(item => {
+      if (!item.poster_path) return;
+      if (moviesPageState.seenIds.has(item.id)) return;
+      moviesPageState.seenIds.add(item.id);
+
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = () => showDetails(item);
+      grid.appendChild(img);
+    });
+
+    if (moviesPageState.page > moviesPageState.maxPages) {
+      moviesPageState.hasMore = false;
+      document.getElementById('movies-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[MoviesPage]', err);
+  } finally {
+    moviesPageState.loading = false;
+    document.getElementById('movies-page-loading').style.display = 'none';
+  }
+}
+
+function openSeriesPage() {
+  setActiveNav('series');
+  const page = document.getElementById('series-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  seriesPageState = {
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
+  document.getElementById('series-page-grid').innerHTML = '';
+  document.getElementById('series-page-end').style.display = 'none';
+  document.getElementById('series-page-loading').style.display = 'none';
+
+  loadSeriesPageBatch();
+}
+
+function closeSeriesPage() {
+  document.getElementById('series-page').classList.remove('open');
+  document.getElementById('series-page-grid').innerHTML = '';
+  seriesPageState.initialized = false;
+  setActiveNav('home');
+}
+
+async function loadSeriesPageBatch() {
+  if (seriesPageState.loading || !seriesPageState.hasMore) return;
+  seriesPageState.loading = true;
+  document.getElementById('series-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchTrending('tv', seriesPageState.page);
+    seriesPageState.maxPages = data.total_pages;
+    seriesPageState.page += 1;
+
+    const grid = document.getElementById('series-page-grid');
+    data.results.forEach(item => {
+      if (!item.poster_path) return;
+      if (seriesPageState.seenIds.has(item.id)) return;
+      seriesPageState.seenIds.add(item.id);
+
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = () => showDetails(item);
+      grid.appendChild(img);
+    });
+
+    if (seriesPageState.page > seriesPageState.maxPages) {
+      seriesPageState.hasMore = false;
+      document.getElementById('series-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[SeriesPage]', err);
+  } finally {
+    seriesPageState.loading = false;
+    document.getElementById('series-page-loading').style.display = 'none';
+  }
+}
+
+function openMorePage() {
+  setActiveNav('more');
+  const page = document.getElementById('more-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+}
+
+function closeMorePage() {
+  document.getElementById('more-page').classList.remove('open');
+  setActiveNav('home');
 }
 
 // ===== VIEW ALL PAGE =====
 function openViewAll(key) {
+  closeMorePage();
   const genre = GENRE_MAP[key];
   if (!genre) return;
-
-  const menu = document.getElementById('side-menu');
-  const overlay = document.getElementById('menu-overlay');
-  if (menu) menu.classList.remove('open');
-  if (overlay) overlay.classList.remove('open');
 
   viewAllState = {
     key: key,
@@ -363,9 +535,6 @@ function openViewAll(key) {
   const page = document.getElementById('view-all-page');
   page.classList.add('open');
   page.scrollTop = 0;
-  document.body.style.overflow = 'hidden';
-  page.style.overflowY = 'auto';
-  page.style.webkitOverflowScrolling = 'touch';
 
   loadViewAllBatch();
 
@@ -424,10 +593,10 @@ function closeViewAll() {
   const page = document.getElementById('view-all-page');
   page.classList.remove('open');
   page.scrollTop = 0;
-  document.body.style.overflow = '';
   document.getElementById('view-all-grid').innerHTML = '';
   viewAllState.initialized = false;
   viewAllState.seenIds = new Set();
+  setActiveNav('home');
 }
 
 let viewAllScrollTimer = null;
@@ -460,6 +629,33 @@ function viewAllScrollHandler() {
       loadViewAllBatch();
     }
   }, 150);
+}
+
+// ===== SCROLL LISTENER FOR MOVIES/SERIES PAGES =====
+function attachMoviesPageScroll() {
+  const page = document.getElementById('movies-page');
+  if (!page) return;
+  page.addEventListener('scroll', function() {
+    if (!moviesPageState.initialized) return;
+    if (moviesPageState.loading) return;
+    if (!moviesPageState.hasMore) return;
+    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+      loadMoviesPageBatch();
+    }
+  }, { passive: true });
+}
+
+function attachSeriesPageScroll() {
+  const page = document.getElementById('series-page');
+  if (!page) return;
+  page.addEventListener('scroll', function() {
+    if (!seriesPageState.initialized) return;
+    if (seriesPageState.loading) return;
+    if (!seriesPageState.hasMore) return;
+    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+      loadSeriesPageBatch();
+    }
+  }, { passive: true });
 }
 
 // ===== INFINITE SCROLL (HOMEPAGE HORIZONTAL) =====
@@ -565,6 +761,8 @@ async function init() {
     }
 
     attachScrollListeners();
+    attachMoviesPageScroll();
+    attachSeriesPageScroll();
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
@@ -579,9 +777,8 @@ document.addEventListener('keydown', (e) => {
     closeModal();
     closeSearchModal();
     closeViewAll();
-    const menu = document.getElementById('side-menu');
-    const overlay = document.getElementById('menu-overlay');
-    if (menu) menu.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
+    closeMoviesPage();
+    closeSeriesPage();
+    closeMorePage();
   }
 });
