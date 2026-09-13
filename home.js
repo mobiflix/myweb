@@ -243,7 +243,6 @@ function playNow() {
   const playerView = document.getElementById('player-view');
   if (playerView) playerView.scrollTop = 0;
 
-  // Mag-push ng history state para may pang-intercept sa back button
   history.pushState({ view: 'player' }, '', location.href);
 }
 
@@ -264,7 +263,6 @@ function closePlayerView() {
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
 
-  // I-reset ang history state
   history.pushState(null, '', location.href);
 }
 
@@ -287,7 +285,6 @@ function closeModal() {
   document.getElementById('details-view').style.display = 'block';
   document.getElementById('player-view').style.display = 'none';
 
-  // I-reset ang history state
   history.pushState(null, '', location.href);
 }
 
@@ -299,20 +296,16 @@ window.addEventListener('popstate', function(e) {
   const isPlayerOpen = playerView && playerView.style.display === 'block';
 
   if (isPlayerOpen) {
-    // Kung nasa player view, bumalik sa details view
     e.preventDefault();
     closePlayerView();
   } else if (isModalOpen) {
-    // Kung nasa details view, isara ang modal
     e.preventDefault();
     closeModal();
   } else {
-    // Normal browsing — hayaan ang browser
     history.pushState(null, '', location.href);
   }
 });
 
-// I-push ang initial state para may pang-intercept sa back button
 history.pushState(null, '', location.href);
 
 // ===== RESET ALL PAGES =====
