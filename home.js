@@ -76,16 +76,18 @@ let viewAllState = {
   seenIds: new Set()
 };
 
-// ===== FETCH (Hollywood only, digital releases only) =====
+// ===== FETCH (Hollywood only, digital release only, popularity sort) =====
 async function fetchTrending(type, page) {
-  const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
+  const res = await fetch(
+    `${BASE_URL}/discover/${type}?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4&watch_region=US`
+  );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4&watch_region=US`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -223,14 +225,12 @@ function toggleFullscreen() {
   if (!isFullscreen) {
     if (wrapper.requestFullscreen) {
       wrapper.requestFullscreen().then(function() {
-        // Force landscape sa mobile
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock('landscape').catch(function() {});
         }
       }).catch(function() {});
     } else if (wrapper.webkitRequestFullscreen) {
       wrapper.webkitRequestFullscreen();
-      // Force landscape sa iOS
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function() {});
       }
@@ -258,15 +258,21 @@ function updateFullscreenUI() {
 document.addEventListener('fullscreenchange', updateFullscreenUI);
 document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
-// ===== SEARCH =====
+// ===== SEARCH (Hollywood only) =====
 function openSearchModal() {
-  document.getElementById('search-modal').style.display = 'flex';
-  document.getElementById('search-input').focus();
+  const modal = document.getElementById('search-modal');
+  modal.classList.add('open');
+  modal.scrollTop = 0;
   document.body.style.overflow = 'hidden';
+  setTimeout(function() {
+    document.getElementById('search-input').focus();
+  }, 200);
 }
 
 function closeSearchModal() {
-  document.getElementById('search-modal').style.display = 'none';
+  const modal = document.getElementById('search-modal');
+  modal.classList.remove('open');
+  modal.scrollTop = 0;
   document.getElementById('search-results').innerHTML = '';
   document.getElementById('search-input').value = '';
   document.body.style.overflow = '';
@@ -284,11 +290,14 @@ async function searchTMDB() {
   searchTimeout = setTimeout(async () => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
     const data = await res.json();
+    // Hollywood only filter
+    const filtered = (data.results || []).filter(function(item) {
+      return item.original_language === 'en' && item.poster_path;
+    });
 
     const container = document.getElementById('search-results');
     container.innerHTML = '';
-    data.results.forEach(item => {
-      if (!item.poster_path) return;
+    filtered.forEach(item => {
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
