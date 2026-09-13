@@ -182,6 +182,19 @@
     </div>
   </div>
 
+  <!-- ===== SEARCH PAGE (kaparehas ng View All design) ===== -->
+  <div class="search-modal" id="search-modal">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeSearchModal()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2>Search</h2>
+    </div>
+    <div class="search-container">
+      <i class="fa fa-search"></i>
+      <input type="text" id="search-input" placeholder="Search for a movie or TV show..." oninput="searchTMDB()" />
+    </div>
+    <div class="results" id="search-results"></div>
+  </div>
+
   <!-- ===== DETAILS MODAL ===== -->
   <div class="modal" id="modal">
     <div class="modal-content">
@@ -219,18 +232,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- ===== SEARCH MODAL (may Back button sa upper-left) ===== -->
-  <div class="search-modal" id="search-modal">
-    <button class="search-back-btn" onclick="closeSearchModal()">
-      <i class="fa fa-arrow-left"></i> Back
-    </button>
-    <div class="search-container">
-      <i class="fa fa-search"></i>
-      <input type="text" id="search-input" placeholder="Search for a movie or TV show..." oninput="searchTMDB()" />
-    </div>
-    <div class="results" id="search-results"></div>
   </div>
 
   <!-- ===== FOOTER ===== -->
