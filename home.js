@@ -227,7 +227,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW (auto Server 1, auto fullscreen) =====
+// ===== PLAY NOW =====
 function playNow() {
   if (!currentItem) return;
 
@@ -434,23 +434,49 @@ function goHome() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ===== MOVIES PAGE =====
 function openMoviesPage() {
   setActiveNav('movies');
   const page = document.getElementById('movies-page');
   page.classList.add('open');
   page.scrollTop = 0;
-  moviesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  moviesPageState = {
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
   document.getElementById('movies-page-grid').innerHTML = '';
   document.getElementById('movies-page-end').style.display = 'none';
   document.getElementById('movies-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', moviesPageScrollHandler);
+  page.addEventListener('scroll', moviesPageScrollHandler, { passive: true });
+
   loadMoviesPageBatch();
 }
 
 function closeMoviesPage() {
-  document.getElementById('movies-page').classList.remove('open');
+  const page = document.getElementById('movies-page');
+  page.classList.remove('open');
   document.getElementById('movies-page-grid').innerHTML = '';
   moviesPageState.initialized = false;
   setActiveNav('home');
+}
+
+function moviesPageScrollHandler() {
+  if (!moviesPageState.initialized) return;
+  if (moviesPageState.loading) return;
+  if (!moviesPageState.hasMore) return;
+  const page = document.getElementById('movies-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadMoviesPageBatch();
+  }
 }
 
 async function loadMoviesPageBatch() {
@@ -489,23 +515,49 @@ async function loadMoviesPageBatch() {
   }
 }
 
+// ===== SERIES PAGE =====
 function openSeriesPage() {
   setActiveNav('series');
   const page = document.getElementById('series-page');
   page.classList.add('open');
   page.scrollTop = 0;
-  seriesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  seriesPageState = {
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
   document.getElementById('series-page-grid').innerHTML = '';
   document.getElementById('series-page-end').style.display = 'none';
   document.getElementById('series-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', seriesPageScrollHandler);
+  page.addEventListener('scroll', seriesPageScrollHandler, { passive: true });
+
   loadSeriesPageBatch();
 }
 
 function closeSeriesPage() {
-  document.getElementById('series-page').classList.remove('open');
+  const page = document.getElementById('series-page');
+  page.classList.remove('open');
   document.getElementById('series-page-grid').innerHTML = '';
   seriesPageState.initialized = false;
   setActiveNav('home');
+}
+
+function seriesPageScrollHandler() {
+  if (!seriesPageState.initialized) return;
+  if (seriesPageState.loading) return;
+  if (!seriesPageState.hasMore) return;
+  const page = document.getElementById('series-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadSeriesPageBatch();
+  }
 }
 
 async function loadSeriesPageBatch() {
@@ -544,6 +596,7 @@ async function loadSeriesPageBatch() {
   }
 }
 
+// ===== MORE PAGE =====
 function openMorePage() {
   setActiveNav('more');
   const page = document.getElementById('more-page');
@@ -562,7 +615,16 @@ function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
-  viewAllState = { key: key, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+  viewAllState = {
+    key: key,
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
   document.getElementById('view-all-title').textContent = (genre.icon || '🎬') + ' ' + genre.name;
 
   const grid = document.getElementById('view-all-grid');
@@ -574,8 +636,12 @@ function openViewAll(key) {
   page.classList.add('open');
   page.scrollTop = 0;
 
+  page.removeEventListener('scroll', viewAllScrollHandler);
+  page.removeEventListener('touchmove', viewAllScrollHandler);
+  page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
+  page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
+
   loadViewAllBatch();
-  setTimeout(function() { attachViewAllScroll(); }, 100);
 }
 
 async function loadViewAllBatch() {
@@ -634,15 +700,6 @@ function closeViewAll() {
 
 let viewAllScrollTimer = null;
 
-function attachViewAllScroll() {
-  const page = document.getElementById('view-all-page');
-  if (!page) return;
-  page.removeEventListener('scroll', viewAllScrollHandler);
-  page.removeEventListener('touchmove', viewAllScrollHandler);
-  page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
-  page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
-}
-
 function viewAllScrollHandler() {
   if (!viewAllState.initialized) return;
   if (viewAllState.loading) return;
@@ -655,33 +712,6 @@ function viewAllScrollHandler() {
       loadViewAllBatch();
     }
   }, 150);
-}
-
-// ===== SCROLL LISTENERS =====
-function attachMoviesPageScroll() {
-  const page = document.getElementById('movies-page');
-  if (!page) return;
-  page.addEventListener('scroll', function() {
-    if (!moviesPageState.initialized) return;
-    if (moviesPageState.loading) return;
-    if (!moviesPageState.hasMore) return;
-    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
-      loadMoviesPageBatch();
-    }
-  }, { passive: true });
-}
-
-function attachSeriesPageScroll() {
-  const page = document.getElementById('series-page');
-  if (!page) return;
-  page.addEventListener('scroll', function() {
-    if (!seriesPageState.initialized) return;
-    if (seriesPageState.loading) return;
-    if (!seriesPageState.hasMore) return;
-    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
-      loadSeriesPageBatch();
-    }
-  }, { passive: true });
 }
 
 // ===== HOMEPAGE INFINITE SCROLL =====
@@ -783,8 +813,6 @@ async function init() {
     }
 
     attachScrollListeners();
-    attachMoviesPageScroll();
-    attachSeriesPageScroll();
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
