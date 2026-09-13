@@ -35,7 +35,7 @@ const GENRE_MAP = {
   mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES for home rows =====
+// ===== GENRES =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
   { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' },
@@ -51,6 +51,7 @@ const GENRES = [
 
 let currentItem;
 let bannerItem;
+let currentView = 'details'; // 'details' o 'player'
 
 let pages = {
   movie: 1, tv: 1,
@@ -72,33 +73,15 @@ let maxPages = {
 
 // ===== VIEW ALL STATE =====
 let viewAllState = {
-  key: null,
-  page: 1,
-  maxPages: 500,
-  loading: false,
-  hasMore: true,
-  initialized: false,
-  seenIds: new Set()
+  key: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
-// ===== MOVIES PAGE STATE =====
 let moviesPageState = {
-  page: 1,
-  maxPages: 500,
-  loading: false,
-  hasMore: true,
-  initialized: false,
-  seenIds: new Set()
+  page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
-// ===== SERIES PAGE STATE =====
 let seriesPageState = {
-  page: 1,
-  maxPages: 500,
-  loading: false,
-  hasMore: true,
-  initialized: false,
-  seenIds: new Set()
+  page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
 // ===== FETCH =====
@@ -127,7 +110,6 @@ function displayBanner(item) {
   bannerItem = item;
   const banner = document.getElementById('banner');
   banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path || item.poster_path})`;
-
   document.getElementById('banner-title').textContent = item.title || item.name;
 
   const rating = Math.round((item.vote_average || 0) / 2);
@@ -142,8 +124,7 @@ function displayBanner(item) {
 
   const typeEl = document.getElementById('banner-type');
   if (typeEl) {
-    const type = item.media_type === 'movie' ? 'Movie'
-               : (item.media_type === 'tv' ? 'TV Show' : 'Movie');
+    const type = item.media_type === 'movie' ? 'Movie' : (item.media_type === 'tv' ? 'TV Show' : 'Movie');
     typeEl.textContent = type;
   }
 
@@ -170,27 +151,155 @@ function appendToList(items, containerId) {
   });
 }
 
-// ===== MODAL =====
+// ===== SHOW DETAILS =====
 function showDetails(item) {
   currentItem = item;
+  currentView = 'details';
+
+  // Details view
+  document.getElementById('modal-poster').src = `${IMG_URL}${item.backdrop_path || item.poster_path}`;
   document.getElementById('modal-title').textContent = item.title || item.name;
-  document.getElementById('modal-description').textContent = item.overview || 'No description available.';
-  document.getElementById('modal-image').src = `${IMG_W500}${item.poster_path}`;
 
-  const rating = Math.round(item.vote_average / 2);
-  document.getElementById('modal-rating').innerHTML = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  // Rating number (e.g., 7.8)
+  const ratingNum = (item.vote_average || 0).toFixed(1);
+  document.getElementById('modal-rating-num').textContent = ratingNum;
 
+  // Year
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-  document.getElementById('modal-year').textContent = year || '—';
+  document.getElementById('modal-year-num').textContent = year || '—';
 
-  const type = item.media_type === 'movie' ? 'Movie' : (item.media_type === 'tv' ? 'TV Show' : 'Movie');
-  document.getElementById('modal-type').textContent = type;
+  // Runtime (kung movie)
+  const runtimeEl = document.getElementById('modal-runtime');
+  if (item.runtime) {
+    const hours = Math.floor(item.runtime / 60);
+    const mins = item.runtime % 60;
+    runtimeEl.textContent = hours + 'H ' + mins + 'M';
+  } else {
+    runtimeEl.textContent = '—';
+  }
 
-  populateServerDropdown(item);
-  changeServer();
+  // Description
+  document.getElementById('modal-description').textContent = item.overview || 'No description available.';
+
+  // Bookmark state
+  updateBookmarkUI(item);
+
+  // Ipakita ang details view, itago ang player view
+  document.getElementById('details-view').style.display = 'block';
+  document.getElementById('player-view').style.display = 'none';
 
   document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+}
+
+// ===== BOOKMARK (Add to List) =====
+function getWatchlist() {
+  try {
+    return JSON.parse(localStorage.getItem('mobiflix_watchlist')) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveWatchlist(list) {
+  localStorage.setItem('mobiflix_watchlist', JSON.stringify(list));
+}
+
+function updateBookmarkUI(item) {
+  const list = getWatchlist();
+  const exists = list.find(function(x) { return x.id === item.id; });
+  const icon = document.getElementById('bookmark-icon');
+  const text = document.getElementById('bookmark-text');
+  if (exists) {
+    icon.className = 'fa fa-bookmark';
+    text.textContent = 'Added to List';
+  } else {
+    icon.className = 'fa fa-bookmark-o';
+    text.textContent = 'Add to List';
+  }
+}
+
+function toggleAddToList() {
+  if (!currentItem) return;
+  const list = getWatchlist();
+  const index = list.findIndex(function(x) { return x.id === currentItem.id; });
+  if (index >= 0) {
+    list.splice(index, 1);
+  } else {
+    list.push({
+      id: currentItem.id,
+      title: currentItem.title || currentItem.name,
+      poster_path: currentItem.poster_path,
+      media_type: currentItem.media_type || (currentItem.title ? 'movie' : 'tv'),
+      vote_average: currentItem.vote_average,
+      release_date: currentItem.release_date || currentItem.first_air_date
+    });
+  }
+  saveWatchlist(list);
+  updateBookmarkUI(currentItem);
+}
+
+// ===== PLAY NOW (automatic fullscreen portrait) =====
+function playNow() {
+  if (!currentItem) return;
+
+  // Setup player
+  populateServerDropdown(currentItem);
+  changeServer();
+
+  // Ipakita ang player view, itago ang details view
+  document.getElementById('details-view').style.display = 'none';
+  document.getElementById('player-view').style.display = 'block';
+
+  // Auto-fullscreen pagkatapos ng maikling delay
+  setTimeout(function() {
+    const wrapper = document.getElementById('player-wrapper');
+    const icon = document.getElementById('fullscreen-icon');
+
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+    if (!isFullscreen) {
+      if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen().then(function() {
+          // Portrait mode (hindi lahat ng browser sumusuporta)
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch(function() {});
+          }
+        }).catch(function() {});
+      } else if (wrapper.webkitRequestFullscreen) {
+        wrapper.webkitRequestFullscreen();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('portrait').catch(function() {});
+        }
+      }
+      if (icon) icon.className = 'fa fa-compress';
+    }
+  }, 300);
+}
+
+// ===== CLOSE PLAYER VIEW (bumalik sa details) =====
+function closePlayerView() {
+  // Exit fullscreen
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+    if (screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock();
+    }
+  }
+
+  // I-pause ang video
+  document.getElementById('modal-video').src = '';
+
+  // Bumalik sa details view
+  document.getElementById('player-view').style.display = 'none';
+  document.getElementById('details-view').style.display = 'block';
+
+  const icon = document.getElementById('fullscreen-icon');
+  if (icon) icon.className = 'fa fa-expand';
 }
 
 // ===== SERVER DROPDOWN =====
@@ -200,7 +309,7 @@ function populateServerDropdown(item) {
   const endpoints = isMovie ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
 
   select.innerHTML = '';
-  endpoints.forEach((ep, i) => {
+  endpoints.forEach(function(ep, i) {
     const option = document.createElement('option');
     option.value = i;
     option.textContent = 'Server ' + (i + 1);
@@ -219,7 +328,7 @@ function changeServer() {
   const endpoint = endpoints[index];
   if (!endpoint) return;
 
-  let embedURL = `${endpoint.url}${currentItem.id}`;
+  let embedURL = endpoint.url + currentItem.id;
   document.getElementById('modal-video').src = embedURL;
 }
 
@@ -239,12 +348,14 @@ function closeModal() {
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
   document.body.style.overflow = '';
+  document.getElementById('details-view').style.display = 'block';
+  document.getElementById('player-view').style.display = 'none';
 
   const icon = document.getElementById('fullscreen-icon');
   if (icon) icon.className = 'fa fa-expand';
 }
 
-// ===== FULLSCREEN =====
+// ===== FULLSCREEN TOGGLE =====
 function toggleFullscreen() {
   const wrapper = document.getElementById('player-wrapper');
   const icon = document.getElementById('fullscreen-icon');
@@ -255,13 +366,13 @@ function toggleFullscreen() {
     if (wrapper.requestFullscreen) {
       wrapper.requestFullscreen().then(function() {
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function() {});
+          screen.orientation.lock('portrait').catch(function() {});
         }
       }).catch(function() {});
     } else if (wrapper.webkitRequestFullscreen) {
       wrapper.webkitRequestFullscreen();
       if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function() {});
+        screen.orientation.lock('portrait').catch(function() {});
       }
     }
     if (icon) icon.className = 'fa fa-compress';
@@ -332,11 +443,11 @@ async function searchTMDB() {
 
     const container = document.getElementById('search-results');
     container.innerHTML = '';
-    filtered.forEach(item => {
+    filtered.forEach(function(item) {
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
-      img.onclick = () => {
+      img.onclick = function() {
         closeSearchModal();
         showDetails(item);
       };
@@ -371,19 +482,10 @@ function openMoviesPage() {
   page.classList.add('open');
   page.scrollTop = 0;
 
-  moviesPageState = {
-    page: 1,
-    maxPages: 500,
-    loading: false,
-    hasMore: true,
-    initialized: true,
-    seenIds: new Set()
-  };
-
+  moviesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
   document.getElementById('movies-page-grid').innerHTML = '';
   document.getElementById('movies-page-end').style.display = 'none';
   document.getElementById('movies-page-loading').style.display = 'none';
-
   loadMoviesPageBatch();
 }
 
@@ -405,17 +507,16 @@ async function loadMoviesPageBatch() {
     moviesPageState.page += 1;
 
     const grid = document.getElementById('movies-page-grid');
-    data.results.forEach(item => {
+    data.results.forEach(function(item) {
       if (!item.poster_path) return;
       if (moviesPageState.seenIds.has(item.id)) return;
       moviesPageState.seenIds.add(item.id);
-
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
       img.loading = 'lazy';
       img.dataset.id = item.id;
-      img.onclick = () => showDetails(item);
+      img.onclick = function() { showDetails(item); };
       grid.appendChild(img);
     });
 
@@ -437,19 +538,10 @@ function openSeriesPage() {
   page.classList.add('open');
   page.scrollTop = 0;
 
-  seriesPageState = {
-    page: 1,
-    maxPages: 500,
-    loading: false,
-    hasMore: true,
-    initialized: true,
-    seenIds: new Set()
-  };
-
+  seriesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
   document.getElementById('series-page-grid').innerHTML = '';
   document.getElementById('series-page-end').style.display = 'none';
   document.getElementById('series-page-loading').style.display = 'none';
-
   loadSeriesPageBatch();
 }
 
@@ -471,17 +563,16 @@ async function loadSeriesPageBatch() {
     seriesPageState.page += 1;
 
     const grid = document.getElementById('series-page-grid');
-    data.results.forEach(item => {
+    data.results.forEach(function(item) {
       if (!item.poster_path) return;
       if (seriesPageState.seenIds.has(item.id)) return;
       seriesPageState.seenIds.add(item.id);
-
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
       img.loading = 'lazy';
       img.dataset.id = item.id;
-      img.onclick = () => showDetails(item);
+      img.onclick = function() { showDetails(item); };
       grid.appendChild(img);
     });
 
@@ -515,16 +606,7 @@ function openViewAll(key) {
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
-  viewAllState = {
-    key: key,
-    page: 1,
-    maxPages: 500,
-    loading: false,
-    hasMore: true,
-    initialized: true,
-    seenIds: new Set()
-  };
-
+  viewAllState = { key: key, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
   document.getElementById('view-all-title').textContent = (genre.icon || '🎬') + ' ' + genre.name;
 
   const grid = document.getElementById('view-all-grid');
@@ -537,15 +619,11 @@ function openViewAll(key) {
   page.scrollTop = 0;
 
   loadViewAllBatch();
-
-  setTimeout(function() {
-    attachViewAllScroll();
-  }, 100);
+  setTimeout(function() { attachViewAllScroll(); }, 100);
 }
 
 async function loadViewAllBatch() {
   if (viewAllState.loading || !viewAllState.hasMore) return;
-
   viewAllState.loading = true;
   document.getElementById('view-all-loading').style.display = 'block';
 
@@ -563,17 +641,16 @@ async function loadViewAllBatch() {
     viewAllState.maxPages = data.total_pages;
     viewAllState.page += 1;
 
-    data.results.forEach(item => {
+    data.results.forEach(function(item) {
       if (!item.poster_path) return;
       if (viewAllState.seenIds.has(item.id)) return;
       viewAllState.seenIds.add(item.id);
-
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
       img.loading = 'lazy';
       img.dataset.id = item.id;
-      img.onclick = () => showDetails(item);
+      img.onclick = function() { showDetails(item); };
       grid.appendChild(img);
     });
 
@@ -604,10 +681,8 @@ let viewAllScrollTimer = null;
 function attachViewAllScroll() {
   const page = document.getElementById('view-all-page');
   if (!page) return;
-
   page.removeEventListener('scroll', viewAllScrollHandler);
   page.removeEventListener('touchmove', viewAllScrollHandler);
-
   page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
   page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
 }
@@ -616,22 +691,17 @@ function viewAllScrollHandler() {
   if (!viewAllState.initialized) return;
   if (viewAllState.loading) return;
   if (!viewAllState.hasMore) return;
-
   const page = document.getElementById('view-all-page');
   if (!page) return;
-
   clearTimeout(viewAllScrollTimer);
   viewAllScrollTimer = setTimeout(function() {
-    const scrollPos = page.scrollTop + page.clientHeight;
-    const threshold = page.scrollHeight - 300;
-
-    if (scrollPos >= threshold) {
+    if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
       loadViewAllBatch();
     }
   }, 150);
 }
 
-// ===== SCROLL LISTENER FOR MOVIES/SERIES PAGES =====
+// ===== SCROLL LISTENERS =====
 function attachMoviesPageScroll() {
   const page = document.getElementById('movies-page');
   if (!page) return;
@@ -658,12 +728,11 @@ function attachSeriesPageScroll() {
   }, { passive: true });
 }
 
-// ===== INFINITE SCROLL (HOMEPAGE HORIZONTAL) =====
+// ===== INFINITE SCROLL (HOMEPAGE) =====
 async function loadMore(category) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
   pages[category] += 1;
-
   try {
     let result, containerId;
     if (category === 'movie') {
@@ -688,7 +757,6 @@ async function loadMoreGenre(category, genreId, containerId) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
   pages[category] += 1;
-
   try {
     const data = await fetchByGenreMovie(genreId, pages[category]);
     if (data.results.length > 0) {
@@ -718,10 +786,10 @@ function attachScrollListeners() {
     { id: 'mystery-list', category: 'mystery', genre: 9648 }
   ];
 
-  rows.forEach(row => {
+  rows.forEach(function(row) {
     const el = document.getElementById(row.id);
     if (!el) return;
-    el.addEventListener('scroll', () => {
+    el.addEventListener('scroll', function() {
       if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 300) {
         if (row.genre) {
           loadMoreGenre(row.category, row.genre, row.id);
@@ -737,10 +805,8 @@ function attachScrollListeners() {
 async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
-
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
-
     maxPages.movie = moviesData.total_pages;
     maxPages.tv = tvData.total_pages;
 
@@ -772,7 +838,7 @@ async function init() {
 init();
 
 // ===== KEYBOARD =====
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeModal();
     closeSearchModal();
