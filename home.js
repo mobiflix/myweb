@@ -869,3 +869,158 @@ document.addEventListener('keydown', function(e) {
     closeMyListPage();
   }
 });
+// ===== STREAMING PROVIDERS =====
+const STREAMING_PROVIDERS = [
+  { name: 'Netflix', id: 8 },
+  { name: 'Disney+', id: 337 },
+  { name: 'Amazon Prime Video', id: 9 },
+  { name: 'HBO Max', id: 384 },
+  { name: 'Apple TV+', id: 350 },
+  { name: 'Vivamax', id: 1969 }
+];
+
+const PROVIDER_LOGOS = {
+  'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+  'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+  'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo_%282022%29.svg',
+  'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HBO_Max_Logo.svg',
+  'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg',
+  'Vivamax': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Vivamax_logo.svg/1200px-Vivamax_logo.svg.png'
+};
+
+let providerPageState = {
+  providerId: null,
+  page: 1,
+  maxPages: 500,
+  loading: false,
+  hasMore: true,
+  initialized: false,
+  seenIds: new Set()
+};
+
+function renderProviders() {
+  const container = document.getElementById('providers-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  STREAMING_PROVIDERS.forEach(function(provider) {
+    const card = document.createElement('div');
+    card.className = 'provider-card';
+    card.title = provider.name;
+
+    const img = document.createElement('img');
+    img.alt = provider.name;
+    img.src = PROVIDER_LOGOS[provider.name];
+
+    img.onerror = function() {
+      this.style.display = 'none';
+      const span = document.createElement('span');
+      span.textContent = provider.name;
+      card.appendChild(span);
+    };
+
+    card.appendChild(img);
+    card.onclick = function() {
+      openProviderPage(provider.id, provider.name);
+    };
+    container.appendChild(card);
+  });
+}
+
+async function fetchByProvider(providerId, mediaType, page) {
+  const res = await fetch(
+    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
+  );
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+function openProviderPage(providerId, providerName) {
+  resetAllPages();
+  const page = document.getElementById('provider-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  providerPageState = {
+    providerId: providerId,
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
+  document.getElementById('provider-page-title').textContent = '📡 ' + providerName;
+  document.getElementById('provider-page-grid').innerHTML = '';
+  document.getElementById('provider-page-end').style.display = 'none';
+  document.getElementById('provider-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', providerPageScrollHandler);
+  page.addEventListener('scroll', providerPageScrollHandler, { passive: true });
+
+  loadProviderBatch();
+}
+
+function closeProviderPage() {
+  const page = document.getElementById('provider-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
+  document.getElementById('provider-page-grid').innerHTML = '';
+  providerPageState.initialized = false;
+  setActiveNav('home');
+}
+
+function providerPageScrollHandler() {
+  if (!providerPageState.initialized) return;
+  if (providerPageState.loading) return;
+  if (!providerPageState.hasMore) return;
+  const page = document.getElementById('provider-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadProviderBatch();
+  }
+}
+
+async function loadProviderBatch() {
+  if (providerPageState.loading || !providerPageState.hasMore) return;
+  providerPageState.loading = true;
+  document.getElementById('provider-page-loading').style.display = 'block';
+
+  try {
+    const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
+    const data = await fetchByProvider(providerPageState.providerId, mediaType, Math.ceil(providerPageState.page / 2));
+
+    providerPageState.maxPages = data.total_pages;
+    providerPageState.page += 1;
+
+    const grid = document.getElementById('provider-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (providerPageState.seenIds.has(item.id)) return;
+      providerPageState.seenIds.add(item.id);
+      item.media_type = mediaType;
+
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (providerPageState.page > providerPageState.maxPages) {
+      providerPageState.hasMore = false;
+      document.getElementById('provider-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[ProviderPage]', err);
+  } finally {
+    providerPageState.loading = false;
+    document.getElementById('provider-page-loading').style.display = 'none';
+  }
+}
+
+// I-call ang renderProviders sa init
+renderProviders();
