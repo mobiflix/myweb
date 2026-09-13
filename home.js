@@ -10,7 +10,7 @@ const STREAMING_PROVIDERS = [
   { name: 'Amazon Prime Video', id: 9, type: 'provider' },
   { name: 'HBO Max', id: 384, type: 'provider' },
   { name: 'Apple TV+', id: 350, type: 'provider' },
-  { name: 'Vivamax', id: 149142, type: 'company' }
+  { name: 'Vivamax', id: 149142, type: 'vivamax' }
 ];
 
 const PROVIDER_LOGOS = {
@@ -95,6 +95,7 @@ let viewAllState = {
 
 let providerPageState = {
   providerId: null,
+  providerName: '',
   providerType: 'provider',
   page: 1,
   maxPages: 500,
@@ -142,10 +143,11 @@ async function fetchByProvider(providerId, mediaType, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH BY COMPANY (Vivamax) =====
-async function fetchByCompany(companyId, mediaType, page) {
+// ===== FETCH VIVAMAX (combined Viva Films + Vivamax companies) =====
+async function fetchVivamax(mediaType, page) {
+  // Combine Vivamax (149142) + Viva Films (149143) + Viva Communications (113921)
   const res = await fetch(
-    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_companies=${companyId}&page=${page}&sort_by=popularity.desc`
+    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_companies=149142|149143|113921&page=${page}&sort_by=primary_release_date.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -238,6 +240,7 @@ function openProviderPage(providerId, providerName, providerType) {
 
   providerPageState = {
     providerId: providerId,
+    providerName: providerName,
     providerType: providerType || 'provider',
     page: 1,
     maxPages: 500,
@@ -284,16 +287,16 @@ async function loadProviderBatch() {
   document.getElementById('provider-page-loading').style.display = 'block';
 
   try {
-    const currentBatch = providerPageState.page;
-    const mediaType = currentBatch <= 1 ? 'movie' : 'tv';
-    const apiPage = Math.ceil(currentBatch / 2);
+    const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
+    const apiPage = Math.ceil(providerPageState.page / 2);
 
     let data;
-    if (providerPageState.providerType === 'company') {
-      // Vivamax - use company ID
-      data = await fetchByCompany(providerPageState.providerId, mediaType, apiPage);
+
+    if (providerPageState.providerType === 'vivamax') {
+      // Special case: Vivamax gamitin ang combined company IDs
+      data = await fetchVivamax(mediaType, apiPage);
     } else {
-      // Netflix, Disney+, etc. - use provider ID
+      // Normal providers (Netflix, Disney+, etc.)
       data = await fetchByProvider(providerPageState.providerId, mediaType, apiPage);
     }
 
