@@ -53,6 +53,7 @@
       <a onclick="openViewAll('thriller')">🕵️ Thriller</a>
       <a onclick="openViewAll('fantasy')">🧙 Fantasy</a>
       <a onclick="openViewAll('mystery')">🔍 Mystery</a>
+      <a onclick="openViewAll('kids')">👶 Kids</a>
     </div>
   </div>
 
@@ -165,6 +166,14 @@
       </div>
       <div class="list horizontal-scroll" id="mystery-list"></div>
     </div>
+
+    <div class="row">
+      <div class="row-header">
+        <h2>👶 Kids</h2>
+        <button class="view-all-btn" onclick="openViewAll('kids')">View All →</button>
+      </div>
+      <div class="list horizontal-scroll" id="kids-list"></div>
+    </div>
   </div>
 
   <!-- ===== VIEW ALL PAGE ===== -->
@@ -182,7 +191,7 @@
     </div>
   </div>
 
-  <!-- ===== SEARCH PAGE (kaparehas ng View All design) ===== -->
+  <!-- ===== SEARCH PAGE ===== -->
   <div class="search-modal" id="search-modal">
     <div class="view-all-header">
       <button class="back-btn" onclick="closeSearchModal()"><i class="fa fa-arrow-left"></i> Back</button>
