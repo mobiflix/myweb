@@ -13,52 +13,12 @@
 </head>
 
 <body>
-  <!-- ===== NAVBAR ===== -->
+  <!-- ===== NAVBAR (walang hamburger) ===== -->
   <nav class="navbar">
     <div class="nav-left">
       <a href="index.html" class="logo">Mobi<span>Flix</span></a>
-      <div class="nav-links">
-        <a href="#" class="active">Home</a>
-        <a href="#">TV Shows</a>
-        <a href="#">Movies</a>
-        <a href="#">New & Popular</a>
-      </div>
-    </div>
-    <div class="nav-right">
-      <div class="search-box" onclick="openSearchModal()">
-        <i class="fa fa-search"></i>
-        <input type="text" placeholder="Search titles..." readonly />
-      </div>
-      <div class="menu-icon" onclick="toggleMenu()">
-        <i class="fa fa-bars"></i>
-      </div>
     </div>
   </nav>
-
-  <!-- ===== SIDE MENU ===== -->
-  <div class="side-menu" id="side-menu">
-    <div class="side-menu-header">
-      <span class="side-menu-title">🎬 Genres</span>
-      <span class="side-menu-close" onclick="toggleMenu()">&times;</span>
-    </div>
-    <div class="side-menu-links">
-      <a onclick="openViewAll('movie')">🔥 Trending Movies</a>
-      <a onclick="openViewAll('tv')">📺 Trending TV Shows</a>
-      <a onclick="openViewAll('action')">💥 Action</a>
-      <a onclick="openViewAll('kids')">👶 Kids</a>
-      <a onclick="openViewAll('horror')">👻 Horror</a>
-      <a onclick="openViewAll('scifi')">🚀 Sci-Fi</a>
-      <a onclick="openViewAll('comedy')">😂 Comedy</a>
-      <a onclick="openViewAll('romance')">💕 Romance</a>
-      <a onclick="openViewAll('drama')">🎭 Drama</a>
-      <a onclick="openViewAll('thriller')">🕵️ Thriller</a>
-      <a onclick="openViewAll('fantasy')">🧙 Fantasy</a>
-      <a onclick="openViewAll('mystery')">🔍 Mystery</a>
-    </div>
-  </div>
-
-  <!-- Overlay -->
-  <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
 
   <!-- ===== HERO BANNER ===== -->
   <div class="hero" id="banner">
@@ -191,6 +151,56 @@
     </div>
   </div>
 
+  <!-- ===== MOVIES PAGE ===== -->
+  <div class="movies-page" id="movies-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeMoviesPage()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2>🎬 Movies</h2>
+    </div>
+    <div class="view-all-grid" id="movies-page-grid"></div>
+    <div class="view-all-loading" id="movies-page-loading" style="display:none;">
+      <i class="fa fa-spinner fa-spin"></i> Loading more...
+    </div>
+    <div class="view-all-end" id="movies-page-end" style="display:none;">
+      🎬 You've reached the end
+    </div>
+  </div>
+
+  <!-- ===== SERIES PAGE ===== -->
+  <div class="series-page" id="series-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeSeriesPage()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2>📺 Series</h2>
+    </div>
+    <div class="view-all-grid" id="series-page-grid"></div>
+    <div class="view-all-loading" id="series-page-loading" style="display:none;">
+      <i class="fa fa-spinner fa-spin"></i> Loading more...
+    </div>
+    <div class="view-all-end" id="series-page-end" style="display:none;">
+      📺 You've reached the end
+    </div>
+  </div>
+
+  <!-- ===== MORE PAGE (Genres) ===== -->
+  <div class="more-page" id="more-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeMorePage()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2>🎬 Genres</h2>
+    </div>
+    <div class="more-list">
+      <a onclick="openViewAll('action')">💥 Action</a>
+      <a onclick="openViewAll('kids')">👶 Kids</a>
+      <a onclick="openViewAll('horror')">👻 Horror</a>
+      <a onclick="openViewAll('scifi')">🚀 Sci-Fi</a>
+      <a onclick="openViewAll('comedy')">😂 Comedy</a>
+      <a onclick="openViewAll('romance')">💕 Romance</a>
+      <a onclick="openViewAll('drama')">🎭 Drama</a>
+      <a onclick="openViewAll('thriller')">🕵️ Thriller</a>
+      <a onclick="openViewAll('fantasy')">🧙 Fantasy</a>
+      <a onclick="openViewAll('mystery')">🔍 Mystery</a>
+    </div>
+  </div>
+
   <!-- ===== SEARCH PAGE ===== -->
   <div class="search-modal" id="search-modal">
     <div class="view-all-header">
@@ -241,6 +251,30 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ===== BOTTOM NAVIGATION BAR ===== -->
+  <div class="bottom-nav">
+    <a class="bottom-nav-item active" onclick="goHome()">
+      <i class="fa fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openSearchModal()">
+      <i class="fa fa-search"></i>
+      <span>Search</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openMoviesPage()">
+      <i class="fa fa-film"></i>
+      <span>Movies</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openSeriesPage()">
+      <i class="fa fa-tv"></i>
+      <span>Series</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openMorePage()">
+      <i class="fa fa-bars"></i>
+      <span>More</span>
+    </a>
   </div>
 
   <!-- ===== FOOTER ===== -->
