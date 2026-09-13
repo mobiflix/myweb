@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>MobiFlix</title>
   <link rel="stylesheet" href="home.css">
   <link rel="preload" href="home.css" as="style">
@@ -17,6 +17,12 @@
   <nav class="navbar">
     <div class="nav-left">
       <a href="index.html" class="logo">Mobi<span>Flix</span></a>
+      <div class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">TV Shows</a>
+        <a href="#">Movies</a>
+        <a href="#">New & Popular</a>
+      </div>
     </div>
     <div class="nav-right">
       <div class="search-box" onclick="openSearchModal()">
@@ -77,7 +83,7 @@
         <h2>🔥 Trending Movies</h2>
         <button class="view-all-btn" onclick="openViewAll('movie')">View All →</button>
       </div>
-      <div class="list" id="movies-list"></div>
+      <div class="list horizontal-scroll" id="movies-list"></div>
     </div>
 
     <div class="row">
@@ -85,7 +91,7 @@
         <h2>📺 Trending TV Shows</h2>
         <button class="view-all-btn" onclick="openViewAll('tv')">View All →</button>
       </div>
-      <div class="list" id="tvshows-list"></div>
+      <div class="list horizontal-scroll" id="tvshows-list"></div>
     </div>
 
     <div class="row">
@@ -93,7 +99,7 @@
         <h2>💥 Action</h2>
         <button class="view-all-btn" onclick="openViewAll('action')">View All →</button>
       </div>
-      <div class="list" id="action-list"></div>
+      <div class="list horizontal-scroll" id="action-list"></div>
     </div>
 
     <div class="row">
@@ -101,7 +107,7 @@
         <h2>👻 Horror</h2>
         <button class="view-all-btn" onclick="openViewAll('horror')">View All →</button>
       </div>
-      <div class="list" id="horror-list"></div>
+      <div class="list horizontal-scroll" id="horror-list"></div>
     </div>
 
     <div class="row">
@@ -109,7 +115,7 @@
         <h2>🚀 Sci-Fi</h2>
         <button class="view-all-btn" onclick="openViewAll('scifi')">View All →</button>
       </div>
-      <div class="list" id="scifi-list"></div>
+      <div class="list horizontal-scroll" id="scifi-list"></div>
     </div>
 
     <div class="row">
@@ -117,7 +123,7 @@
         <h2>😂 Comedy</h2>
         <button class="view-all-btn" onclick="openViewAll('comedy')">View All →</button>
       </div>
-      <div class="list" id="comedy-list"></div>
+      <div class="list horizontal-scroll" id="comedy-list"></div>
     </div>
 
     <div class="row">
@@ -125,7 +131,7 @@
         <h2>💕 Romance</h2>
         <button class="view-all-btn" onclick="openViewAll('romance')">View All →</button>
       </div>
-      <div class="list" id="romance-list"></div>
+      <div class="list horizontal-scroll" id="romance-list"></div>
     </div>
 
     <div class="row">
@@ -133,7 +139,7 @@
         <h2>🎭 Drama</h2>
         <button class="view-all-btn" onclick="openViewAll('drama')">View All →</button>
       </div>
-      <div class="list" id="drama-list"></div>
+      <div class="list horizontal-scroll" id="drama-list"></div>
     </div>
 
     <div class="row">
@@ -141,7 +147,7 @@
         <h2>🕵️ Thriller</h2>
         <button class="view-all-btn" onclick="openViewAll('thriller')">View All →</button>
       </div>
-      <div class="list" id="thriller-list"></div>
+      <div class="list horizontal-scroll" id="thriller-list"></div>
     </div>
 
     <div class="row">
@@ -149,7 +155,7 @@
         <h2>🧙 Fantasy</h2>
         <button class="view-all-btn" onclick="openViewAll('fantasy')">View All →</button>
       </div>
-      <div class="list" id="fantasy-list"></div>
+      <div class="list horizontal-scroll" id="fantasy-list"></div>
     </div>
 
     <div class="row">
@@ -157,7 +163,7 @@
         <h2>🔍 Mystery</h2>
         <button class="view-all-btn" onclick="openViewAll('mystery')">View All →</button>
       </div>
-      <div class="list" id="mystery-list"></div>
+      <div class="list horizontal-scroll" id="mystery-list"></div>
     </div>
   </div>
 
@@ -179,7 +185,6 @@
   <!-- ===== DETAILS MODAL ===== -->
   <div class="modal" id="modal">
     <div class="modal-content">
-
       <div class="modal-back-bar">
         <button class="modal-back-btn" onclick="closeModal()">
           <i class="fa fa-arrow-left"></i> Back
@@ -197,7 +202,7 @@
         <label for="server"><i class="fa fa-server"></i> Server:</label>
         <select id="server" onchange="changeServer()"></select>
         <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">
-          <i class="fa fa-expand" id="fullscreen-icon"></i>
+          <i class="fa fa-expand" id="fullscreen-icon"></i> FULLSCREEN
         </button>
       </div>
 
