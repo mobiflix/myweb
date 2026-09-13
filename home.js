@@ -78,16 +78,20 @@ let viewAllState = {
 
 // ===== FETCH (Hollywood only, digital release only, popularity sort) =====
 async function fetchTrending(type, page) {
-  const res = await fetch(
-    `${BASE_URL}/discover/${type}?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4&watch_region=US`
-  );
+  let url;
+  if (type === 'movie') {
+    url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US&with_release_type=4&watch_region=US`;
+  } else {
+    url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US`;
+  }
+  const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4&watch_region=US`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US&with_release_type=4&watch_region=US`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -215,7 +219,7 @@ function closeModal() {
   if (icon) icon.className = 'fa fa-expand';
 }
 
-// ===== FULLSCREEN (LANDSCAPE on mobile, back button hindi natatanggal) =====
+// ===== FULLSCREEN =====
 function toggleFullscreen() {
   const wrapper = document.getElementById('player-wrapper');
   const icon = document.getElementById('fullscreen-icon');
@@ -290,9 +294,15 @@ async function searchTMDB() {
   searchTimeout = setTimeout(async () => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
     const data = await res.json();
-    // Hollywood only filter
+    // Hollywood only filter — English + US origin
     const filtered = (data.results || []).filter(function(item) {
-      return item.original_language === 'en' && item.poster_path;
+      if (item.original_language !== 'en') return false;
+      if (!item.poster_path) return false;
+      // Kung may origin_country, siguraduhing US
+      if (item.origin_country && item.origin_country.length > 0) {
+        return item.origin_country.includes('US');
+      }
+      return true;
     });
 
     const container = document.getElementById('search-results');
