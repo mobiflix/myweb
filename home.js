@@ -5,15 +5,15 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
 // ===== ENDPOINTS =====
 const MOVIE_ENDPOINTS = [
+  { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
   { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
-  { name: 'Zxcstream', url: 'https://zxcstream.xyz/player/movie/' },
   { name: '111Movies', url: 'https://111movies.com/movie/' },
   { name: 'VidSrc.io', url: 'https://vidsrc.io/embed/movie/' },
-  { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
   { name: '2Embed', url: 'https://www.2embed.cc/embed/' }
 ];
 
 const SERIES_ENDPOINTS = [
+  { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/tv/' },
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' }
 ];
 
