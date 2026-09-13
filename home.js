@@ -28,7 +28,8 @@ const GENRE_MAP = {
   drama: { name: 'Drama', id: 18, icon: '🎭' },
   thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
   fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
-  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
+  mystery: { name: 'Mystery', id: 9648, icon: '🔍' },
+  kids: { name: 'Kids', id: 10751, icon: '👶' }
 };
 
 // ===== GENRES for home rows =====
@@ -41,7 +42,8 @@ const GENRES = [
   { name: 'Drama', id: 18, container: 'drama-list', key: 'drama' },
   { name: 'Thriller', id: 53, container: 'thriller-list', key: 'thriller' },
   { name: 'Fantasy', id: 14, container: 'fantasy-list', key: 'fantasy' },
-  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' }
+  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' },
+  { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' }
 ];
 
 let currentItem;
@@ -50,19 +52,19 @@ let bannerItem;
 let pages = {
   movie: 1, tv: 1,
   action: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
-  drama: 1, thriller: 1, fantasy: 1, mystery: 1
+  drama: 1, thriller: 1, fantasy: 1, mystery: 1, kids: 1
 };
 
 let loading = {
   movie: false, tv: false,
   action: false, horror: false, scifi: false, comedy: false, romance: false,
-  drama: false, thriller: false, fantasy: false, mystery: false
+  drama: false, thriller: false, fantasy: false, mystery: false, kids: false
 };
 
 let maxPages = {
   movie: 500, tv: 500,
   action: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
-  drama: 500, thriller: 500, fantasy: 500, mystery: 500
+  drama: 500, thriller: 500, fantasy: 500, mystery: 500, kids: 500
 };
 
 // ===== VIEW ALL STATE =====
@@ -76,7 +78,7 @@ let viewAllState = {
   seenIds: new Set()
 };
 
-// ===== FETCH (Hollywood only, digital release only, popularity sort) =====
+// ===== FETCH (Hollywood US only, digital release only, popularity sort) =====
 async function fetchTrending(type, page) {
   let url;
   if (type === 'movie') {
@@ -262,7 +264,7 @@ function updateFullscreenUI() {
 document.addEventListener('fullscreenchange', updateFullscreenUI);
 document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
-// ===== SEARCH (Hollywood only) =====
+// ===== SEARCH (Hollywood US only) =====
 function openSearchModal() {
   const modal = document.getElementById('search-modal');
   modal.classList.add('open');
@@ -294,11 +296,10 @@ async function searchTMDB() {
   searchTimeout = setTimeout(async () => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
     const data = await res.json();
-    // Hollywood only filter — English + US origin
+    // Hollywood US only filter
     const filtered = (data.results || []).filter(function(item) {
       if (item.original_language !== 'en') return false;
       if (!item.poster_path) return false;
-      // Kung may origin_country, siguraduhing US
       if (item.origin_country && item.origin_country.length > 0) {
         return item.origin_country.includes('US');
       }
@@ -514,7 +515,8 @@ function attachScrollListeners() {
     { id: 'drama-list', category: 'drama', genre: 18 },
     { id: 'thriller-list', category: 'thriller', genre: 53 },
     { id: 'fantasy-list', category: 'fantasy', genre: 14 },
-    { id: 'mystery-list', category: 'mystery', genre: 9648 }
+    { id: 'mystery-list', category: 'mystery', genre: 9648 },
+    { id: 'kids-list', category: 'kids', genre: 10751 }
   ];
 
   rows.forEach(row => {
