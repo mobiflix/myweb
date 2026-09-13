@@ -263,8 +263,9 @@ function playNow() {
   }, 300);
 }
 
-// ===== CLOSE PLAYER VIEW =====
+// ===== CLOSE PLAYER VIEW (FIXED — may fullscreen exit) =====
 function closePlayerView() {
+  // I-exit muna ang fullscreen
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
       document.exitFullscreen();
@@ -276,12 +277,15 @@ function closePlayerView() {
     }
   }
 
-  document.getElementById('modal-video').src = '';
-  document.getElementById('player-view').style.display = 'none';
-  document.getElementById('details-view').style.display = 'block';
+  // Tapos i-reset ang player at bumalik sa details
+  setTimeout(function() {
+    document.getElementById('modal-video').src = '';
+    document.getElementById('player-view').style.display = 'none';
+    document.getElementById('details-view').style.display = 'block';
+  }, 150);
 }
 
-// ===== CLOSE MODAL =====
+// ===== CLOSE MODAL (FIXED — may fullscreen exit) =====
 function closeModal() {
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
@@ -294,14 +298,16 @@ function closeModal() {
     }
   }
 
-  document.getElementById('modal').style.display = 'none';
-  document.getElementById('modal-video').src = '';
-  document.body.style.overflow = '';
-  document.getElementById('details-view').style.display = 'block';
-  document.getElementById('player-view').style.display = 'none';
+  setTimeout(function() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('modal-video').src = '';
+    document.body.style.overflow = '';
+    document.getElementById('details-view').style.display = 'block';
+    document.getElementById('player-view').style.display = 'none';
+  }, 150);
 }
 
-// ===== RESET ALL PAGES (para hindi mag-overlap) =====
+// ===== RESET ALL PAGES =====
 function resetAllPages() {
   const pagesToClose = [
     'view-all-page',
@@ -319,21 +325,17 @@ function resetAllPages() {
     }
   });
 
-  // Reset modal
   const modal = document.getElementById('modal');
   if (modal) modal.style.display = 'none';
 
-  // Reset details at player view
   const detailsView = document.getElementById('details-view');
   const playerView = document.getElementById('player-view');
   if (detailsView) detailsView.style.display = 'block';
   if (playerView) playerView.style.display = 'none';
 
-  // Reset video
   const video = document.getElementById('modal-video');
   if (video) video.src = '';
 
-  // Reset body overflow
   document.body.style.overflow = '';
 }
 
