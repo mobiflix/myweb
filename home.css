@@ -54,9 +54,9 @@ body {
   gap: 4px;
   color: #888;
   text-decoration: none;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  padding: 8px 12px;
+  padding: 8px 6px;
   cursor: pointer;
   transition: 0.2s;
   flex: 1;
@@ -178,6 +178,7 @@ body {
 .view-all-page,
 .movies-page,
 .series-page,
+.my-list-page,
 .more-page,
 .search-modal {
   position: fixed;
@@ -192,6 +193,7 @@ body {
 .view-all-page.open,
 .movies-page.open,
 .series-page.open,
+.my-list-page.open,
 .more-page.open,
 .search-modal.open { display: flex; }
 
@@ -227,13 +229,15 @@ body {
 .view-all-header h2 { font-size: 26px; font-weight: 700; color: #fff; }
 
 /* ===== GRID — 4 PER ROW ===== */
-.view-all-grid {
+.view-all-grid,
+.my-list-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
-.view-all-grid img {
+.view-all-grid img,
+.my-list-grid img {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
@@ -242,7 +246,8 @@ body {
   transition: transform 0.3s, box-shadow 0.3s;
   background: #1a1a1a;
 }
-.view-all-grid img:hover {
+.view-all-grid img:hover,
+.my-list-grid img:hover {
   transform: scale(1.05);
   box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 30px rgba(229,9,20,0.2);
 }
@@ -251,6 +256,22 @@ body {
   text-align: center;
   padding: 40px 20px;
   color: #666;
+  font-size: 16px;
+}
+
+/* ===== MY LIST EMPTY ===== */
+.my-list-empty {
+  text-align: center;
+  color: #666;
+  padding: 80px 20px;
+}
+.my-list-empty i {
+  font-size: 64px;
+  color: #333;
+  margin-bottom: 20px;
+  display: block;
+}
+.my-list-empty p {
   font-size: 16px;
 }
 
@@ -391,7 +412,7 @@ body {
   font-size: 16px;
 }
 
-/* ===== BUTTONS (bago ang description) ===== */
+/* ===== BUTTONS ===== */
 .details-buttons {
   display: flex;
   gap: 12px;
@@ -455,7 +476,7 @@ body {
   text-align: center;
 }
 
-/* ===== PLAYER VIEW (walang server selector, walang fullscreen button) ===== */
+/* ===== PLAYER VIEW ===== */
 .player-view { display: none; }
 
 .player-wrapper {
@@ -525,7 +546,7 @@ body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
-  .view-all-grid { grid-template-columns: repeat(4, 1fr); }
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); }
   .search-modal .results { grid-template-columns: repeat(4, 1fr); }
 }
 
@@ -547,10 +568,10 @@ body {
 
   .horizontal-scroll { gap: 10px; }
   .horizontal-scroll img { width: 130px; }
-  .view-all-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
-  .view-all-page, .movies-page, .series-page, .more-page, .search-modal {
+  .view-all-page, .movies-page, .series-page, .my-list-page, .more-page, .search-modal {
     padding: 0 16px 140px 16px;
   }
   .view-all-header h2 { font-size: 20px; }
@@ -578,8 +599,8 @@ body {
   .modal-back-btn { padding: 6px 14px; font-size: 13px; }
   .fs-back-btn { padding: 8px 16px; font-size: 13px; top: 14px; left: 14px; }
 
-  .bottom-nav { height: 60px; }
-  .bottom-nav-item { font-size: 10px; padding: 6px 8px; }
+  .bottom-nav { height: 64px; }
+  .bottom-nav-item { font-size: 9px; padding: 6px 4px; }
   .bottom-nav-item i { font-size: 16px; }
 
   .more-list a { font-size: 16px; padding: 14px 16px; }
@@ -592,6 +613,6 @@ body {
   .details-body h2 { font-size: 22px; }
   .footer-content { font-size: 13px; }
   .footer-links { gap: 12px; }
-  .view-all-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 8px; }
 }
