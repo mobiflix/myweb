@@ -301,8 +301,45 @@ function closeModal() {
   document.getElementById('player-view').style.display = 'none';
 }
 
+// ===== RESET ALL PAGES (para hindi mag-overlap) =====
+function resetAllPages() {
+  const pagesToClose = [
+    'view-all-page',
+    'movies-page',
+    'series-page',
+    'my-list-page',
+    'more-page',
+    'search-modal'
+  ];
+  pagesToClose.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('open');
+      el.style.display = '';
+    }
+  });
+
+  // Reset modal
+  const modal = document.getElementById('modal');
+  if (modal) modal.style.display = 'none';
+
+  // Reset details at player view
+  const detailsView = document.getElementById('details-view');
+  const playerView = document.getElementById('player-view');
+  if (detailsView) detailsView.style.display = 'block';
+  if (playerView) playerView.style.display = 'none';
+
+  // Reset video
+  const video = document.getElementById('modal-video');
+  if (video) video.src = '';
+
+  // Reset body overflow
+  document.body.style.overflow = '';
+}
+
 // ===== MY LIST PAGE =====
 function openMyListPage() {
+  resetAllPages();
   setActiveNav('mylist');
   const page = document.getElementById('my-list-page');
   page.classList.add('open');
@@ -357,6 +394,7 @@ async function fetchFullDetails(id, mediaType) {
 
 // ===== SEARCH =====
 function openSearchModal() {
+  resetAllPages();
   setActiveNav('search');
   const modal = document.getElementById('search-modal');
   modal.classList.add('open');
@@ -424,18 +462,14 @@ function setActiveNav(name) {
 }
 
 function goHome() {
-  closeViewAll();
-  closeMoviesPage();
-  closeSeriesPage();
-  closeMorePage();
-  closeMyListPage();
-  closeSearchModal();
+  resetAllPages();
   setActiveNav('home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== MOVIES PAGE =====
 function openMoviesPage() {
+  resetAllPages();
   setActiveNav('movies');
   const page = document.getElementById('movies-page');
   page.classList.add('open');
@@ -517,6 +551,7 @@ async function loadMoviesPageBatch() {
 
 // ===== SERIES PAGE =====
 function openSeriesPage() {
+  resetAllPages();
   setActiveNav('series');
   const page = document.getElementById('series-page');
   page.classList.add('open');
@@ -598,6 +633,7 @@ async function loadSeriesPageBatch() {
 
 // ===== MORE PAGE =====
 function openMorePage() {
+  resetAllPages();
   setActiveNav('more');
   const page = document.getElementById('more-page');
   page.classList.add('open');
@@ -611,7 +647,7 @@ function closeMorePage() {
 
 // ===== VIEW ALL PAGE =====
 function openViewAll(key) {
-  closeMorePage();
+  resetAllPages();
   const genre = GENRE_MAP[key];
   if (!genre) return;
 
