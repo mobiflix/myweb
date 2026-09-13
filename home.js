@@ -227,6 +227,47 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
+// ===== I-APPEND ANG BACK BUTTON SA FULLSCREEN ELEMENT =====
+function appendBackButtonToFullscreen() {
+  const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
+  const backBtn = document.getElementById('fs-back-btn');
+  if (!fsElement || !backBtn) return;
+
+  fsElement.appendChild(backBtn);
+  backBtn.style.display = 'flex';
+  backBtn.style.position = 'fixed';
+  backBtn.style.top = '20px';
+  backBtn.style.left = '20px';
+  backBtn.style.zIndex = '2147483647';
+
+  document.body.classList.add('fs-active');
+}
+
+// ===== I-BALIK ANG BACK BUTTON SA BODY KAPAG EXIT FULLSCREEN =====
+function restoreBackButton() {
+  const backBtn = document.getElementById('fs-back-btn');
+  if (!backBtn) return;
+
+  if (backBtn.parentElement !== document.body) {
+    document.body.appendChild(backBtn);
+  }
+  backBtn.style.display = 'none';
+  document.body.classList.remove('fs-active');
+}
+
+// ===== FULLSCREEN CHANGE LISTENER =====
+function handleFullscreenChange() {
+  const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (isFs) {
+    appendBackButtonToFullscreen();
+  } else {
+    restoreBackButton();
+  }
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
 // ===== PLAY NOW =====
 function playNow() {
   if (!currentItem) return;
@@ -249,12 +290,14 @@ function playNow() {
     if (!isFullscreen) {
       if (wrapper.requestFullscreen) {
         wrapper.requestFullscreen().then(function() {
+          appendBackButtonToFullscreen();
           if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('portrait').catch(function() {});
           }
         }).catch(function() {});
       } else if (wrapper.webkitRequestFullscreen) {
         wrapper.webkitRequestFullscreen();
+        appendBackButtonToFullscreen();
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock('portrait').catch(function() {});
         }
@@ -276,6 +319,7 @@ function closePlayerView() {
     }
   }
 
+  restoreBackButton();
   document.getElementById('modal-video').src = '';
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
@@ -294,6 +338,7 @@ function closeModal() {
     }
   }
 
+  restoreBackButton();
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
   document.body.style.overflow = '';
@@ -301,7 +346,7 @@ function closeModal() {
   document.getElementById('player-view').style.display = 'none';
 }
 
-// ===== RESET ALL PAGES (para hindi mag-overlap) =====
+// ===== RESET ALL PAGES =====
 function resetAllPages() {
   const pagesToClose = [
     'view-all-page',
@@ -319,21 +364,17 @@ function resetAllPages() {
     }
   });
 
-  // Reset modal
   const modal = document.getElementById('modal');
   if (modal) modal.style.display = 'none';
 
-  // Reset details at player view
   const detailsView = document.getElementById('details-view');
   const playerView = document.getElementById('player-view');
   if (detailsView) detailsView.style.display = 'block';
   if (playerView) playerView.style.display = 'none';
 
-  // Reset video
   const video = document.getElementById('modal-video');
   if (video) video.src = '';
 
-  // Reset body overflow
   document.body.style.overflow = '';
 }
 
