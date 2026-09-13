@@ -3,6 +3,25 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
+// ===== STREAMING PROVIDERS =====
+const STREAMING_PROVIDERS = [
+  { name: 'Netflix', id: 8 },
+  { name: 'Disney+', id: 337 },
+  { name: 'Amazon Prime Video', id: 9 },
+  { name: 'HBO Max', id: 384 },
+  { name: 'Apple TV+', id: 350 },
+  { name: 'Vivamax', id: 1969 }
+];
+
+const PROVIDER_LOGOS = {
+  'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+  'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+  'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo_%282022%29.svg',
+  'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HBO_Max_Logo.svg',
+  'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg',
+  'Vivamax': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Vivamax_logo.svg/1200px-Vivamax_logo.svg.png'
+};
+
 // ===== ENDPOINTS =====
 const MOVIE_ENDPOINTS = [
   { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
@@ -74,6 +93,10 @@ let viewAllState = {
   key: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
+let providerPageState = {
+  providerId: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
+};
+
 let moviesPageState = {
   page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
@@ -98,6 +121,14 @@ async function fetchTrending(type, page) {
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
     `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US&with_release_type=4&watch_region=US`
+  );
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+async function fetchByProvider(providerId, mediaType, page) {
+  const res = await fetch(
+    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -147,6 +178,126 @@ function appendToList(items, containerId) {
     img.onclick = () => showDetails(item);
     container.appendChild(img);
   });
+}
+
+// ===== STREAMING PROVIDERS RENDER =====
+function renderProviders() {
+  const container = document.getElementById('providers-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  STREAMING_PROVIDERS.forEach(function(provider) {
+    const card = document.createElement('div');
+    card.className = 'provider-card';
+    card.title = provider.name;
+
+    const img = document.createElement('img');
+    img.alt = provider.name;
+    img.src = PROVIDER_LOGOS[provider.name];
+
+    img.onerror = function() {
+      this.style.display = 'none';
+      if (!card.querySelector('span')) {
+        const span = document.createElement('span');
+        span.textContent = provider.name;
+        card.appendChild(span);
+      }
+    };
+
+    card.appendChild(img);
+    card.onclick = function() {
+      openProviderPage(provider.id, provider.name);
+    };
+    container.appendChild(card);
+  });
+}
+
+// ===== PROVIDER PAGE =====
+function openProviderPage(providerId, providerName) {
+  resetAllPages();
+  const page = document.getElementById('provider-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  providerPageState = {
+    providerId: providerId,
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
+  document.getElementById('provider-page-title').textContent = '📡 ' + providerName;
+  document.getElementById('provider-page-grid').innerHTML = '';
+  document.getElementById('provider-page-end').style.display = 'none';
+  document.getElementById('provider-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', providerPageScrollHandler);
+  page.addEventListener('scroll', providerPageScrollHandler, { passive: true });
+
+  loadProviderBatch();
+}
+
+function closeProviderPage() {
+  const page = document.getElementById('provider-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
+  document.getElementById('provider-page-grid').innerHTML = '';
+  providerPageState.initialized = false;
+  setActiveNav('home');
+}
+
+function providerPageScrollHandler() {
+  if (!providerPageState.initialized) return;
+  if (providerPageState.loading) return;
+  if (!providerPageState.hasMore) return;
+  const page = document.getElementById('provider-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadProviderBatch();
+  }
+}
+
+async function loadProviderBatch() {
+  if (providerPageState.loading || !providerPageState.hasMore) return;
+  providerPageState.loading = true;
+  document.getElementById('provider-page-loading').style.display = 'block';
+
+  try {
+    const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
+    const data = await fetchByProvider(providerPageState.providerId, mediaType, Math.ceil(providerPageState.page / 2));
+
+    providerPageState.maxPages = data.total_pages;
+    providerPageState.page += 1;
+
+    const grid = document.getElementById('provider-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (providerPageState.seenIds.has(item.id)) return;
+      providerPageState.seenIds.add(item.id);
+      item.media_type = mediaType;
+
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (providerPageState.page > providerPageState.maxPages) {
+      providerPageState.hasMore = false;
+      document.getElementById('provider-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[ProviderPage]', err);
+  } finally {
+    providerPageState.loading = false;
+    document.getElementById('provider-page-loading').style.display = 'none';
+  }
 }
 
 // ===== SHOW DETAILS =====
@@ -301,10 +452,11 @@ function closeModal() {
   document.getElementById('player-view').style.display = 'none';
 }
 
-// ===== RESET ALL PAGES (para hindi mag-overlap) =====
+// ===== RESET ALL PAGES =====
 function resetAllPages() {
   const pagesToClose = [
     'view-all-page',
+    'provider-page',
     'movies-page',
     'series-page',
     'my-list-page',
@@ -319,21 +471,17 @@ function resetAllPages() {
     }
   });
 
-  // Reset modal
   const modal = document.getElementById('modal');
   if (modal) modal.style.display = 'none';
 
-  // Reset details at player view
   const detailsView = document.getElementById('details-view');
   const playerView = document.getElementById('player-view');
   if (detailsView) detailsView.style.display = 'block';
   if (playerView) playerView.style.display = 'none';
 
-  // Reset video
   const video = document.getElementById('modal-video');
   if (video) video.src = '';
 
-  // Reset body overflow
   document.body.style.overflow = '';
 }
 
@@ -827,6 +975,9 @@ function attachScrollListeners() {
 async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
+
+    renderProviders();
+
     const moviesData = await fetchTrending('movie', 1);
     const tvData = await fetchTrending('tv', 1);
     maxPages.movie = moviesData.total_pages;
@@ -863,164 +1014,10 @@ document.addEventListener('keydown', function(e) {
     closeModal();
     closeSearchModal();
     closeViewAll();
+    closeProviderPage();
     closeMoviesPage();
     closeSeriesPage();
     closeMorePage();
     closeMyListPage();
   }
 });
-// ===== STREAMING PROVIDERS =====
-const STREAMING_PROVIDERS = [
-  { name: 'Netflix', id: 8 },
-  { name: 'Disney+', id: 337 },
-  { name: 'Amazon Prime Video', id: 9 },
-  { name: 'HBO Max', id: 384 },
-  { name: 'Apple TV+', id: 350 },
-  { name: 'Vivamax', id: 1969 }
-];
-
-const PROVIDER_LOGOS = {
-  'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
-  'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
-  'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo_%282022%29.svg',
-  'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HBO_Max_Logo.svg',
-  'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg',
-  'Vivamax': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Vivamax_logo.svg/1200px-Vivamax_logo.svg.png'
-};
-
-let providerPageState = {
-  providerId: null,
-  page: 1,
-  maxPages: 500,
-  loading: false,
-  hasMore: true,
-  initialized: false,
-  seenIds: new Set()
-};
-
-function renderProviders() {
-  const container = document.getElementById('providers-list');
-  if (!container) return;
-  container.innerHTML = '';
-
-  STREAMING_PROVIDERS.forEach(function(provider) {
-    const card = document.createElement('div');
-    card.className = 'provider-card';
-    card.title = provider.name;
-
-    const img = document.createElement('img');
-    img.alt = provider.name;
-    img.src = PROVIDER_LOGOS[provider.name];
-
-    img.onerror = function() {
-      this.style.display = 'none';
-      const span = document.createElement('span');
-      span.textContent = provider.name;
-      card.appendChild(span);
-    };
-
-    card.appendChild(img);
-    card.onclick = function() {
-      openProviderPage(provider.id, provider.name);
-    };
-    container.appendChild(card);
-  });
-}
-
-async function fetchByProvider(providerId, mediaType, page) {
-  const res = await fetch(
-    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
-  );
-  const data = await res.json();
-  return { results: data.results || [], total_pages: data.total_pages || 1 };
-}
-
-function openProviderPage(providerId, providerName) {
-  resetAllPages();
-  const page = document.getElementById('provider-page');
-  page.classList.add('open');
-  page.scrollTop = 0;
-
-  providerPageState = {
-    providerId: providerId,
-    page: 1,
-    maxPages: 500,
-    loading: false,
-    hasMore: true,
-    initialized: true,
-    seenIds: new Set()
-  };
-
-  document.getElementById('provider-page-title').textContent = '📡 ' + providerName;
-  document.getElementById('provider-page-grid').innerHTML = '';
-  document.getElementById('provider-page-end').style.display = 'none';
-  document.getElementById('provider-page-loading').style.display = 'none';
-
-  page.removeEventListener('scroll', providerPageScrollHandler);
-  page.addEventListener('scroll', providerPageScrollHandler, { passive: true });
-
-  loadProviderBatch();
-}
-
-function closeProviderPage() {
-  const page = document.getElementById('provider-page');
-  page.classList.remove('open');
-  page.scrollTop = 0;
-  document.getElementById('provider-page-grid').innerHTML = '';
-  providerPageState.initialized = false;
-  setActiveNav('home');
-}
-
-function providerPageScrollHandler() {
-  if (!providerPageState.initialized) return;
-  if (providerPageState.loading) return;
-  if (!providerPageState.hasMore) return;
-  const page = document.getElementById('provider-page');
-  if (!page) return;
-  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
-    loadProviderBatch();
-  }
-}
-
-async function loadProviderBatch() {
-  if (providerPageState.loading || !providerPageState.hasMore) return;
-  providerPageState.loading = true;
-  document.getElementById('provider-page-loading').style.display = 'block';
-
-  try {
-    const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
-    const data = await fetchByProvider(providerPageState.providerId, mediaType, Math.ceil(providerPageState.page / 2));
-
-    providerPageState.maxPages = data.total_pages;
-    providerPageState.page += 1;
-
-    const grid = document.getElementById('provider-page-grid');
-    data.results.forEach(function(item) {
-      if (!item.poster_path) return;
-      if (providerPageState.seenIds.has(item.id)) return;
-      providerPageState.seenIds.add(item.id);
-      item.media_type = mediaType;
-
-      const img = document.createElement('img');
-      img.src = `${IMG_W500}${item.poster_path}`;
-      img.alt = item.title || item.name;
-      img.loading = 'lazy';
-      img.dataset.id = item.id;
-      img.onclick = function() { showDetails(item); };
-      grid.appendChild(img);
-    });
-
-    if (providerPageState.page > providerPageState.maxPages) {
-      providerPageState.hasMore = false;
-      document.getElementById('provider-page-end').style.display = 'block';
-    }
-  } catch (err) {
-    console.error('[ProviderPage]', err);
-  } finally {
-    providerPageState.loading = false;
-    document.getElementById('provider-page-loading').style.display = 'none';
-  }
-}
-
-// I-call ang renderProviders sa init
-renderProviders();
