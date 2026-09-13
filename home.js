@@ -5,6 +5,7 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
 // ===== ENDPOINTS =====
 const MOVIE_ENDPOINTS = [
+  { name: 'Vidstuck', url: 'https://vidstuck.xyz/embed/movie/' },
   { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
   { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
   { name: '111Movies', url: 'https://111movies.com/movie/' },
@@ -13,6 +14,7 @@ const MOVIE_ENDPOINTS = [
 ];
 
 const SERIES_ENDPOINTS = [
+  { name: 'Vidstuck', url: 'https://vidstuck.xyz/embed/tv/' },
   { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/tv/' },
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' }
 ];
