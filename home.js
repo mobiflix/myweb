@@ -5,12 +5,12 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
 // ===== STREAMING PROVIDERS =====
 const STREAMING_PROVIDERS = [
-  { name: 'Netflix', id: 8 },
-  { name: 'Disney+', id: 337 },
-  { name: 'Amazon Prime Video', id: 9 },
-  { name: 'HBO Max', id: 384 },
-  { name: 'Apple TV+', id: 350 },
-  { name: 'Vivamax', id: 1969 }
+  { name: 'Netflix', id: 8, type: 'provider' },
+  { name: 'Disney+', id: 337, type: 'provider' },
+  { name: 'Amazon Prime Video', id: 9, type: 'provider' },
+  { name: 'HBO Max', id: 384, type: 'provider' },
+  { name: 'Apple TV+', id: 350, type: 'provider' },
+  { name: 'Vivamax', id: 149142, type: 'company' }
 ];
 
 const PROVIDER_LOGOS = {
@@ -94,7 +94,14 @@ let viewAllState = {
 };
 
 let providerPageState = {
-  providerId: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
+  providerId: null,
+  providerType: 'provider',
+  page: 1,
+  maxPages: 500,
+  loading: false,
+  hasMore: true,
+  initialized: false,
+  seenIds: new Set()
 };
 
 let moviesPageState = {
@@ -126,9 +133,19 @@ async function fetchByGenreMovie(genreId, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
+// ===== FETCH BY PROVIDER (Netflix, Disney+, etc.) =====
 async function fetchByProvider(providerId, mediaType, page) {
   const res = await fetch(
     `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
+  );
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+// ===== FETCH BY COMPANY (Vivamax) =====
+async function fetchByCompany(companyId, mediaType, page) {
+  const res = await fetch(
+    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_companies=${companyId}&page=${page}&sort_by=popularity.desc`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -206,14 +223,14 @@ function renderProviders() {
 
     card.appendChild(img);
     card.onclick = function() {
-      openProviderPage(provider.id, provider.name);
+      openProviderPage(provider.id, provider.name, provider.type);
     };
     container.appendChild(card);
   });
 }
 
 // ===== PROVIDER PAGE =====
-function openProviderPage(providerId, providerName) {
+function openProviderPage(providerId, providerName, providerType) {
   resetAllPages();
   const page = document.getElementById('provider-page');
   page.classList.add('open');
@@ -221,6 +238,7 @@ function openProviderPage(providerId, providerName) {
 
   providerPageState = {
     providerId: providerId,
+    providerType: providerType || 'provider',
     page: 1,
     maxPages: 500,
     loading: false,
@@ -266,8 +284,18 @@ async function loadProviderBatch() {
   document.getElementById('provider-page-loading').style.display = 'block';
 
   try {
-    const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
-    const data = await fetchByProvider(providerPageState.providerId, mediaType, Math.ceil(providerPageState.page / 2));
+    const currentBatch = providerPageState.page;
+    const mediaType = currentBatch <= 1 ? 'movie' : 'tv';
+    const apiPage = Math.ceil(currentBatch / 2);
+
+    let data;
+    if (providerPageState.providerType === 'company') {
+      // Vivamax - use company ID
+      data = await fetchByCompany(providerPageState.providerId, mediaType, apiPage);
+    } else {
+      // Netflix, Disney+, etc. - use provider ID
+      data = await fetchByProvider(providerPageState.providerId, mediaType, apiPage);
+    }
 
     providerPageState.maxPages = data.total_pages;
     providerPageState.page += 1;
