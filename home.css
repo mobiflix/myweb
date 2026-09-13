@@ -357,7 +357,7 @@ body {
   margin-top: -60px;
   position: relative;
   z-index: 2;
-  text-align: center; /* Center lahat ng text sa loob */
+  text-align: center;
 }
 
 .details-body h2 {
@@ -372,7 +372,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   font-size: 16px;
   color: #ccc;
   flex-wrap: wrap;
@@ -384,29 +384,21 @@ body {
   font-size: 22px;
 }
 
-.details-sep {
-  color: #444;
-}
+.details-sep { color: #444; }
 
 .details-year, .details-runtime {
   color: #ccc;
   font-size: 16px;
 }
 
-.details-description {
-  color: #bbb;
-  font-size: 15px;
-  line-height: 1.7;
-  margin-bottom: 22px;
-  text-align: center;
-}
-
+/* ===== BUTTONS (bago ang description) ===== */
 .details-buttons {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  margin-bottom: 22px;
 }
 
 .btn-play-now {
@@ -455,12 +447,20 @@ body {
   border-color: rgba(255,255,255,0.4);
 }
 
-/* ===== PLAYER VIEW ===== */
+.details-description {
+  color: #bbb;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+/* ===== PLAYER VIEW (walang server selector, walang fullscreen button) ===== */
 .player-view { display: none; }
 
 .player-wrapper {
   width: 100%; position: relative;
-  background: #000; border-radius: 16px 16px 0 0;
+  background: #000; border-radius: 16px;
   overflow: hidden;
 }
 .player-wrapper iframe {
@@ -499,44 +499,6 @@ body {
 .player-wrapper:-webkit-full-screen .fs-back-btn {
   display: flex !important;
 }
-
-/* ===== SERVER SELECTOR ===== */
-.server-selector {
-  display: flex; align-items: center; gap: 10px;
-  padding: 16px 28px 20px; background: #141414;
-  border-radius: 0 0 16px 16px;
-}
-.server-selector label {
-  color: #aaa; font-size: 14px;
-  display: flex; align-items: center; gap: 6px;
-  white-space: nowrap;
-}
-.server-selector select {
-  background: #1a1a1a; color: #fff;
-  border: 1px solid #2a2a2a; padding: 8px 14px;
-  border-radius: 6px; font-size: 14px;
-  cursor: pointer; outline: none; transition: 0.2s;
-  flex: 1; max-width: 260px;
-}
-.server-selector select:hover, .server-selector select:focus { border-color: #e50914; }
-
-.fullscreen-btn {
-  padding: 10px 20px;
-  border-radius: 6px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.fullscreen-btn:hover { background: #e50914; border-color: #e50914; }
 
 /* ===== FULLSCREEN PLAYER ===== */
 .player-wrapper:fullscreen { border-radius: 0; }
@@ -596,24 +558,19 @@ body {
   .modal { padding: 20px 10px; }
   .modal-content { border-radius: 12px; }
 
-  /* Mobile: details view adjustments */
   .details-poster { height: 320px; }
   .details-body { padding: 0 16px 24px; margin-top: -50px; }
   .details-body h2 { font-size: 24px; }
-  .details-meta { gap: 8px; font-size: 14px; }
+  .details-meta { gap: 8px; font-size: 14px; margin-bottom: 16px; }
   .details-rating { font-size: 18px; }
   .details-year, .details-runtime { font-size: 14px; }
   .details-description { font-size: 14px; }
-  .details-buttons { gap: 10px; }
+  .details-buttons { gap: 10px; margin-bottom: 18px; }
   .btn-play-now, .btn-add-list {
     padding: 12px 20px;
     font-size: 15px;
     max-width: 180px;
   }
-
-  .server-selector { padding: 12px 16px 20px; gap: 8px; flex-wrap: wrap; }
-  .server-selector select { max-width: 100%; width: 100%; }
-  .fullscreen-btn { width: 100%; justify-content: center; }
 
   .search-container { padding: 10px 16px; }
   .search-container input { font-size: 15px; }
