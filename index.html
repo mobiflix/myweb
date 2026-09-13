@@ -214,7 +214,7 @@
     <div class="results" id="search-results"></div>
   </div>
 
-  <!-- ===== DETAILS MODAL (bagong design) ===== -->
+  <!-- ===== DETAILS MODAL ===== -->
   <div class="modal" id="modal">
     <div class="modal-content">
 
@@ -243,8 +243,7 @@
             <span class="details-runtime" id="modal-runtime"></span>
           </div>
 
-          <p class="details-description" id="modal-description"></p>
-
+          <!-- Play Now + Add to List — BAGO ang description -->
           <div class="details-buttons">
             <button class="btn-play-now" onclick="playNow()">
               <i class="fa fa-play"></i> Play Now
@@ -253,24 +252,18 @@
               <i class="fa fa-bookmark" id="bookmark-icon"></i> <span id="bookmark-text">Add to List</span>
             </button>
           </div>
+
+          <p class="details-description" id="modal-description"></p>
         </div>
       </div>
 
-      <!-- Player View (hidden initially) -->
+      <!-- Player View (walang server selector at fullscreen button) -->
       <div class="player-view" id="player-view">
         <div class="player-wrapper" id="player-wrapper">
           <button class="fs-back-btn" onclick="closePlayerView()">
             <i class="fa fa-arrow-left"></i> Back
           </button>
           <iframe id="modal-video" frameborder="0" allowfullscreen></iframe>
-        </div>
-
-        <div class="server-selector">
-          <label for="server"><i class="fa fa-server"></i> Server:</label>
-          <select id="server" onchange="changeServer()"></select>
-          <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">
-            <i class="fa fa-expand" id="fullscreen-icon"></i> FULLSCREEN
-          </button>
         </div>
       </div>
 
