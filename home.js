@@ -75,7 +75,7 @@ let viewAllState = {
   seenIds: new Set()
 };
 
-// ===== FETCH =====
+// ===== FETCH (Hollywood only, digital releases only) =====
 async function fetchTrending(type, page) {
   const res = await fetch(`${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
@@ -84,7 +84,7 @@ async function fetchTrending(type, page) {
 
 async function fetchByGenreMovie(genreId, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_release_type=4`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
@@ -96,22 +96,18 @@ function displayBanner(item) {
   const banner = document.getElementById('banner');
   banner.style.backgroundImage = `url(${IMG_URL}${item.backdrop_path || item.poster_path})`;
 
-  // Title
   document.getElementById('banner-title').textContent = item.title || item.name;
 
-  // Rating
   const rating = Math.round((item.vote_average || 0) / 2);
   const ratingEl = document.getElementById('banner-rating');
   if (ratingEl) ratingEl.innerHTML = '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
-  // Year
   const yearEl = document.getElementById('banner-year');
   if (yearEl) {
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
     yearEl.textContent = year || '';
   }
 
-  // Type
   const typeEl = document.getElementById('banner-type');
   if (typeEl) {
     const type = item.media_type === 'movie' ? 'Movie'
@@ -119,7 +115,6 @@ function displayBanner(item) {
     typeEl.textContent = type;
   }
 
-  // Description
   const descEl = document.getElementById('banner-description');
   if (descEl) descEl.textContent = item.overview || 'No description available.';
 }
@@ -204,6 +199,9 @@ function closeModal() {
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
     }
+    if (screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock();
+    }
   }
 
   document.getElementById('modal').style.display = 'none';
@@ -214,7 +212,7 @@ function closeModal() {
   if (icon) icon.className = 'fa fa-expand';
 }
 
-// ===== FULLSCREEN =====
+// ===== FULLSCREEN (LANDSCAPE on mobile) =====
 function toggleFullscreen() {
   const wrapper = document.getElementById('player-wrapper');
   const icon = document.getElementById('fullscreen-icon');
@@ -223,7 +221,12 @@ function toggleFullscreen() {
 
   if (!isFullscreen) {
     if (wrapper.requestFullscreen) {
-      wrapper.requestFullscreen().catch(function() {});
+      wrapper.requestFullscreen().then(() => {
+        // Force landscape on mobile
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      }).catch(function() {});
     } else if (wrapper.webkitRequestFullscreen) {
       wrapper.webkitRequestFullscreen();
     }
@@ -233,6 +236,9 @@ function toggleFullscreen() {
       document.exitFullscreen();
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
+    }
+    if (screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock();
     }
     if (icon) icon.className = 'fa fa-expand';
   }
@@ -271,7 +277,7 @@ async function searchTMDB() {
   }
 
   searchTimeout = setTimeout(async () => {
-    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
     const data = await res.json();
 
     const container = document.getElementById('search-results');
@@ -396,7 +402,6 @@ function closeViewAll() {
   viewAllState.seenIds = new Set();
 }
 
-// ===== VIEW ALL SCROLL (mobile-friendly) =====
 let viewAllScrollTimer = null;
 
 function attachViewAllScroll() {
@@ -429,7 +434,7 @@ function viewAllScrollHandler() {
   }, 150);
 }
 
-// ===== INFINITE SCROLL (HOME ROWS) =====
+// ===== INFINITE SCROLL (HOMEPAGE HORIZONTAL) =====
 async function loadMore(category) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
@@ -492,14 +497,14 @@ function attachScrollListeners() {
     const el = document.getElementById(row.id);
     if (!el) return;
     el.addEventListener('scroll', () => {
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 300) {
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 300) {
         if (row.genre) {
           loadMoreGenre(row.category, row.genre, row.id);
         } else {
           loadMore(row.category);
         }
       }
-    });
+    }, { passive: true });
   });
 }
 
