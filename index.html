@@ -221,9 +221,11 @@
     </div>
   </div>
 
-  <!-- ===== SEARCH MODAL ===== -->
+  <!-- ===== SEARCH MODAL (may Back button sa upper-left) ===== -->
   <div class="search-modal" id="search-modal">
-    <span class="close" onclick="closeSearchModal()">&times;</span>
+    <button class="search-back-btn" onclick="closeSearchModal()">
+      <i class="fa fa-arrow-left"></i> Back
+    </button>
     <div class="search-container">
       <i class="fa fa-search"></i>
       <input type="text" id="search-input" placeholder="Search for a movie or TV show..." oninput="searchTMDB()" />
