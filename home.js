@@ -8,7 +8,6 @@ const STREAMING_PROVIDERS = [
   { name: 'Netflix', id: 8, type: 'provider', color: '#e50914' },
   { name: 'Disney+', id: 337, type: 'provider', color: '#113ccf' },
   { name: 'Amazon Prime Video', id: 9, type: 'provider', color: '#00a8e1' },
-  { name: 'Paramount+', id: 531, type: 'provider', color: '#0064ff' },
   { name: 'Peacock', id: 386, type: 'provider', color: '#000000' },
   { name: 'Hulu', id: 15, type: 'provider', color: '#1ce783' },
   { name: 'Apple TV+', id: 350, type: 'provider', color: '#1c1c1e' }
@@ -18,7 +17,6 @@ const PROVIDER_LOGOS = {
   'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
   'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
   'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo_%282022%29.svg',
-  'Paramount+': 'https://upload.wikimedia.org/wikipedia/commons/8/8c/Paramount%2B_logo.svg',
   'Peacock': 'https://upload.wikimedia.org/wikipedia/commons/d/d3/NBCUniversal_Peacock_Logo.svg',
   'Hulu': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg',
   'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg'
