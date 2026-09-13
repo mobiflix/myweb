@@ -50,7 +50,6 @@ const GENRES = [
 
 let currentItem;
 let bannerItem;
-let currentView = 'details';
 
 let pages = {
   movie: 1, tv: 1,
@@ -152,7 +151,6 @@ function appendToList(items, containerId) {
 // ===== SHOW DETAILS =====
 function showDetails(item) {
   currentItem = item;
-  currentView = 'details';
 
   document.getElementById('modal-poster').src = `${IMG_URL}${item.backdrop_path || item.poster_path}`;
   document.getElementById('modal-title').textContent = item.title || item.name;
@@ -227,7 +225,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW =====
+// ===== PLAY NOW (WALANG AUTO-FULLSCREEN) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -242,30 +240,14 @@ function playNow() {
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
-  setTimeout(function() {
-    const wrapper = document.getElementById('player-wrapper');
-    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-
-    if (!isFullscreen) {
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen().then(function() {
-          if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(function() {});
-          }
-        }).catch(function() {});
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait').catch(function() {});
-        }
-      }
-    }
-  }, 300);
+  // I-reset lang ang scroll position — walang fullscreen request
+  const playerView = document.getElementById('player-view');
+  if (playerView) playerView.scrollTop = 0;
 }
 
-// ===== CLOSE PLAYER VIEW (FIXED — may fullscreen exit) =====
+// ===== CLOSE PLAYER VIEW =====
 function closePlayerView() {
-  // I-exit muna ang fullscreen
+  // I-exit ang fullscreen kung naka-fullscreen ang wrapper
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
       document.exitFullscreen();
@@ -277,15 +259,12 @@ function closePlayerView() {
     }
   }
 
-  // Tapos i-reset ang player at bumalik sa details
-  setTimeout(function() {
-    document.getElementById('modal-video').src = '';
-    document.getElementById('player-view').style.display = 'none';
-    document.getElementById('details-view').style.display = 'block';
-  }, 150);
+  document.getElementById('modal-video').src = '';
+  document.getElementById('player-view').style.display = 'none';
+  document.getElementById('details-view').style.display = 'block';
 }
 
-// ===== CLOSE MODAL (FIXED — may fullscreen exit) =====
+// ===== CLOSE MODAL =====
 function closeModal() {
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
@@ -298,13 +277,11 @@ function closeModal() {
     }
   }
 
-  setTimeout(function() {
-    document.getElementById('modal').style.display = 'none';
-    document.getElementById('modal-video').src = '';
-    document.body.style.overflow = '';
-    document.getElementById('details-view').style.display = 'block';
-    document.getElementById('player-view').style.display = 'none';
-  }, 150);
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modal-video').src = '';
+  document.body.style.overflow = '';
+  document.getElementById('details-view').style.display = 'block';
+  document.getElementById('player-view').style.display = 'none';
 }
 
 // ===== RESET ALL PAGES =====
