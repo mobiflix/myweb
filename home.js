@@ -227,48 +227,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== I-APPEND ANG BACK BUTTON SA FULLSCREEN ELEMENT =====
-function appendBackButtonToFullscreen() {
-  const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
-  const backBtn = document.getElementById('fs-back-btn');
-  if (!fsElement || !backBtn) return;
-
-  fsElement.appendChild(backBtn);
-  backBtn.style.display = 'flex';
-  backBtn.style.position = 'fixed';
-  backBtn.style.top = '20px';
-  backBtn.style.left = '20px';
-  backBtn.style.zIndex = '2147483647';
-
-  document.body.classList.add('fs-active');
-}
-
-// ===== I-BALIK ANG BACK BUTTON SA BODY KAPAG EXIT FULLSCREEN =====
-function restoreBackButton() {
-  const backBtn = document.getElementById('fs-back-btn');
-  if (!backBtn) return;
-
-  if (backBtn.parentElement !== document.body) {
-    document.body.appendChild(backBtn);
-  }
-  backBtn.style.display = 'none';
-  document.body.classList.remove('fs-active');
-}
-
-// ===== FULLSCREEN CHANGE LISTENER =====
-function handleFullscreenChange() {
-  const isFs = document.fullscreenElement || document.webkitFullscreenElement;
-  if (isFs) {
-    appendBackButtonToFullscreen();
-  } else {
-    restoreBackButton();
-  }
-}
-
-document.addEventListener('fullscreenchange', handleFullscreenChange);
-document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-// ===== PLAY NOW =====
+// ===== PLAY NOW (walang custom fullscreen — native na lang) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -282,44 +241,10 @@ function playNow() {
 
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
-
-  setTimeout(function() {
-    const wrapper = document.getElementById('player-wrapper');
-    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-
-    if (!isFullscreen) {
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen().then(function() {
-          appendBackButtonToFullscreen();
-          if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(function() {});
-          }
-        }).catch(function() {});
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-        appendBackButtonToFullscreen();
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait').catch(function() {});
-        }
-      }
-    }
-  }, 300);
 }
 
 // ===== CLOSE PLAYER VIEW =====
 function closePlayerView() {
-  if (document.fullscreenElement || document.webkitFullscreenElement) {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
-  }
-
-  restoreBackButton();
   document.getElementById('modal-video').src = '';
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
@@ -327,18 +252,6 @@ function closePlayerView() {
 
 // ===== CLOSE MODAL =====
 function closeModal() {
-  if (document.fullscreenElement || document.webkitFullscreenElement) {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
-  }
-
-  restoreBackButton();
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
   document.body.style.overflow = '';
