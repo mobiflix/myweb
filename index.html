@@ -181,6 +181,20 @@
     </div>
   </div>
 
+  <!-- ===== MY LIST PAGE ===== -->
+  <div class="my-list-page" id="my-list-page">
+    <div class="view-all-header">
+      <button class="back-btn" onclick="closeMyListPage()"><i class="fa fa-arrow-left"></i> Back</button>
+      <h2>🔖 My List</h2>
+    </div>
+    <div class="my-list-grid" id="my-list-grid"></div>
+    <div class="my-list-empty" id="my-list-empty" style="display:none;">
+      <i class="fa fa-bookmark-o"></i>
+      <p>Wala ka pang na-add sa listahan.</p>
+      <p style="font-size: 13px; color: #666; margin-top: 8px;">Pumunta sa kahit anong movie at i-click ang "Add to List".</p>
+    </div>
+  </div>
+
   <!-- ===== MORE PAGE (Genres) ===== -->
   <div class="more-page" id="more-page">
     <div class="view-all-header">
@@ -218,14 +232,12 @@
   <div class="modal" id="modal">
     <div class="modal-content">
 
-      <!-- Back button -->
       <div class="modal-back-bar">
         <button class="modal-back-btn" onclick="closeModal()">
           <i class="fa fa-arrow-left"></i> Back
         </button>
       </div>
 
-      <!-- Details View -->
       <div class="details-view" id="details-view">
         <div class="details-poster">
           <img id="modal-poster" src="" alt="" />
@@ -243,7 +255,6 @@
             <span class="details-runtime" id="modal-runtime"></span>
           </div>
 
-          <!-- Play Now + Add to List — BAGO ang description -->
           <div class="details-buttons">
             <button class="btn-play-now" onclick="playNow()">
               <i class="fa fa-play"></i> Play Now
@@ -257,7 +268,6 @@
         </div>
       </div>
 
-      <!-- Player View (walang server selector at fullscreen button) -->
       <div class="player-view" id="player-view">
         <div class="player-wrapper" id="player-wrapper">
           <button class="fs-back-btn" onclick="closePlayerView()">
@@ -287,6 +297,10 @@
     <a class="bottom-nav-item" onclick="openSeriesPage()">
       <i class="fa fa-tv"></i>
       <span>Series</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openMyListPage()">
+      <i class="fa fa-bookmark"></i>
+      <span>My List</span>
     </a>
     <a class="bottom-nav-item" onclick="openMorePage()">
       <i class="fa fa-bars"></i>
