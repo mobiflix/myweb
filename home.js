@@ -21,6 +21,7 @@ const GENRE_MAP = {
   movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
   action: { name: 'Action', id: 28, icon: '💥' },
+  kids: { name: 'Kids', id: 10751, icon: '👶' },
   horror: { name: 'Horror', id: 27, icon: '👻' },
   scifi: { name: 'Sci-Fi', id: 878, icon: '🚀' },
   comedy: { name: 'Comedy', id: 35, icon: '😂' },
@@ -28,13 +29,13 @@ const GENRE_MAP = {
   drama: { name: 'Drama', id: 18, icon: '🎭' },
   thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
   fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
-  mystery: { name: 'Mystery', id: 9648, icon: '🔍' },
-  kids: { name: 'Kids', id: 10751, icon: '👶' }
+  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES for home rows =====
+// ===== GENRES for home rows (Kids nasa ilalim ng Action) =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
+  { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' },
   { name: 'Horror', id: 27, container: 'horror-list', key: 'horror' },
   { name: 'Sci-Fi', id: 878, container: 'scifi-list', key: 'scifi' },
   { name: 'Comedy', id: 35, container: 'comedy-list', key: 'comedy' },
@@ -42,8 +43,7 @@ const GENRES = [
   { name: 'Drama', id: 18, container: 'drama-list', key: 'drama' },
   { name: 'Thriller', id: 53, container: 'thriller-list', key: 'thriller' },
   { name: 'Fantasy', id: 14, container: 'fantasy-list', key: 'fantasy' },
-  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' },
-  { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' }
+  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' }
 ];
 
 let currentItem;
@@ -51,20 +51,20 @@ let bannerItem;
 
 let pages = {
   movie: 1, tv: 1,
-  action: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
-  drama: 1, thriller: 1, fantasy: 1, mystery: 1, kids: 1
+  action: 1, kids: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
+  drama: 1, thriller: 1, fantasy: 1, mystery: 1
 };
 
 let loading = {
   movie: false, tv: false,
-  action: false, horror: false, scifi: false, comedy: false, romance: false,
-  drama: false, thriller: false, fantasy: false, mystery: false, kids: false
+  action: false, kids: false, horror: false, scifi: false, comedy: false, romance: false,
+  drama: false, thriller: false, fantasy: false, mystery: false
 };
 
 let maxPages = {
   movie: 500, tv: 500,
-  action: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
-  drama: 500, thriller: 500, fantasy: 500, mystery: 500, kids: 500
+  action: 500, kids: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
+  drama: 500, thriller: 500, fantasy: 500, mystery: 500
 };
 
 // ===== VIEW ALL STATE =====
@@ -508,6 +508,7 @@ function attachScrollListeners() {
     { id: 'movies-list', category: 'movie' },
     { id: 'tvshows-list', category: 'tv' },
     { id: 'action-list', category: 'action', genre: 28 },
+    { id: 'kids-list', category: 'kids', genre: 10751 },
     { id: 'horror-list', category: 'horror', genre: 27 },
     { id: 'scifi-list', category: 'scifi', genre: 878 },
     { id: 'comedy-list', category: 'comedy', genre: 35 },
@@ -515,8 +516,7 @@ function attachScrollListeners() {
     { id: 'drama-list', category: 'drama', genre: 18 },
     { id: 'thriller-list', category: 'thriller', genre: 53 },
     { id: 'fantasy-list', category: 'fantasy', genre: 14 },
-    { id: 'mystery-list', category: 'mystery', genre: 9648 },
-    { id: 'kids-list', category: 'kids', genre: 10751 }
+    { id: 'mystery-list', category: 'mystery', genre: 9648 }
   ];
 
   rows.forEach(row => {
