@@ -35,7 +35,6 @@ const GENRE_MAP = {
   mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
 };
 
-// ===== GENRES =====
 const GENRES = [
   { name: 'Action', id: 28, container: 'action-list', key: 'action' },
   { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' },
@@ -51,7 +50,7 @@ const GENRES = [
 
 let currentItem;
 let bannerItem;
-let currentView = 'details'; // 'details' o 'player'
+let currentView = 'details';
 
 let pages = {
   movie: 1, tv: 1,
@@ -71,7 +70,6 @@ let maxPages = {
   drama: 500, thriller: 500, fantasy: 500, mystery: 500
 };
 
-// ===== VIEW ALL STATE =====
 let viewAllState = {
   key: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
@@ -156,19 +154,15 @@ function showDetails(item) {
   currentItem = item;
   currentView = 'details';
 
-  // Details view
   document.getElementById('modal-poster').src = `${IMG_URL}${item.backdrop_path || item.poster_path}`;
   document.getElementById('modal-title').textContent = item.title || item.name;
 
-  // Rating number (e.g., 7.8)
   const ratingNum = (item.vote_average || 0).toFixed(1);
   document.getElementById('modal-rating-num').textContent = ratingNum;
 
-  // Year
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
   document.getElementById('modal-year-num').textContent = year || '—';
 
-  // Runtime (kung movie)
   const runtimeEl = document.getElementById('modal-runtime');
   if (item.runtime) {
     const hours = Math.floor(item.runtime / 60);
@@ -178,13 +172,10 @@ function showDetails(item) {
     runtimeEl.textContent = '—';
   }
 
-  // Description
   document.getElementById('modal-description').textContent = item.overview || 'No description available.';
 
-  // Bookmark state
   updateBookmarkUI(item);
 
-  // Ipakita ang details view, itago ang player view
   document.getElementById('details-view').style.display = 'block';
   document.getElementById('player-view').style.display = 'none';
 
@@ -192,13 +183,10 @@ function showDetails(item) {
   document.body.style.overflow = 'hidden';
 }
 
-// ===== BOOKMARK (Add to List) =====
+// ===== BOOKMARK =====
 function getWatchlist() {
-  try {
-    return JSON.parse(localStorage.getItem('mobiflix_watchlist')) || [];
-  } catch (e) {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem('mobiflix_watchlist')) || []; }
+  catch (e) { return []; }
 }
 
 function saveWatchlist(list) {
@@ -239,29 +227,30 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW (automatic fullscreen portrait) =====
+// ===== PLAY NOW (auto Server 1, auto fullscreen) =====
 function playNow() {
   if (!currentItem) return;
 
-  // Setup player
-  populateServerDropdown(currentItem);
-  changeServer();
+  // Server 1 lang — hindi na kailangan ng server selector
+  const isMovie = currentItem.media_type === 'movie' || (!currentItem.media_type && currentItem.title);
+  const endpoints = isMovie ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
+  const endpoint = endpoints[0]; // Server 1
+  if (!endpoint) return;
 
-  // Ipakita ang player view, itago ang details view
+  const embedURL = endpoint.url + currentItem.id;
+  document.getElementById('modal-video').src = embedURL;
+
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
   // Auto-fullscreen pagkatapos ng maikling delay
   setTimeout(function() {
     const wrapper = document.getElementById('player-wrapper');
-    const icon = document.getElementById('fullscreen-icon');
-
     const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
 
     if (!isFullscreen) {
       if (wrapper.requestFullscreen) {
         wrapper.requestFullscreen().then(function() {
-          // Portrait mode (hindi lahat ng browser sumusuporta)
           if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('portrait').catch(function() {});
           }
@@ -272,14 +261,12 @@ function playNow() {
           screen.orientation.lock('portrait').catch(function() {});
         }
       }
-      if (icon) icon.className = 'fa fa-compress';
     }
   }, 300);
 }
 
-// ===== CLOSE PLAYER VIEW (bumalik sa details) =====
+// ===== CLOSE PLAYER VIEW =====
 function closePlayerView() {
-  // Exit fullscreen
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
       document.exitFullscreen();
@@ -291,45 +278,9 @@ function closePlayerView() {
     }
   }
 
-  // I-pause ang video
   document.getElementById('modal-video').src = '';
-
-  // Bumalik sa details view
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
-
-  const icon = document.getElementById('fullscreen-icon');
-  if (icon) icon.className = 'fa fa-expand';
-}
-
-// ===== SERVER DROPDOWN =====
-function populateServerDropdown(item) {
-  const select = document.getElementById('server');
-  const isMovie = item.media_type === 'movie' || (!item.media_type && item.title);
-  const endpoints = isMovie ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
-
-  select.innerHTML = '';
-  endpoints.forEach(function(ep, i) {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = 'Server ' + (i + 1);
-    select.appendChild(option);
-  });
-
-  select.dataset.type = isMovie ? 'movie' : 'tv';
-}
-
-function changeServer() {
-  if (!currentItem) return;
-  const select = document.getElementById('server');
-  const index = parseInt(select.value) || 0;
-  const type = select.dataset.type || 'movie';
-  const endpoints = type === 'movie' ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
-  const endpoint = endpoints[index];
-  if (!endpoint) return;
-
-  let embedURL = endpoint.url + currentItem.id;
-  document.getElementById('modal-video').src = embedURL;
 }
 
 // ===== CLOSE MODAL =====
@@ -350,53 +301,7 @@ function closeModal() {
   document.body.style.overflow = '';
   document.getElementById('details-view').style.display = 'block';
   document.getElementById('player-view').style.display = 'none';
-
-  const icon = document.getElementById('fullscreen-icon');
-  if (icon) icon.className = 'fa fa-expand';
 }
-
-// ===== FULLSCREEN TOGGLE =====
-function toggleFullscreen() {
-  const wrapper = document.getElementById('player-wrapper');
-  const icon = document.getElementById('fullscreen-icon');
-
-  const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-
-  if (!isFullscreen) {
-    if (wrapper.requestFullscreen) {
-      wrapper.requestFullscreen().then(function() {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait').catch(function() {});
-        }
-      }).catch(function() {});
-    } else if (wrapper.webkitRequestFullscreen) {
-      wrapper.webkitRequestFullscreen();
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('portrait').catch(function() {});
-      }
-    }
-    if (icon) icon.className = 'fa fa-compress';
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
-    if (icon) icon.className = 'fa fa-expand';
-  }
-}
-
-function updateFullscreenUI() {
-  const icon = document.getElementById('fullscreen-icon');
-  const isFs = document.fullscreenElement || document.webkitFullscreenElement;
-  if (icon) icon.className = isFs ? 'fa fa-compress' : 'fa fa-expand';
-}
-
-document.addEventListener('fullscreenchange', updateFullscreenUI);
-document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
 // ===== SEARCH =====
 function openSearchModal() {
@@ -481,7 +386,6 @@ function openMoviesPage() {
   const page = document.getElementById('movies-page');
   page.classList.add('open');
   page.scrollTop = 0;
-
   moviesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
   document.getElementById('movies-page-grid').innerHTML = '';
   document.getElementById('movies-page-end').style.display = 'none';
@@ -537,7 +441,6 @@ function openSeriesPage() {
   const page = document.getElementById('series-page');
   page.classList.add('open');
   page.scrollTop = 0;
-
   seriesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
   document.getElementById('series-page-grid').innerHTML = '';
   document.getElementById('series-page-end').style.display = 'none';
@@ -728,7 +631,7 @@ function attachSeriesPageScroll() {
   }, { passive: true });
 }
 
-// ===== INFINITE SCROLL (HOMEPAGE) =====
+// ===== HOMEPAGE INFINITE SCROLL =====
 async function loadMore(category) {
   if (loading[category] || pages[category] >= maxPages[category]) return;
   loading[category] = true;
