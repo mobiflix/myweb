@@ -270,15 +270,17 @@
 
       <div class="player-view" id="player-view">
         <div class="player-wrapper" id="player-wrapper">
-          <button class="fs-back-btn" onclick="closePlayerView()">
-            <i class="fa fa-arrow-left"></i> Back
-          </button>
           <iframe id="modal-video" frameborder="0" allowfullscreen></iframe>
         </div>
       </div>
 
     </div>
   </div>
+
+  <!-- Fullscreen back button — nasa labas ng player-wrapper, ililipat sa fullscreen element kapag naka-fullscreen -->
+  <button class="fs-back-btn" id="fs-back-btn" onclick="closePlayerView()">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
 
   <!-- ===== BOTTOM NAVIGATION BAR ===== -->
   <div class="bottom-nav">
