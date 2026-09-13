@@ -5,12 +5,11 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
 // ===== STREAMING PROVIDERS =====
 const STREAMING_PROVIDERS = [
-  { name: 'Netflix', id: 8, type: 'provider' },
-  { name: 'Disney+', id: 337, type: 'provider' },
-  { name: 'Amazon Prime Video', id: 9, type: 'provider' },
-  { name: 'HBO Max', id: 384, type: 'provider' },
-  { name: 'Apple TV+', id: 350, type: 'provider' },
-  { name: 'Vivamax', id: 149142, type: 'vivamax' }
+  { name: 'Netflix', id: 8, type: 'provider', color: '#e50914' },
+  { name: 'Disney+', id: 337, type: 'provider', color: '#113ccf' },
+  { name: 'Amazon Prime Video', id: 9, type: 'provider', color: '#00a8e1' },
+  { name: 'HBO Max', id: 384, type: 'provider', color: '#5822b4' },
+  { name: 'Apple TV+', id: 350, type: 'provider', color: '#1c1c1e' }
 ];
 
 const PROVIDER_LOGOS = {
@@ -18,8 +17,7 @@ const PROVIDER_LOGOS = {
   'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
   'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo_%282022%29.svg',
   'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HBO_Max_Logo.svg',
-  'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg',
-  'Vivamax': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Vivamax_logo.svg/1200px-Vivamax_logo.svg.png'
+  'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg'
 };
 
 // ===== ENDPOINTS =====
@@ -143,16 +141,6 @@ async function fetchByProvider(providerId, mediaType, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH VIVAMAX (combined Viva Films + Vivamax companies) =====
-async function fetchVivamax(mediaType, page) {
-  // Combine Vivamax (149142) + Viva Films (149143) + Viva Communications (113921)
-  const res = await fetch(
-    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_companies=149142|149143|113921&page=${page}&sort_by=primary_release_date.desc`
-  );
-  const data = await res.json();
-  return { results: data.results || [], total_pages: data.total_pages || 1 };
-}
-
 // ===== DISPLAY =====
 function displayBanner(item) {
   bannerItem = item;
@@ -199,7 +187,7 @@ function appendToList(items, containerId) {
   });
 }
 
-// ===== STREAMING PROVIDERS RENDER =====
+// ===== STREAMING PROVIDERS RENDER (may brand colors) =====
 function renderProviders() {
   const container = document.getElementById('providers-list');
   if (!container) return;
@@ -209,6 +197,9 @@ function renderProviders() {
     const card = document.createElement('div');
     card.className = 'provider-card';
     card.title = provider.name;
+    // I-set ang background color base sa brand
+    card.style.background = provider.color;
+    card.style.borderColor = provider.color;
 
     const img = document.createElement('img');
     img.alt = provider.name;
@@ -290,15 +281,7 @@ async function loadProviderBatch() {
     const mediaType = providerPageState.page <= 1 ? 'movie' : 'tv';
     const apiPage = Math.ceil(providerPageState.page / 2);
 
-    let data;
-
-    if (providerPageState.providerType === 'vivamax') {
-      // Special case: Vivamax gamitin ang combined company IDs
-      data = await fetchVivamax(mediaType, apiPage);
-    } else {
-      // Normal providers (Netflix, Disney+, etc.)
-      data = await fetchByProvider(providerPageState.providerId, mediaType, apiPage);
-    }
+    const data = await fetchByProvider(providerPageState.providerId, mediaType, apiPage);
 
     providerPageState.maxPages = data.total_pages;
     providerPageState.page += 1;
