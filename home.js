@@ -240,14 +240,15 @@ function playNow() {
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
-  // I-reset lang ang scroll position — walang fullscreen request
   const playerView = document.getElementById('player-view');
   if (playerView) playerView.scrollTop = 0;
+
+  // Mag-push ng history state para may pang-intercept sa back button
+  history.pushState({ view: 'player' }, '', location.href);
 }
 
 // ===== CLOSE PLAYER VIEW =====
 function closePlayerView() {
-  // I-exit ang fullscreen kung naka-fullscreen ang wrapper
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
       document.exitFullscreen();
@@ -262,6 +263,9 @@ function closePlayerView() {
   document.getElementById('modal-video').src = '';
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
+
+  // I-reset ang history state
+  history.pushState(null, '', location.href);
 }
 
 // ===== CLOSE MODAL =====
@@ -282,7 +286,34 @@ function closeModal() {
   document.body.style.overflow = '';
   document.getElementById('details-view').style.display = 'block';
   document.getElementById('player-view').style.display = 'none';
+
+  // I-reset ang history state
+  history.pushState(null, '', location.href);
 }
+
+// ===== PREVENT BACK BUTTON FROM EXITING SITE =====
+window.addEventListener('popstate', function(e) {
+  const modal = document.getElementById('modal');
+  const isModalOpen = modal && modal.style.display === 'flex';
+  const playerView = document.getElementById('player-view');
+  const isPlayerOpen = playerView && playerView.style.display === 'block';
+
+  if (isPlayerOpen) {
+    // Kung nasa player view, bumalik sa details view
+    e.preventDefault();
+    closePlayerView();
+  } else if (isModalOpen) {
+    // Kung nasa details view, isara ang modal
+    e.preventDefault();
+    closeModal();
+  } else {
+    // Normal browsing — hayaan ang browser
+    history.pushState(null, '', location.href);
+  }
+});
+
+// I-push ang initial state para may pang-intercept sa back button
+history.pushState(null, '', location.href);
 
 // ===== RESET ALL PAGES =====
 function resetAllPages() {
