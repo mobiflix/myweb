@@ -9,6 +9,7 @@ const MOVIE_ENDPOINTS = [
   { name: 'Zxcstream', url: 'https://zxcstream.xyz/player/movie/' },
   { name: '111Movies', url: 'https://111movies.com/movie/' },
   { name: 'VidSrc.io', url: 'https://vidsrc.io/embed/movie/' },
+  { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
   { name: '2Embed', url: 'https://www.2embed.cc/embed/' }
 ];
 
