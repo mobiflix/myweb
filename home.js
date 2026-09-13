@@ -231,10 +231,9 @@ function toggleAddToList() {
 function playNow() {
   if (!currentItem) return;
 
-  // Server 1 lang — hindi na kailangan ng server selector
   const isMovie = currentItem.media_type === 'movie' || (!currentItem.media_type && currentItem.title);
   const endpoints = isMovie ? MOVIE_ENDPOINTS : SERIES_ENDPOINTS;
-  const endpoint = endpoints[0]; // Server 1
+  const endpoint = endpoints[0];
   if (!endpoint) return;
 
   const embedURL = endpoint.url + currentItem.id;
@@ -243,7 +242,6 @@ function playNow() {
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
-  // Auto-fullscreen pagkatapos ng maikling delay
   setTimeout(function() {
     const wrapper = document.getElementById('player-wrapper');
     const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -301,6 +299,60 @@ function closeModal() {
   document.body.style.overflow = '';
   document.getElementById('details-view').style.display = 'block';
   document.getElementById('player-view').style.display = 'none';
+}
+
+// ===== MY LIST PAGE =====
+function openMyListPage() {
+  setActiveNav('mylist');
+  const page = document.getElementById('my-list-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+  renderMyList();
+}
+
+function closeMyListPage() {
+  document.getElementById('my-list-page').classList.remove('open');
+  setActiveNav('home');
+}
+
+function renderMyList() {
+  const list = getWatchlist();
+  const grid = document.getElementById('my-list-grid');
+  const empty = document.getElementById('my-list-empty');
+
+  grid.innerHTML = '';
+
+  if (list.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  list.forEach(function(item) {
+    if (!item.poster_path) return;
+    const img = document.createElement('img');
+    img.src = `${IMG_W500}${item.poster_path}`;
+    img.alt = item.title || item.name;
+    img.loading = 'lazy';
+    img.dataset.id = item.id;
+    img.onclick = function() {
+      fetchFullDetails(item.id, item.media_type);
+    };
+    grid.appendChild(img);
+  });
+}
+
+async function fetchFullDetails(id, mediaType) {
+  try {
+    const type = mediaType === 'movie' ? 'movie' : 'tv';
+    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+    const data = await res.json();
+    data.media_type = type;
+    showDetails(data);
+  } catch (err) {
+    console.error('[MyList]', err);
+  }
 }
 
 // ===== SEARCH =====
@@ -367,7 +419,7 @@ function setActiveNav(name) {
     el.classList.remove('active');
   });
   const items = document.querySelectorAll('.bottom-nav-item');
-  const map = { home: 0, search: 1, movies: 2, series: 3, more: 4 };
+  const map = { home: 0, search: 1, movies: 2, series: 3, mylist: 4, more: 5 };
   if (items[map[name]]) items[map[name]].classList.add('active');
 }
 
@@ -376,6 +428,7 @@ function goHome() {
   closeMoviesPage();
   closeSeriesPage();
   closeMorePage();
+  closeMyListPage();
   closeSearchModal();
   setActiveNav('home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -749,5 +802,6 @@ document.addEventListener('keydown', function(e) {
     closeMoviesPage();
     closeSeriesPage();
     closeMorePage();
+    closeMyListPage();
   }
 });
