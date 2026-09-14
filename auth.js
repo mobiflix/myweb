@@ -10,7 +10,7 @@ const USERS = [
 ];
 
 // Ilang araw bago ma-expire yung login session
-const SESSION_DAYS = 30;
+const SESSION_DAYS = 1;
 
 // ============================================
 //   HUWAG NANG GALAWIN ANG NASA IBABA
