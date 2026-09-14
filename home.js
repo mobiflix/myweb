@@ -358,7 +358,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW (AUTO LANDSCAPE) =====
+// ===== PLAY NOW (Simple + Reliable) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -378,52 +378,43 @@ function playNow() {
 
   wrapper.classList.remove('force-landscape', 'show-hint');
 
-  // Mobile lang ang mag-trigger ng fullscreen + landscape
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
   if (!isMobile) return;
 
-  requestFsAndLock(wrapper);
-}
-
-function requestFsAndLock(wrapper) {
+  // 1) Subukan fullscreen
   const fsPromise = wrapper.requestFullscreen
     ? wrapper.requestFullscreen()
     : (wrapper.webkitRequestFullscreen
         ? Promise.resolve(wrapper.webkitRequestFullscreen())
-        : Promise.reject(new Error('no-fullscreen-api')));
+        : Promise.resolve());
 
   Promise.resolve(fsPromise)
     .then(function () {
+      // 2) Subukan orientation lock
       if (screen.orientation && screen.orientation.lock) {
-        return screen.orientation.lock('landscape')
+        screen.orientation.lock('landscape')
           .then(function () {
-            console.log('[Orientation] Locked to landscape ✅');
+            console.log('[MobiFlix] Landscape locked ✅');
           })
-          .catch(function (err) {
-            console.warn('[Orientation] Landscape lock failed:', err);
-            activateRotateFallback(wrapper);
+          .catch(function () {
+            // 3) Kung mabigo, ipakita ang hint
+            console.log('[MobiFlix] Lock failed — showing hint');
+            showRotateHint(wrapper);
           });
       } else {
-        console.warn('[Orientation] API not supported');
-        activateRotateFallback(wrapper);
+        showRotateHint(wrapper);
       }
     })
-    .catch(function (err) {
-      console.warn('[Fullscreen] Failed:', err);
-      activateRotateFallback(wrapper);
+    .catch(function () {
+      showRotateHint(wrapper);
     });
 }
 
-function activateRotateFallback(wrapper) {
-  wrapper.classList.add('force-landscape');
+function showRotateHint(wrapper) {
+  wrapper.classList.add('show-hint');
   setTimeout(function () {
-    if (wrapper.classList.contains('force-landscape')) {
-      wrapper.classList.add('show-hint');
-      setTimeout(function () {
-        wrapper.classList.remove('show-hint');
-      }, 3000);
-    }
-  }, 1000);
+    wrapper.classList.remove('show-hint');
+  }, 4000);
 }
 
 // ===== CLOSE PLAYER VIEW =====
