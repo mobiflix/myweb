@@ -967,9 +967,10 @@ document.addEventListener('keydown', function(e) {
     closeMyListPage();
   }
 });
+
 // ===== LOGOUT =====
 function handleLogout() {
-  if (confirm('Sigurado ka bang gusto mong mag-log out?')) {
+  if (confirm('Are you sure you want to log out?')) {
     logout();
     showLoginScreen();
   }
