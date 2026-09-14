@@ -610,83 +610,6 @@ body {
 .footer-links a { color: #888; text-decoration: none; font-size: 14px; transition: color 0.3s; }
 .footer-links a:hover { color: #e50914; }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); }
-  .search-modal .results { grid-template-columns: repeat(4, 1fr); }
-}
-
-@media (max-width: 768px) {
-  .navbar { padding: 12px 16px; }
-  .logo { font-size: 20px; }
-
-  .hero { height: 60vh; padding: 0 20px 60px; }
-  .hero-content h1 { font-size: 28px; }
-  .btn-play { padding: 10px 20px; font-size: 14px; }
-  .hero-description { font-size: 14px; -webkit-line-clamp: 3; }
-  .hero-meta { gap: 10px; }
-  .hero-rating, .hero-year { font-size: 13px; }
-
-  .content { padding: 0 16px 40px; margin-top: -60px; }
-  .row-header { flex-wrap: wrap; gap: 8px; }
-  .row h2 { font-size: 18px; }
-  .view-all-btn { font-size: 12px; padding: 5px 12px; }
-
-  .horizontal-scroll { gap: 10px; }
-  .horizontal-scroll img { width: 130px; }
-  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 10px; }
-
-  .providers-row h2 { font-size: 18px; }
-  .provider-card { width: 120px; height: 70px; padding: 12px; }
-
-  .view-all-page, .movies-page, .series-page, .my-list-page, .more-page, .search-modal {
-    padding: 0 16px 140px 16px;
-  }
-  .view-all-header h2 { font-size: 20px; }
-
-  .modal { padding: 20px 10px; }
-  .modal-content { border-radius: 12px; }
-
-  .details-poster { height: 320px; }
-  .details-body { padding: 0 16px 24px; margin-top: -50px; }
-  .details-body h2 { font-size: 24px; }
-  .details-meta { gap: 8px; font-size: 14px; margin-bottom: 16px; }
-  .details-rating { font-size: 18px; }
-  .details-year, .details-runtime { font-size: 14px; }
-  .details-description { font-size: 14px; }
-  .details-buttons { gap: 10px; margin-bottom: 18px; }
-  .btn-play-now, .btn-add-list {
-    padding: 12px 20px;
-    font-size: 15px;
-    max-width: 180px;
-  }
-
-  .search-container { padding: 10px 16px; }
-  .search-container input { font-size: 15px; }
-
-  .modal-back-btn { padding: 6px 14px; font-size: 13px; }
-  .fs-back-btn { padding: 10px 18px; font-size: 13px; top: 14px; left: 14px; }
-
-  .bottom-nav { height: 64px; }
-  .bottom-nav-item { font-size: 9px; padding: 6px 4px; }
-  .bottom-nav-item i { font-size: 16px; }
-
-  .more-list a { font-size: 16px; padding: 14px 16px; }
-}
-
-@media (max-width: 480px) {
-  .hero-content h1 { font-size: 22px; }
-  .hero-description { font-size: 13px; -webkit-line-clamp: 4; }
-  .details-poster { height: 260px; }
-  .details-body h2 { font-size: 22px; }
-  .footer-content { font-size: 13px; }
-  .footer-links { gap: 12px; }
-  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .fs-back-btn { padding: 8px 16px; font-size: 12px; top: 10px; left: 10px; }
-  .provider-card { width: 100px; height: 60px; padding: 10px; }
-}
 /* ===== LOGIN SCREEN ===== */
 body.locked {
   overflow: hidden;
@@ -826,7 +749,82 @@ body.locked {
   line-height: 1.5;
 }
 
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); }
+  .search-modal .results { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .navbar { padding: 12px 16px; }
+  .logo { font-size: 20px; }
+
+  .hero { height: 60vh; padding: 0 20px 60px; }
+  .hero-content h1 { font-size: 28px; }
+  .btn-play { padding: 10px 20px; font-size: 14px; }
+  .hero-description { font-size: 14px; -webkit-line-clamp: 3; }
+  .hero-meta { gap: 10px; }
+  .hero-rating, .hero-year { font-size: 13px; }
+
+  .content { padding: 0 16px 40px; margin-top: -60px; }
+  .row-header { flex-wrap: wrap; gap: 8px; }
+  .row h2 { font-size: 18px; }
+  .view-all-btn { font-size: 12px; padding: 5px 12px; }
+
+  .horizontal-scroll { gap: 10px; }
+  .horizontal-scroll img { width: 130px; }
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  .providers-row h2 { font-size: 18px; }
+  .provider-card { width: 120px; height: 70px; padding: 12px; }
+
+  .view-all-page, .movies-page, .series-page, .my-list-page, .more-page, .search-modal {
+    padding: 0 16px 140px 16px;
+  }
+  .view-all-header h2 { font-size: 20px; }
+
+  .modal { padding: 20px 10px; }
+  .modal-content { border-radius: 12px; }
+
+  .details-poster { height: 320px; }
+  .details-body { padding: 0 16px 24px; margin-top: -50px; }
+  .details-body h2 { font-size: 24px; }
+  .details-meta { gap: 8px; font-size: 14px; margin-bottom: 16px; }
+  .details-rating { font-size: 18px; }
+  .details-year, .details-runtime { font-size: 14px; }
+  .details-description { font-size: 14px; }
+  .details-buttons { gap: 10px; margin-bottom: 18px; }
+  .btn-play-now, .btn-add-list {
+    padding: 12px 20px;
+    font-size: 15px;
+    max-width: 180px;
+  }
+
+  .search-container { padding: 10px 16px; }
+  .search-container input { font-size: 15px; }
+
+  .modal-back-btn { padding: 6px 14px; font-size: 13px; }
+  .fs-back-btn { padding: 10px 18px; font-size: 13px; top: 14px; left: 14px; }
+
+  .bottom-nav { height: 64px; }
+  .bottom-nav-item { font-size: 9px; padding: 6px 4px; }
+  .bottom-nav-item i { font-size: 16px; }
+
+  .more-list a { font-size: 16px; padding: 14px 16px; }
+}
+
 @media (max-width: 480px) {
+  .hero-content h1 { font-size: 22px; }
+  .hero-description { font-size: 13px; -webkit-line-clamp: 4; }
+  .details-poster { height: 260px; }
+  .details-body h2 { font-size: 22px; }
+  .footer-content { font-size: 13px; }
+  .footer-links { gap: 12px; }
+  .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .search-modal .results { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .fs-back-btn { padding: 8px 16px; font-size: 12px; top: 10px; left: 10px; }
+  .provider-card { width: 100px; height: 60px; padding: 10px; }
   .login-box { padding: 32px 24px; }
   .login-logo { font-size: 26px; }
   .login-box h2 { font-size: 20px; }
