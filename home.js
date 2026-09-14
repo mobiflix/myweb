@@ -24,6 +24,7 @@ const PROVIDER_LOGOS = {
 
 // ===== ENDPOINTS =====
 const MOVIE_ENDPOINTS = [
+  { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
   { name: 'Zxcstream', url: 'https://zxcstream.icu/watch/movie/' },
   { name: 'Vidstuck', url: 'https://vidstuck.xyz/embed/movie/' },
   { name: 'VidLink', url: 'https://vidlink.pro/movie/' },
