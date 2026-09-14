@@ -358,7 +358,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW (Simple + Reliable) =====
+// ===== PLAY NOW (CSS ROTATE FORCE LANDSCAPE) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -376,45 +376,30 @@ function playNow() {
   const wrapper = document.getElementById('player-wrapper');
   if (!wrapper) return;
 
-  wrapper.classList.remove('force-landscape', 'show-hint');
-
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  if (!isMobile) return;
 
-  // 1) Subukan fullscreen
-  const fsPromise = wrapper.requestFullscreen
-    ? wrapper.requestFullscreen()
-    : (wrapper.webkitRequestFullscreen
-        ? Promise.resolve(wrapper.webkitRequestFullscreen())
-        : Promise.resolve());
+  // Mobile lang ang mag-force ng landscape
+  if (isMobile) {
+    // I-activate ang CSS rotate FORCE LANDSCAPE
+    wrapper.classList.add('force-landscape');
 
-  Promise.resolve(fsPromise)
-    .then(function () {
-      // 2) Subukan orientation lock
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape')
-          .then(function () {
-            console.log('[MobiFlix] Landscape locked ✅');
-          })
-          .catch(function () {
-            // 3) Kung mabigo, ipakita ang hint
-            console.log('[MobiFlix] Lock failed — showing hint');
-            showRotateHint(wrapper);
-          });
-      } else {
-        showRotateHint(wrapper);
-      }
-    })
-    .catch(function () {
-      showRotateHint(wrapper);
-    });
-}
+    // I-lock ang body scroll habang naka-player
+    document.body.style.overflow = 'hidden';
 
-function showRotateHint(wrapper) {
-  wrapper.classList.add('show-hint');
-  setTimeout(function () {
-    wrapper.classList.remove('show-hint');
-  }, 4000);
+    // Subukan pa rin ang orientation lock (bonus)
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function () {
+        // Ok lang — CSS rotate na ang gumagana
+      });
+    }
+  }
+
+  // Subukan pa rin ang fullscreen (para sa back button at native controls)
+  if (wrapper.requestFullscreen) {
+    wrapper.requestFullscreen().catch(function () {});
+  } else if (wrapper.webkitRequestFullscreen) {
+    wrapper.webkitRequestFullscreen();
+  }
 }
 
 // ===== CLOSE PLAYER VIEW =====
@@ -431,11 +416,12 @@ function closePlayerView() {
   }
 
   const wrapper = document.getElementById('player-wrapper');
-  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
+  if (wrapper) wrapper.classList.remove('force-landscape');
 
   document.getElementById('modal-video').src = '';
   document.getElementById('player-view').style.display = 'none';
   document.getElementById('details-view').style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
 
 // ===== CLOSE MODAL =====
@@ -452,7 +438,7 @@ function closeModal() {
   }
 
   const wrapper = document.getElementById('player-wrapper');
-  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
+  if (wrapper) wrapper.classList.remove('force-landscape');
 
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
@@ -492,7 +478,7 @@ function resetAllPages() {
   if (video) video.src = '';
 
   const wrapper = document.getElementById('player-wrapper');
-  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
+  if (wrapper) wrapper.classList.remove('force-landscape');
 
   document.body.style.overflow = '';
 }
