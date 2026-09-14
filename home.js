@@ -38,7 +38,7 @@ const SERIES_ENDPOINTS = [
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' }
 ];
 
-// ===== GENRE MAP (Movies at TV Shows na lang) =====
+// ===== GENRE MAP =====
 const GENRE_MAP = {
   movie: { name: 'Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv:    { name: 'TV Shows', type: 'trending', media: 'tv', icon: '📺' }
@@ -76,7 +76,7 @@ let seriesPageState = {
   page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
-// ===== FETCH: TRENDING (sikat ngayong linggo) =====
+// ===== FETCH: TRENDING =====
 async function fetchTrending(type, page) {
   let url;
   if (type === 'movie') {
@@ -89,7 +89,7 @@ async function fetchTrending(type, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH: TOP RATED (para sa malalim na scroll) =====
+// ===== FETCH: TOP RATED =====
 async function fetchTopRated(type, page) {
   const res = await fetch(
     `${BASE_URL}/${type}/top_rated?api_key=${API_KEY}&page=${page}`
@@ -358,7 +358,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW =====
+// ===== PLAY NOW (AUTO LANDSCAPE) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -373,25 +373,57 @@ function playNow() {
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
-  setTimeout(function() {
-    const wrapper = document.getElementById('player-wrapper');
-    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  const wrapper = document.getElementById('player-wrapper');
+  if (!wrapper) return;
 
-    if (!isFullscreen) {
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen().then(function() {
-          if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(function() {});
-          }
-        }).catch(function() {});
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait').catch(function() {});
-        }
+  wrapper.classList.remove('force-landscape', 'show-hint');
+
+  // Mobile lang ang mag-trigger ng fullscreen + landscape
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  if (!isMobile) return;
+
+  requestFsAndLock(wrapper);
+}
+
+function requestFsAndLock(wrapper) {
+  const fsPromise = wrapper.requestFullscreen
+    ? wrapper.requestFullscreen()
+    : (wrapper.webkitRequestFullscreen
+        ? Promise.resolve(wrapper.webkitRequestFullscreen())
+        : Promise.reject(new Error('no-fullscreen-api')));
+
+  Promise.resolve(fsPromise)
+    .then(function () {
+      if (screen.orientation && screen.orientation.lock) {
+        return screen.orientation.lock('landscape')
+          .then(function () {
+            console.log('[Orientation] Locked to landscape ✅');
+          })
+          .catch(function (err) {
+            console.warn('[Orientation] Landscape lock failed:', err);
+            activateRotateFallback(wrapper);
+          });
+      } else {
+        console.warn('[Orientation] API not supported');
+        activateRotateFallback(wrapper);
       }
+    })
+    .catch(function (err) {
+      console.warn('[Fullscreen] Failed:', err);
+      activateRotateFallback(wrapper);
+    });
+}
+
+function activateRotateFallback(wrapper) {
+  wrapper.classList.add('force-landscape');
+  setTimeout(function () {
+    if (wrapper.classList.contains('force-landscape')) {
+      wrapper.classList.add('show-hint');
+      setTimeout(function () {
+        wrapper.classList.remove('show-hint');
+      }, 3000);
     }
-  }, 300);
+  }, 1000);
 }
 
 // ===== CLOSE PLAYER VIEW =====
@@ -402,10 +434,13 @@ function closePlayerView() {
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
     }
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
   }
+  if (screen.orientation && screen.orientation.unlock) {
+    try { screen.orientation.unlock(); } catch (e) {}
+  }
+
+  const wrapper = document.getElementById('player-wrapper');
+  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
 
   document.getElementById('modal-video').src = '';
   document.getElementById('player-view').style.display = 'none';
@@ -420,10 +455,13 @@ function closeModal() {
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
     }
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
   }
+  if (screen.orientation && screen.orientation.unlock) {
+    try { screen.orientation.unlock(); } catch (e) {}
+  }
+
+  const wrapper = document.getElementById('player-wrapper');
+  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
 
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal-video').src = '';
@@ -461,6 +499,9 @@ function resetAllPages() {
 
   const video = document.getElementById('modal-video');
   if (video) video.src = '';
+
+  const wrapper = document.getElementById('player-wrapper');
+  if (wrapper) wrapper.classList.remove('force-landscape', 'show-hint');
 
   document.body.style.overflow = '';
 }
