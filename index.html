@@ -33,19 +33,21 @@
         <div class="login-error" id="login-error" style="display:none;"></div>
         <button type="submit" class="login-btn">Sign In</button>
       </form>
-      <p class="login-note">Kailangan ng tamang username at password para makapasok.</p>
+      <p class="login-note">Enter your username and password to continue.</p>
     </div>
   </div>
 
   <!-- ===== BUONG APP ===== -->
   <div id="app-content">
 
+    <!-- ===== NAVBAR ===== -->
     <nav class="navbar">
       <div class="nav-left">
         <a href="index.html" class="logo">Mobi<span>Flix</span></a>
       </div>
     </nav>
 
+    <!-- ===== HERO BANNER ===== -->
     <div class="hero" id="banner">
       <div class="hero-overlay"></div>
       <div class="hero-content">
@@ -62,8 +64,10 @@
       </div>
     </div>
 
+    <!-- ===== CONTENT ROWS ===== -->
     <div class="content">
 
+      <!-- ===== STREAMING PROVIDERS ===== -->
       <div class="row providers-row">
         <div class="row-header">
           <h2>📡 Streaming Providers</h2>
@@ -89,6 +93,7 @@
 
     </div>
 
+    <!-- ===== VIEW ALL PAGE ===== -->
     <div class="view-all-page" id="view-all-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeViewAll()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -103,6 +108,7 @@
       </div>
     </div>
 
+    <!-- ===== PROVIDER PAGE ===== -->
     <div class="view-all-page" id="provider-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeProviderPage()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -117,6 +123,7 @@
       </div>
     </div>
 
+    <!-- ===== MOVIES PAGE ===== -->
     <div class="movies-page" id="movies-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeMoviesPage()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -131,6 +138,7 @@
       </div>
     </div>
 
+    <!-- ===== SERIES PAGE ===== -->
     <div class="series-page" id="series-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeSeriesPage()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -145,6 +153,7 @@
       </div>
     </div>
 
+    <!-- ===== MY LIST PAGE ===== -->
     <div class="my-list-page" id="my-list-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeMyListPage()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -153,11 +162,12 @@
       <div class="my-list-grid" id="my-list-grid"></div>
       <div class="my-list-empty" id="my-list-empty" style="display:none;">
         <i class="fa fa-bookmark-o"></i>
-        <p>Wala ka pang na-add sa listahan.</p>
-        <p style="font-size: 13px; color: #666; margin-top: 8px;">Pumunta sa kahit anong movie at i-click ang "Add to List".</p>
+        <p>You haven't added anything to your list yet.</p>
+        <p style="font-size: 13px; color: #666; margin-top: 8px;">Go to any movie and click "Add to List".</p>
       </div>
     </div>
 
+    <!-- ===== MORE PAGE ===== -->
     <div class="more-page" id="more-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeMorePage()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -170,6 +180,7 @@
       </div>
     </div>
 
+    <!-- ===== SEARCH PAGE ===== -->
     <div class="search-modal" id="search-modal">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeSearchModal()"><i class="fa fa-arrow-left"></i> Back</button>
@@ -182,6 +193,7 @@
       <div class="results" id="search-results"></div>
     </div>
 
+    <!-- ===== DETAILS MODAL ===== -->
     <div class="modal" id="modal">
       <div class="modal-content">
 
@@ -233,6 +245,7 @@
       </div>
     </div>
 
+    <!-- ===== BOTTOM NAVIGATION BAR ===== -->
     <div class="bottom-nav">
       <a class="bottom-nav-item active" onclick="goHome()">
         <i class="fa fa-home"></i>
@@ -260,6 +273,7 @@
       </a>
     </div>
 
+    <!-- ===== FOOTER ===== -->
     <footer class="footer">
       <div class="footer-content">
         <p>&copy; 2026 MobiFlix. All rights reserved.</p>
@@ -271,6 +285,6 @@
       </div>
     </footer>
 
-  </div>
+  </div><!-- /#app-content -->
 </body>
 </html>
