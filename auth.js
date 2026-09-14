@@ -6,7 +6,7 @@
 
 // 👇 DITO MO ILALAGAY YUNG MGA USERNAME AT PASSWORD
 const USERS = [
-  { username: 'admin', password: 'mobiflix2026' }
+  { username: 'mobiflix', password: '8888' }
 ];
 
 // Ilang araw bago ma-expire yung login session
