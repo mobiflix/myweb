@@ -72,7 +72,7 @@ function hideLoginScreen() {
 }
 
 function handleLogout() {
-  if (confirm('Sigurado ka bang gusto mong mag-log out?')) {
+  if (confirm('Are you sure you want to log out?')) {
     logout();
     showLoginScreen();
   }
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const errorEl = document.getElementById('login-error');
 
       if (!username || !password) {
-        errorEl.textContent = 'Ilagay ang username at password.';
+        errorEl.textContent = 'Please enter your username and password.';
         errorEl.style.display = 'block';
         return;
       }
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
         errorEl.style.display = 'none';
         hideLoginScreen();
       } else {
-        errorEl.textContent = 'Mali ang username o password. Subukan muli.';
+        errorEl.textContent = 'Incorrect username or password. Please try again.';
         errorEl.style.display = 'block';
         document.getElementById('login-password').value = '';
       }
