@@ -8,6 +8,11 @@
   <link rel="preload" href="home.css" as="style">
   <link rel="preload" href="home.js" as="script">
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e50914">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MobiFlix">
+<link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script defer src="auth.js"></script>
   <script defer src="home.js"></script>
@@ -284,6 +289,21 @@
         </div>
       </div>
     </footer>
+      <!-- ===== PWA SERVICE WORKER REGISTRATION ===== -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(reg) {
+            console.log('[PWA] Service Worker registered:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('[PWA] Service Worker failed:', err);
+          });
+      });
+    }
+  </script>
+</body>
 
   </div><!-- /#app-content -->
 </body>
