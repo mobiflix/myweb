@@ -829,3 +829,27 @@ body.locked {
   .login-logo { font-size: 26px; }
   .login-box h2 { font-size: 20px; }
 }
+/* Pilitin maging landscape ang player sa mobile view */
+@media screen and (max-width: 768px) {
+  #player-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 99999;
+    display: none;
+  }
+  
+  /* I-rotate ang wrapper para maging landscape display sa portrait mode */
+  #player-wrapper {
+    width: 100vh;
+    height: 100vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
+}
