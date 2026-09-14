@@ -38,56 +38,19 @@ const SERIES_ENDPOINTS = [
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' }
 ];
 
-// ===== GENRE MAP =====
+// ===== GENRE MAP (Movies at TV Shows na lang) =====
 const GENRE_MAP = {
-  movie: { name: 'Trending Movies', type: 'trending', media: 'movie', icon: '🔥' },
-  tv: { name: 'Trending TV Shows', type: 'trending', media: 'tv', icon: '📺' },
-  action: { name: 'Action', id: 28, icon: '💥' },
-  kids: { name: 'Kids', id: 10751, icon: '👶' },
-  horror: { name: 'Horror', id: 27, icon: '👻' },
-  scifi: { name: 'Sci-Fi', id: 878, icon: '🚀' },
-  comedy: { name: 'Comedy', id: 35, icon: '😂' },
-  romance: { name: 'Romance', id: 10749, icon: '💕' },
-  drama: { name: 'Drama', id: 18, icon: '🎭' },
-  thriller: { name: 'Thriller', id: 53, icon: '🕵️' },
-  fantasy: { name: 'Fantasy', id: 14, icon: '🧙' },
-  mystery: { name: 'Mystery', id: 9648, icon: '🔍' }
+  movie: { name: 'Movies', type: 'trending', media: 'movie', icon: '🔥' },
+  tv:    { name: 'TV Shows', type: 'trending', media: 'tv', icon: '📺' }
 };
-
-const GENRES = [
-  { name: 'Action', id: 28, container: 'action-list', key: 'action' },
-  { name: 'Kids', id: 10751, container: 'kids-list', key: 'kids' },
-  { name: 'Horror', id: 27, container: 'horror-list', key: 'horror' },
-  { name: 'Sci-Fi', id: 878, container: 'scifi-list', key: 'scifi' },
-  { name: 'Comedy', id: 35, container: 'comedy-list', key: 'comedy' },
-  { name: 'Romance', id: 10749, container: 'romance-list', key: 'romance' },
-  { name: 'Drama', id: 18, container: 'drama-list', key: 'drama' },
-  { name: 'Thriller', id: 53, container: 'thriller-list', key: 'thriller' },
-  { name: 'Fantasy', id: 14, container: 'fantasy-list', key: 'fantasy' },
-  { name: 'Mystery', id: 9648, container: 'mystery-list', key: 'mystery' }
-];
 
 let currentItem;
 let bannerItem;
 let currentView = 'details';
 
-let pages = {
-  movie: 1, tv: 1,
-  action: 1, kids: 1, horror: 1, scifi: 1, comedy: 1, romance: 1,
-  drama: 1, thriller: 1, fantasy: 1, mystery: 1
-};
-
-let loading = {
-  movie: false, tv: false,
-  action: false, kids: false, horror: false, scifi: false, comedy: false, romance: false,
-  drama: false, thriller: false, fantasy: false, mystery: false
-};
-
-let maxPages = {
-  movie: 500, tv: 500,
-  action: 500, kids: 500, horror: 500, scifi: 500, comedy: 500, romance: 500,
-  drama: 500, thriller: 500, fantasy: 500, mystery: 500
-};
+let pages = { movie: 1, tv: 1 };
+let loading = { movie: false, tv: false };
+let maxPages = { movie: 500, tv: 500 };
 
 let viewAllState = {
   key: null, page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
@@ -113,28 +76,29 @@ let seriesPageState = {
   page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
-// ===== FETCH =====
+// ===== FETCH: TRENDING (sikat ngayong linggo) =====
 async function fetchTrending(type, page) {
   let url;
   if (type === 'movie') {
-    url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US&with_release_type=4&watch_region=US`;
+    url = `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${page}`;
   } else {
-    url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US`;
+    url = `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`;
   }
   const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-async function fetchByGenreMovie(genreId, page) {
+// ===== FETCH: TOP RATED (para sa malalim na scroll) =====
+async function fetchTopRated(type, page) {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&with_original_language=en&with_origin_country=US&with_release_type=4&watch_region=US`
+    `${BASE_URL}/${type}/top_rated?api_key=${API_KEY}&page=${page}`
   );
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH BY PROVIDER (Netflix, Disney+, etc.) =====
+// ===== FETCH BY PROVIDER =====
 async function fetchByProvider(providerId, mediaType, page) {
   const res = await fetch(
     `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
@@ -143,7 +107,7 @@ async function fetchByProvider(providerId, mediaType, page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== DISPLAY =====
+// ===== DISPLAY BANNER =====
 function displayBanner(item) {
   bannerItem = item;
   const banner = document.getElementById('banner');
@@ -189,7 +153,7 @@ function appendToList(items, containerId) {
   });
 }
 
-// ===== STREAMING PROVIDERS RENDER (may brand colors) =====
+// ===== STREAMING PROVIDERS RENDER =====
 function renderProviders() {
   const container = document.getElementById('providers-list');
   if (!container) return;
@@ -589,15 +553,11 @@ async function searchTMDB() {
   }
 
   searchTimeout = setTimeout(async () => {
-    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&with_original_language=en`);
+    const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
     const data = await res.json();
     const filtered = (data.results || []).filter(function(item) {
-      if (item.original_language !== 'en') return false;
       if (!item.poster_path) return false;
-      if (item.origin_country && item.origin_country.length > 0) {
-        return item.origin_country.includes('US');
-      }
-      return true;
+      return item.media_type === 'movie' || item.media_type === 'tv';
     });
 
     const container = document.getElementById('search-results');
@@ -683,7 +643,10 @@ async function loadMoviesPageBatch() {
   document.getElementById('movies-page-loading').style.display = 'block';
 
   try {
-    const data = await fetchTrending('movie', moviesPageState.page);
+    const data = moviesPageState.page <= 2
+      ? await fetchTrending('movie', moviesPageState.page)
+      : await fetchTopRated('movie', moviesPageState.page);
+
     moviesPageState.maxPages = data.total_pages;
     moviesPageState.page += 1;
 
@@ -692,6 +655,7 @@ async function loadMoviesPageBatch() {
       if (!item.poster_path) return;
       if (moviesPageState.seenIds.has(item.id)) return;
       moviesPageState.seenIds.add(item.id);
+      item.media_type = 'movie';
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
@@ -765,7 +729,10 @@ async function loadSeriesPageBatch() {
   document.getElementById('series-page-loading').style.display = 'block';
 
   try {
-    const data = await fetchTrending('tv', seriesPageState.page);
+    const data = seriesPageState.page <= 2
+      ? await fetchTrending('tv', seriesPageState.page)
+      : await fetchTopRated('tv', seriesPageState.page);
+
     seriesPageState.maxPages = data.total_pages;
     seriesPageState.page += 1;
 
@@ -774,6 +741,7 @@ async function loadSeriesPageBatch() {
       if (!item.poster_path) return;
       if (seriesPageState.seenIds.has(item.id)) return;
       seriesPageState.seenIds.add(item.id);
+      item.media_type = 'tv';
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
@@ -837,9 +805,7 @@ function openViewAll(key) {
   page.scrollTop = 0;
 
   page.removeEventListener('scroll', viewAllScrollHandler);
-  page.removeEventListener('touchmove', viewAllScrollHandler);
   page.addEventListener('scroll', viewAllScrollHandler, { passive: true });
-  page.addEventListener('touchmove', viewAllScrollHandler, { passive: true });
 
   loadViewAllBatch();
 }
@@ -854,10 +820,10 @@ async function loadViewAllBatch() {
 
   try {
     let data;
-    if (genre.type === 'trending') {
+    if (viewAllState.page <= 2) {
       data = await fetchTrending(genre.media, viewAllState.page);
     } else {
-      data = await fetchByGenreMovie(genre.id, viewAllState.page);
+      data = await fetchTopRated(genre.media, viewAllState.page);
     }
 
     viewAllState.maxPages = data.total_pages;
@@ -867,6 +833,7 @@ async function loadViewAllBatch() {
       if (!item.poster_path) return;
       if (viewAllState.seenIds.has(item.id)) return;
       viewAllState.seenIds.add(item.id);
+      item.media_type = genre.media;
       const img = document.createElement('img');
       img.src = `${IMG_W500}${item.poster_path}`;
       img.alt = item.title || item.name;
@@ -922,10 +889,14 @@ async function loadMore(category) {
   try {
     let result, containerId;
     if (category === 'movie') {
-      result = await fetchTrending('movie', pages[category]);
+      result = pages[category] <= 2
+        ? await fetchTrending('movie', pages[category])
+        : await fetchTopRated('movie', pages[category]);
       containerId = 'movies-list';
     } else if (category === 'tv') {
-      result = await fetchTrending('tv', pages[category]);
+      result = pages[category] <= 2
+        ? await fetchTrending('tv', pages[category])
+        : await fetchTopRated('tv', pages[category]);
       containerId = 'tvshows-list';
     }
     if (result && result.results.length > 0) {
@@ -939,37 +910,10 @@ async function loadMore(category) {
   }
 }
 
-async function loadMoreGenre(category, genreId, containerId) {
-  if (loading[category] || pages[category] >= maxPages[category]) return;
-  loading[category] = true;
-  pages[category] += 1;
-  try {
-    const data = await fetchByGenreMovie(genreId, pages[category]);
-    if (data.results.length > 0) {
-      maxPages[category] = data.total_pages;
-      appendToList(data.results, containerId);
-    }
-  } catch (err) {
-    console.error('[Genre]', err);
-  } finally {
-    loading[category] = false;
-  }
-}
-
 function attachScrollListeners() {
   const rows = [
     { id: 'movies-list', category: 'movie' },
-    { id: 'tvshows-list', category: 'tv' },
-    { id: 'action-list', category: 'action', genre: 28 },
-    { id: 'kids-list', category: 'kids', genre: 10751 },
-    { id: 'horror-list', category: 'horror', genre: 27 },
-    { id: 'scifi-list', category: 'scifi', genre: 878 },
-    { id: 'comedy-list', category: 'comedy', genre: 35 },
-    { id: 'romance-list', category: 'romance', genre: 10749 },
-    { id: 'drama-list', category: 'drama', genre: 18 },
-    { id: 'thriller-list', category: 'thriller', genre: 53 },
-    { id: 'fantasy-list', category: 'fantasy', genre: 14 },
-    { id: 'mystery-list', category: 'mystery', genre: 9648 }
+    { id: 'tvshows-list', category: 'tv' }
   ];
 
   rows.forEach(function(row) {
@@ -977,11 +921,7 @@ function attachScrollListeners() {
     if (!el) return;
     el.addEventListener('scroll', function() {
       if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 300) {
-        if (row.genre) {
-          loadMoreGenre(row.category, row.genre, row.id);
-        } else {
-          loadMore(row.category);
-        }
+        loadMore(row.category);
       }
     }, { passive: true });
   });
@@ -1004,16 +944,6 @@ async function init() {
     }
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
-
-    for (let i = 0; i < GENRES.length; i++) {
-      const genre = GENRES[i];
-      try {
-        const data = await fetchByGenreMovie(genre.id, 1);
-        appendToList(data.results, genre.container);
-      } catch (err) {
-        console.error('[MobiFlix] Genre error:', genre.name, err);
-      }
-    }
 
     attachScrollListeners();
     console.log('[MobiFlix] Ready.');
