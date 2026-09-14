@@ -358,7 +358,7 @@ function toggleAddToList() {
   updateBookmarkUI(currentItem);
 }
 
-// ===== PLAY NOW (FIXED) =====
+// ===== PLAY NOW (MOBILE CHROME OPTIMIZED) =====
 function playNow() {
   if (!currentItem) return;
 
@@ -374,23 +374,20 @@ function playNow() {
   document.getElementById('details-view').style.display = 'none';
   document.getElementById('player-view').style.display = 'block';
 
-  setTimeout(function() {
-    const wrapper = document.getElementById('player-wrapper');
-    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-
-    if (!isFullscreen && wrapper) {
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen().catch(function(err) {
-          console.log("Fullscreen error:", err);
-        });
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-      }
+  // Direktang hinihingi ang fullscreen sa mobile nang walang setTimeout para hindi ma-block ni Chrome
+  const wrapper = document.getElementById('player-wrapper');
+  if (wrapper) {
+    if (wrapper.requestFullscreen) {
+      wrapper.requestFullscreen().catch(function(err) {
+        console.log("Fullscreen restriction or error:", err);
+      });
+    } else if (wrapper.webkitRequestFullscreen) {
+      wrapper.webkitRequestFullscreen();
     }
-  }, 300);
+  }
 }
 
-// ===== CLOSE PLAYER VIEW (FIXED) =====
+// ===== CLOSE PLAYER VIEW =====
 function closePlayerView() {
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
@@ -407,7 +404,7 @@ function closePlayerView() {
   document.getElementById('details-view').style.display = 'block';
 }
 
-// ===== CLOSE MODAL (FIXED) =====
+// ===== CLOSE MODAL =====
 function closeModal() {
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     if (document.exitFullscreen) {
