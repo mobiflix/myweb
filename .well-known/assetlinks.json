@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.mobiflix.twa",
+        "sha256_cert_fingerprints": ["70:44:DE:74:9D:C6:6C:B5:47:19:E1:DA:5E:08:E3:76:9E:91:75:78:97:71:0D:CC:FB:91:CA:02:D6:89:E2:35"]
+      }
+    }]
