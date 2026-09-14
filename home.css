@@ -597,70 +597,42 @@ body {
   height: 100vh; width: 100vw; aspect-ratio: auto;
 }
 
-/* ===== AUTO-LANDSCAPE FALLBACK ===== */
-.player-wrapper.force-landscape {
-  position: fixed !important;
-  top: 0 !important;
-  left: 100vw !important;
-  width: 100vh !important;
-  height: 100vw !important;
-  transform: rotate(90deg);
-  transform-origin: left top;
-  z-index: 2147483646;
-  border-radius: 0;
-  background: #000;
-}
-
-.player-wrapper.force-landscape iframe {
-  width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: auto !important;
-}
-
-.player-wrapper.force-landscape .fs-back-btn {
-  display: flex !important;
-  position: fixed !important;
-  top: 12px !important;
-  left: 12px !important;
-  z-index: 2147483647 !important;
-  transform: rotate(-90deg);
-  transform-origin: left top;
-  margin-left: -40px;
-  margin-top: 40px;
-}
-
 /* ===== ROTATE HINT OVERLAY ===== */
 .rotate-hint {
   display: none;
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 0.95);
   color: #fff;
-  z-index: 20;
+  z-index: 999999;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 24px;
   text-align: center;
-  padding: 30px;
-  backdrop-filter: blur(4px);
+  padding: 40px 30px;
+  backdrop-filter: blur(8px);
 }
 
 .rotate-hint i {
-  font-size: 72px;
+  font-size: 80px;
   color: #e50914;
   animation: rotatePhone 2s ease-in-out infinite;
 }
 
 .rotate-hint p {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.6;
-  max-width: 320px;
-  color: #ddd;
+  max-width: 340px;
+  color: #eee;
 }
 
 .rotate-hint p strong {
   color: #e50914;
+  display: block;
+  margin-top: 6px;
+  font-size: 22px;
+  letter-spacing: 1px;
 }
 
 @keyframes rotatePhone {
@@ -888,8 +860,9 @@ body.locked {
 
   .more-list a { font-size: 16px; padding: 14px 16px; }
 
-  .rotate-hint i { font-size: 56px; }
-  .rotate-hint p { font-size: 14px; }
+  .rotate-hint i { font-size: 60px; }
+  .rotate-hint p { font-size: 15px; }
+  .rotate-hint p strong { font-size: 18px; }
 }
 
 @media (max-width: 480px) {
