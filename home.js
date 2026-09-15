@@ -3,6 +3,9 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
+// ===== INDIAN LANGUAGES TO EXCLUDE =====
+const INDIAN_LANGS = ['hi', 'ta', 'te', 'ml', 'kn', 'bn', 'mr', 'pa', 'gu', 'or', 'as', 'ur', 'sa', 'ne', 'si'];
+
 // ===== STREAMING PROVIDERS =====
 const STREAMING_PROVIDERS = [
   { name: 'Netflix', id: 8, type: 'provider', color: '#e50914' },
@@ -38,11 +41,24 @@ const SERIES_ENDPOINTS = [
   { name: 'VidSrc.me', url: 'https://vidsrc.me/embed/tv/' }
 ];
 
-// ===== GENRE MAP (Movies at TV Shows na lang) =====
+// ===== GENRE MAP =====
 const GENRE_MAP = {
   movie: { name: 'Movies', type: 'trending', media: 'movie', icon: '🔥' },
   tv:    { name: 'TV Shows', type: 'trending', media: 'tv', icon: '📺' }
 };
+
+// ===== GENRE ROWS (Discover) =====
+const GENRE_ROWS = [
+  { id: 28,    name: 'Action',        icon: '💥', media: 'movie' },
+  { id: 35,    name: 'Comedy',        icon: '😂', media: 'movie' },
+  { id: 27,    name: 'Horror',        icon: '👻', media: 'movie' },
+  { id: 878,   name: 'Sci-Fi',        icon: '🚀', media: 'movie' },
+  { id: 10749, name: 'Romance',       icon: '💕', media: 'movie' },
+  { id: 16,    name: 'Animation',     icon: '🎨', media: 'movie' },
+  { id: 80,    name: 'Crime',         icon: '🕵️', media: 'movie' },
+  { id: 10765, name: 'Sci-Fi & Fantasy', icon: '✨', media: 'tv' },
+  { id: 18,    name: 'Drama',         icon: '🎭', media: 'tv' }
+];
 
 let currentItem;
 let bannerItem;
@@ -76,33 +92,49 @@ let seriesPageState = {
   page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set()
 };
 
-// ===== FETCH: TRENDING (sikat ngayong linggo) =====
-async function fetchTrending(type, page) {
-  let url;
-  if (type === 'movie') {
-    url = `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${page}`;
-  } else {
-    url = `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${page}`;
-  }
-  const res = await fetch(url);
-  const data = await res.json();
-  return { results: data.results || [], total_pages: data.total_pages || 1 };
+// ===== HELPER: FILTER INDIAN =====
+function filterNonIndian(results) {
+  return (results || []).filter(function(item) {
+    return !INDIAN_LANGS.includes(item.original_language);
+  });
 }
 
-// ===== FETCH: TOP RATED (para sa malalim na scroll) =====
+// ===== FETCH: TRENDING =====
+async function fetchTrending(type, page) {
+  const url = `${BASE_URL}/trending/${type}/week?api_key=${API_KEY}&page=${page}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return { results: filterNonIndian(data.results), total_pages: data.total_pages || 1 };
+}
+
+// ===== FETCH: TOP RATED =====
 async function fetchTopRated(type, page) {
-  const res = await fetch(
-    `${BASE_URL}/${type}/top_rated?api_key=${API_KEY}&page=${page}`
-  );
+  const res = await fetch(`${BASE_URL}/${type}/top_rated?api_key=${API_KEY}&page=${page}`);
+  const data = await res.json();
+  return { results: filterNonIndian(data.results), total_pages: data.total_pages || 1 };
+}
+
+// ===== FETCH: DISCOVER BY GENRE =====
+async function fetchByGenre(mediaType, genreId, page) {
+  const url = `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}` +
+    `&with_genres=${genreId}` +
+    `&sort_by=popularity.desc` +
+    `&page=${page}` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}`;
+  const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
 // ===== FETCH BY PROVIDER =====
 async function fetchByProvider(providerId, mediaType, page) {
-  const res = await fetch(
-    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}&with_watch_providers=${providerId}&watch_region=US&page=${page}&sort_by=popularity.desc&with_original_language=en`
-  );
+  const url = `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}` +
+    `&with_watch_providers=${providerId}` +
+    `&watch_region=US` +
+    `&page=${page}` +
+    `&sort_by=popularity.desc` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}`;
+  const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
@@ -135,7 +167,9 @@ function displayBanner(item) {
 }
 
 function playBanner() { if (bannerItem) showDetails(bannerItem); }
+function showBannerDetails() { if (bannerItem) showDetails(bannerItem); }
 
+// ===== APPEND TO LIST (HORIZONTAL) =====
 function appendToList(items, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -150,6 +184,34 @@ function appendToList(items, containerId) {
     img.dataset.id = item.id;
     img.onclick = () => showDetails(item);
     container.appendChild(img);
+  });
+}
+
+// ===== TOP 10 RENDERER =====
+function renderTop10(items, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  items.slice(0, 10).forEach(function(item, index) {
+    if (!item.poster_path) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'top10-item';
+    wrapper.onclick = function() { showDetails(item); };
+
+    const number = document.createElement('div');
+    number.className = 'top10-number';
+    number.textContent = index + 1;
+
+    const img = document.createElement('img');
+    img.src = `${IMG_W500}${item.poster_path}`;
+    img.alt = item.title || item.name;
+    img.loading = 'lazy';
+
+    wrapper.appendChild(number);
+    wrapper.appendChild(img);
+    container.appendChild(wrapper);
   });
 }
 
@@ -186,6 +248,143 @@ function renderProviders() {
     };
     container.appendChild(card);
   });
+}
+
+// ===== GENRE ROWS RENDER =====
+async function renderGenreRows() {
+  const container = document.getElementById('genre-rows');
+  if (!container) return;
+  container.innerHTML = '';
+
+  for (const genre of GENRE_ROWS) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'row';
+
+    const header = document.createElement('div');
+    header.className = 'row-header';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = `${genre.icon} ${genre.name}`;
+
+    const viewAllBtn = document.createElement('button');
+    viewAllBtn.className = 'view-all-btn';
+    viewAllBtn.textContent = 'View All →';
+    viewAllBtn.onclick = function() { openGenrePage(genre); };
+
+    header.appendChild(h2);
+    header.appendChild(viewAllBtn);
+
+    const scrollDiv = document.createElement('div');
+    scrollDiv.className = 'list horizontal-scroll';
+    scrollDiv.id = `genre-${genre.media}-${genre.id}`;
+
+    rowDiv.appendChild(header);
+    rowDiv.appendChild(scrollDiv);
+    container.appendChild(rowDiv);
+
+    // Load content
+    try {
+      const data = await fetchByGenre(genre.media, genre.id, 1);
+      data.results.forEach(function(item) {
+        item.media_type = genre.media;
+      });
+      appendToList(data.results, scrollDiv.id);
+    } catch (err) {
+      console.error('[GenreRow]', err);
+    }
+  }
+}
+
+// ===== OPEN GENRE PAGE =====
+function openGenrePage(genre) {
+  resetAllPages();
+  setActiveNav('home');
+
+  const page = document.getElementById('genre-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  genrePageState = {
+    genre: genre,
+    page: 1,
+    maxPages: 500,
+    loading: false,
+    hasMore: true,
+    initialized: true,
+    seenIds: new Set()
+  };
+
+  document.getElementById('genre-page-title').textContent = `${genre.icon} ${genre.name}`;
+  document.getElementById('genre-page-grid').innerHTML = '';
+  document.getElementById('genre-page-end').style.display = 'none';
+  document.getElementById('genre-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', genrePageScrollHandler);
+  page.addEventListener('scroll', genrePageScrollHandler, { passive: true });
+
+  loadGenrePageBatch();
+}
+
+function closeGenrePage() {
+  const page = document.getElementById('genre-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
+  document.getElementById('genre-page-grid').innerHTML = '';
+  if (typeof genrePageState !== 'undefined') genrePageState.initialized = false;
+  setActiveNav('home');
+}
+
+let genrePageState = {};
+
+function genrePageScrollHandler() {
+  if (!genrePageState.initialized) return;
+  if (genrePageState.loading) return;
+  if (!genrePageState.hasMore) return;
+  const page = document.getElementById('genre-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadGenrePageBatch();
+  }
+}
+
+async function loadGenrePageBatch() {
+  if (genrePageState.loading || !genrePageState.hasMore) return;
+  genrePageState.loading = true;
+  document.getElementById('genre-page-loading').style.display = 'block';
+
+  try {
+    const genre = genrePageState.genre;
+    const data = await fetchByGenre(genre.media, genre.id, genrePageState.page);
+
+    genrePageState.maxPages = data.total_pages;
+    genrePageState.page += 1;
+
+    const grid = document.getElementById('genre-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (genrePageState.seenIds.has(item.id)) return;
+      genrePageState.seenIds.add(item.id);
+      item.media_type = genre.media;
+
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (genrePageState.page > genrePageState.maxPages) {
+      genrePageState.hasMore = false;
+      document.getElementById('genre-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[GenrePage]', err);
+  } finally {
+    genrePageState.loading = false;
+    document.getElementById('genre-page-loading').style.display = 'none';
+  }
 }
 
 // ===== PROVIDER PAGE =====
@@ -441,7 +640,8 @@ function resetAllPages() {
     'series-page',
     'my-list-page',
     'more-page',
-    'search-modal'
+    'search-modal',
+    'genre-page'
   ];
   pagesToClose.forEach(function(id) {
     const el = document.getElementById(id);
@@ -555,7 +755,7 @@ async function searchTMDB() {
   searchTimeout = setTimeout(async () => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
     const data = await res.json();
-    const filtered = (data.results || []).filter(function(item) {
+    const filtered = filterNonIndian(data.results).filter(function(item) {
       if (!item.poster_path) return false;
       return item.media_type === 'movie' || item.media_type === 'tv';
     });
@@ -934,18 +1134,33 @@ async function init() {
 
     renderProviders();
 
-    const moviesData = await fetchTrending('movie', 1);
-    const tvData = await fetchTrending('tv', 1);
+    const [moviesData, tvData] = await Promise.all([
+      fetchTrending('movie', 1),
+      fetchTrending('tv', 1)
+    ]);
+
     maxPages.movie = moviesData.total_pages;
     maxPages.tv = tvData.total_pages;
 
+    // Hero banner
     if (moviesData.results.length > 0) {
-      displayBanner(moviesData.results[Math.floor(Math.random() * moviesData.results.length)]);
+      const randomIndex = Math.floor(Math.random() * Math.min(5, moviesData.results.length));
+      displayBanner(moviesData.results[randomIndex]);
     }
+
+    // Top 10 rows
+    renderTop10(moviesData.results, 'top10-movies');
+    renderTop10(tvData.results, 'top10-tv');
+
+    // Trending rows
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
 
     attachScrollListeners();
+
+    // Genre rows (async, hindi blocking)
+    renderGenreRows();
+
     console.log('[MobiFlix] Ready.');
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
@@ -965,6 +1180,7 @@ document.addEventListener('keydown', function(e) {
     closeSeriesPage();
     closeMorePage();
     closeMyListPage();
+    closeGenrePage();
   }
 });
 
