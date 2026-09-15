@@ -1,5 +1,5 @@
 {
-  "version": "v3",
+  "version": "v4",
   "released": "2026-09-15",
-  "notes": "Cache-busting + auto-update + Top 10 + Genre rows"
+  "notes": "Genres moved to More + Ongoing & Completed TV Shows on Homepage"
 }
