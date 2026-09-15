@@ -8,15 +8,15 @@
   <meta http-equiv="Expires" content="0">
   <title>MobiFlix</title>
 
-  <link rel="stylesheet" href="home.css?v=5">
-  <link rel="manifest" href="manifest.json?v=5">
+  <link rel="stylesheet" href="home.css?v=6">
+  <link rel="manifest" href="manifest.json?v=6">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script defer src="auth.js?v=5"></script>
-  <script defer src="home.js?v=5"></script>
+  <script defer src="auth.js?v=6"></script>
+  <script defer src="home.js?v=6"></script>
 
   <script>
     (function() {
-      const CURRENT_VERSION = 'v5';
+      const CURRENT_VERSION = 'v6';
       const CHECK_INTERVAL = 60000;
 
       async function checkForUpdates() {
@@ -126,15 +126,6 @@
         <div class="top10-scroll" id="top10-tv"></div>
       </div>
 
-      <!-- TRENDING MOVIES -->
-      <div class="row">
-        <div class="row-header">
-          <h2>🎬 Trending Movies</h2>
-          <button class="view-all-btn" onclick="openViewAll('movie')">View All →</button>
-        </div>
-        <div class="list horizontal-scroll" id="movies-list"></div>
-      </div>
-
       <!-- ONGOING TV SHOWS -->
       <div class="row">
         <div class="row-header">
@@ -151,15 +142,6 @@
           <button class="view-all-btn" onclick="openCompletedPage()">View All →</button>
         </div>
         <div class="list horizontal-scroll" id="completed-tv-list"></div>
-      </div>
-
-      <!-- TRENDING TV -->
-      <div class="row">
-        <div class="row-header">
-          <h2>📺 Trending TV Shows</h2>
-          <button class="view-all-btn" onclick="openViewAll('tv')">View All →</button>
-        </div>
-        <div class="list horizontal-scroll" id="tvshows-list"></div>
       </div>
 
     </div>
