@@ -116,7 +116,7 @@ async function fetchTopRated(type, page) {
   return { results: filterNonIndian(data.results), total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH: ONGOING TV SHOWS (TAMANG STATUS) =====
+// ===== FETCH: ONGOING TV SHOWS =====
 // Status 0 = Returning Series, 1 = Planned
 async function fetchOngoingTV(page) {
   const today = new Date().toISOString().split('T')[0];
@@ -132,7 +132,7 @@ async function fetchOngoingTV(page) {
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH: COMPLETED TV SHOWS (TAMANG STATUS) =====
+// ===== FETCH: COMPLETED TV SHOWS =====
 // Status 3 = Ended, 4 = Cancelled
 async function fetchCompletedTV(page) {
   const url = `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
@@ -1208,52 +1208,6 @@ function viewAllScrollHandler() {
   }, 150);
 }
 
-// ===== HOMEPAGE INFINITE SCROLL =====
-async function loadMore(category) {
-  if (loading[category] || pages[category] >= maxPages[category]) return;
-  loading[category] = true;
-  pages[category] += 1;
-  try {
-    let result, containerId;
-    if (category === 'movie') {
-      result = pages[category] <= 2
-        ? await fetchTrending('movie', pages[category])
-        : await fetchTopRated('movie', pages[category]);
-      containerId = 'movies-list';
-    } else if (category === 'tv') {
-      result = pages[category] <= 2
-        ? await fetchTrending('tv', pages[category])
-        : await fetchTopRated('tv', pages[category]);
-      containerId = 'tvshows-list';
-    }
-    if (result && result.results.length > 0) {
-      maxPages[category] = result.total_pages;
-      appendToList(result.results, containerId);
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading[category] = false;
-  }
-}
-
-function attachScrollListeners() {
-  const rows = [
-    { id: 'movies-list', category: 'movie' },
-    { id: 'tvshows-list', category: 'tv' }
-  ];
-
-  rows.forEach(function(row) {
-    const el = document.getElementById(row.id);
-    if (!el) return;
-    el.addEventListener('scroll', function() {
-      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 300) {
-        loadMore(row.category);
-      }
-    }, { passive: true });
-  });
-}
-
 // ===== INIT =====
 async function init() {
   try {
@@ -1269,9 +1223,6 @@ async function init() {
       fetchCompletedTV(1)
     ]);
 
-    maxPages.movie = moviesData.total_pages;
-    maxPages.tv = tvData.total_pages;
-
     if (moviesData.results.length > 0) {
       const randomIndex = Math.floor(Math.random() * Math.min(5, moviesData.results.length));
       displayBanner(moviesData.results[randomIndex]);
@@ -1280,9 +1231,6 @@ async function init() {
     renderTop10(moviesData.results, 'top10-movies');
     renderTop10(tvData.results, 'top10-tv');
 
-    appendToList(moviesData.results, 'movies-list');
-    appendToList(tvData.results, 'tvshows-list');
-
     // Ongoing TV Shows
     ongoingData.results.forEach(function(item) { item.media_type = 'tv'; });
     appendToList(ongoingData.results, 'ongoing-tv-list');
@@ -1290,8 +1238,6 @@ async function init() {
     // Completed TV Shows
     completedData.results.forEach(function(item) { item.media_type = 'tv'; });
     appendToList(completedData.results, 'completed-tv-list');
-
-    attachScrollListeners();
 
     console.log('[MobiFlix] Ready. Ongoing:', ongoingData.results.length, 'Completed:', completedData.results.length);
   } catch (err) {
