@@ -47,17 +47,35 @@ const GENRE_MAP = {
   tv:    { name: 'TV Shows', type: 'trending', media: 'tv', icon: '📺' }
 };
 
-// ===== GENRE ROWS =====
-const GENRE_ROWS = [
-  { id: 28,    name: 'Action',        icon: '💥', media: 'movie' },
-  { id: 35,    name: 'Comedy',        icon: '😂', media: 'movie' },
-  { id: 27,    name: 'Horror',        icon: '👻', media: 'movie' },
-  { id: 878,   name: 'Sci-Fi',        icon: '🚀', media: 'movie' },
-  { id: 10749, name: 'Romance',       icon: '💕', media: 'movie' },
-  { id: 16,    name: 'Animation',     icon: '🎨', media: 'movie' },
-  { id: 80,    name: 'Crime',         icon: '🕵️', media: 'movie' },
+// ===== GENRE LIST (para sa More page) =====
+const GENRE_LIST = [
+  { id: 28,    name: 'Action',           icon: '💥', media: 'movie' },
+  { id: 12,    name: 'Adventure',        icon: '🗺️', media: 'movie' },
+  { id: 16,    name: 'Animation',        icon: '🎨', media: 'movie' },
+  { id: 35,    name: 'Comedy',           icon: '😂', media: 'movie' },
+  { id: 80,    name: 'Crime',            icon: '🕵️', media: 'movie' },
+  { id: 99,    name: 'Documentary',      icon: '📄', media: 'movie' },
+  { id: 18,    name: 'Drama',            icon: '🎭', media: 'movie' },
+  { id: 10751, name: 'Family',           icon: '👨‍👩‍👧', media: 'movie' },
+  { id: 14,    name: 'Fantasy',          icon: '🧙', media: 'movie' },
+  { id: 36,    name: 'History',          icon: '📜', media: 'movie' },
+  { id: 27,    name: 'Horror',           icon: '👻', media: 'movie' },
+  { id: 10402, name: 'Music',            icon: '🎵', media: 'movie' },
+  { id: 9648,  name: 'Mystery',          icon: '🔍', media: 'movie' },
+  { id: 10749, name: 'Romance',          icon: '💕', media: 'movie' },
+  { id: 878,   name: 'Sci-Fi',           icon: '🚀', media: 'movie' },
+  { id: 10770, name: 'TV Movie',         icon: '📺', media: 'movie' },
+  { id: 53,    name: 'Thriller',         icon: '😱', media: 'movie' },
+  { id: 10752, name: 'War',              icon: '⚔️', media: 'movie' },
+  { id: 37,    name: 'Western',          icon: '🤠', media: 'movie' },
+  { id: 10759, name: 'Action & Adventure', icon: '💥', media: 'tv' },
+  { id: 10762, name: 'Kids',             icon: '🧒', media: 'tv' },
+  { id: 10763, name: 'News',             icon: '📰', media: 'tv' },
+  { id: 10764, name: 'Reality',          icon: '📺', media: 'tv' },
   { id: 10765, name: 'Sci-Fi & Fantasy', icon: '✨', media: 'tv' },
-  { id: 18,    name: 'Drama',         icon: '🎭', media: 'tv' }
+  { id: 10766, name: 'Soap',             icon: '🧼', media: 'tv' },
+  { id: 10767, name: 'Talk',             icon: '💬', media: 'tv' },
+  { id: 10768, name: 'War & Politics',   icon: '⚔️', media: 'tv' }
 ];
 
 let currentItem;
@@ -73,6 +91,8 @@ let providerPageState = { providerId: null, providerName: '', providerType: 'pro
 let moviesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set() };
 let seriesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: false, seenIds: new Set() };
 let genrePageState = {};
+let ongoingPageState = {};
+let completedPageState = {};
 
 // ===== HELPER: FILTER INDIAN =====
 function filterNonIndian(results) {
@@ -94,6 +114,35 @@ async function fetchTopRated(type, page) {
   const res = await fetch(`${BASE_URL}/${type}/top_rated?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return { results: filterNonIndian(data.results), total_pages: data.total_pages || 1 };
+}
+
+// ===== FETCH: ONGOING TV SHOWS =====
+// Gumagamit ng discover filter para sa mga seryeng may bagong episode (hindi pa tapos)
+async function fetchOngoingTV(page) {
+  const today = new Date().toISOString().split('T')[0];
+  const url = `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
+    `&sort_by=popularity.desc` +
+    `&page=${page}` +
+    `&first_air_date.lte=${today}` +
+    `&vote_count.gte=50` +
+    `&with_status=0|3` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+// ===== FETCH: COMPLETED TV SHOWS =====
+async function fetchCompletedTV(page) {
+  const url = `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
+    `&sort_by=popularity.desc` +
+    `&page=${page}` +
+    `&with_status=2` +
+    `&vote_count.gte=100` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
 // ===== FETCH: DISCOVER BY GENRE =====
@@ -232,54 +281,24 @@ function renderProviders() {
   });
 }
 
-// ===== GENRE ROWS RENDER =====
-async function renderGenreRows() {
-  const container = document.getElementById('genre-rows');
+// ===== GENRES RENDER (para sa More page) =====
+function renderGenresInMore() {
+  const container = document.getElementById('more-genres-list');
   if (!container) return;
   container.innerHTML = '';
 
-  for (const genre of GENRE_ROWS) {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'row';
-
-    const header = document.createElement('div');
-    header.className = 'row-header';
-
-    const h2 = document.createElement('h2');
-    h2.textContent = `${genre.icon} ${genre.name}`;
-
-    const viewAllBtn = document.createElement('button');
-    viewAllBtn.className = 'view-all-btn';
-    viewAllBtn.textContent = 'View All →';
-    viewAllBtn.onclick = function() { openGenrePage(genre); };
-
-    header.appendChild(h2);
-    header.appendChild(viewAllBtn);
-
-    const scrollDiv = document.createElement('div');
-    scrollDiv.className = 'list horizontal-scroll';
-    scrollDiv.id = `genre-${genre.media}-${genre.id}`;
-
-    rowDiv.appendChild(header);
-    rowDiv.appendChild(scrollDiv);
-    container.appendChild(rowDiv);
-
-    try {
-      const data = await fetchByGenre(genre.media, genre.id, 1);
-      data.results.forEach(function(item) {
-        item.media_type = genre.media;
-      });
-      appendToList(data.results, scrollDiv.id);
-    } catch (err) {
-      console.error('[GenreRow]', err);
-    }
-  }
+  GENRE_LIST.forEach(function(genre) {
+    const link = document.createElement('a');
+    link.textContent = `${genre.icon} ${genre.name}`;
+    link.onclick = function() { openGenrePage(genre); };
+    container.appendChild(link);
+  });
 }
 
 // ===== OPEN GENRE PAGE =====
 function openGenrePage(genre) {
   resetAllPages();
-  setActiveNav('home');
+  setActiveNav('more');
 
   const page = document.getElementById('genre-page');
   page.classList.add('open');
@@ -312,7 +331,7 @@ function closeGenrePage() {
   page.scrollTop = 0;
   document.getElementById('genre-page-grid').innerHTML = '';
   if (genrePageState.initialized) genrePageState.initialized = false;
-  setActiveNav('home');
+  setActiveNav('more');
 }
 
 function genrePageScrollHandler() {
@@ -363,6 +382,160 @@ async function loadGenrePageBatch() {
   } finally {
     genrePageState.loading = false;
     document.getElementById('genre-page-loading').style.display = 'none';
+  }
+}
+
+// ===== ONGOING TV PAGE =====
+function openOngoingPage() {
+  resetAllPages();
+  setActiveNav('home');
+  const page = document.getElementById('ongoing-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  ongoingPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  document.getElementById('ongoing-page-grid').innerHTML = '';
+  document.getElementById('ongoing-page-end').style.display = 'none';
+  document.getElementById('ongoing-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', ongoingPageScrollHandler);
+  page.addEventListener('scroll', ongoingPageScrollHandler, { passive: true });
+
+  loadOngoingPageBatch();
+}
+
+function closeOngoingPage() {
+  const page = document.getElementById('ongoing-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
+  document.getElementById('ongoing-page-grid').innerHTML = '';
+  ongoingPageState.initialized = false;
+  setActiveNav('home');
+}
+
+function ongoingPageScrollHandler() {
+  if (!ongoingPageState.initialized) return;
+  if (ongoingPageState.loading) return;
+  if (!ongoingPageState.hasMore) return;
+  const page = document.getElementById('ongoing-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadOngoingPageBatch();
+  }
+}
+
+async function loadOngoingPageBatch() {
+  if (ongoingPageState.loading || !ongoingPageState.hasMore) return;
+  ongoingPageState.loading = true;
+  document.getElementById('ongoing-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchOngoingTV(ongoingPageState.page);
+    ongoingPageState.maxPages = data.total_pages;
+    ongoingPageState.page += 1;
+
+    const grid = document.getElementById('ongoing-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (ongoingPageState.seenIds.has(item.id)) return;
+      ongoingPageState.seenIds.add(item.id);
+      item.media_type = 'tv';
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (ongoingPageState.page > ongoingPageState.maxPages) {
+      ongoingPageState.hasMore = false;
+      document.getElementById('ongoing-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[OngoingPage]', err);
+  } finally {
+    ongoingPageState.loading = false;
+    document.getElementById('ongoing-page-loading').style.display = 'none';
+  }
+}
+
+// ===== COMPLETED TV PAGE =====
+function openCompletedPage() {
+  resetAllPages();
+  setActiveNav('home');
+  const page = document.getElementById('completed-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  completedPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  document.getElementById('completed-page-grid').innerHTML = '';
+  document.getElementById('completed-page-end').style.display = 'none';
+  document.getElementById('completed-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', completedPageScrollHandler);
+  page.addEventListener('scroll', completedPageScrollHandler, { passive: true });
+
+  loadCompletedPageBatch();
+}
+
+function closeCompletedPage() {
+  const page = document.getElementById('completed-page');
+  page.classList.remove('open');
+  page.scrollTop = 0;
+  document.getElementById('completed-page-grid').innerHTML = '';
+  completedPageState.initialized = false;
+  setActiveNav('home');
+}
+
+function completedPageScrollHandler() {
+  if (!completedPageState.initialized) return;
+  if (completedPageState.loading) return;
+  if (!completedPageState.hasMore) return;
+  const page = document.getElementById('completed-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) {
+    loadCompletedPageBatch();
+  }
+}
+
+async function loadCompletedPageBatch() {
+  if (completedPageState.loading || !completedPageState.hasMore) return;
+  completedPageState.loading = true;
+  document.getElementById('completed-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchCompletedTV(completedPageState.page);
+    completedPageState.maxPages = data.total_pages;
+    completedPageState.page += 1;
+
+    const grid = document.getElementById('completed-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (completedPageState.seenIds.has(item.id)) return;
+      completedPageState.seenIds.add(item.id);
+      item.media_type = 'tv';
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (completedPageState.page > completedPageState.maxPages) {
+      completedPageState.hasMore = false;
+      document.getElementById('completed-page-end').style.display = 'block';
+    }
+  } catch (err) {
+    console.error('[CompletedPage]', err);
+  } finally {
+    completedPageState.loading = false;
+    document.getElementById('completed-page-loading').style.display = 'none';
   }
 }
 
@@ -614,7 +787,8 @@ function closeModal() {
 function resetAllPages() {
   const pagesToClose = [
     'view-all-page', 'provider-page', 'movies-page', 'series-page',
-    'my-list-page', 'more-page', 'search-modal', 'genre-page'
+    'my-list-page', 'more-page', 'search-modal', 'genre-page',
+    'ongoing-page', 'completed-page'
   ];
   pagesToClose.forEach(function(id) {
     const el = document.getElementById(id);
@@ -929,6 +1103,7 @@ function openMorePage() {
   const page = document.getElementById('more-page');
   page.classList.add('open');
   page.scrollTop = 0;
+  renderGenresInMore();
 }
 
 function closeMorePage() {
@@ -1085,9 +1260,12 @@ async function init() {
 
     renderProviders();
 
-    const [moviesData, tvData] = await Promise.all([
+    // Load all homepage sections in parallel
+    const [moviesData, tvData, ongoingData, completedData] = await Promise.all([
       fetchTrending('movie', 1),
-      fetchTrending('tv', 1)
+      fetchTrending('tv', 1),
+      fetchOngoingTV(1),
+      fetchCompletedTV(1)
     ]);
 
     maxPages.movie = moviesData.total_pages;
@@ -1104,9 +1282,15 @@ async function init() {
     appendToList(moviesData.results, 'movies-list');
     appendToList(tvData.results, 'tvshows-list');
 
-    attachScrollListeners();
+    // Ongoing TV Shows
+    ongoingData.results.forEach(function(item) { item.media_type = 'tv'; });
+    appendToList(ongoingData.results, 'ongoing-tv-list');
 
-    renderGenreRows();
+    // Completed TV Shows
+    completedData.results.forEach(function(item) { item.media_type = 'tv'; });
+    appendToList(completedData.results, 'completed-tv-list');
+
+    attachScrollListeners();
 
     console.log('[MobiFlix] Ready.');
   } catch (err) {
@@ -1128,6 +1312,8 @@ document.addEventListener('keydown', function(e) {
     closeMorePage();
     closeMyListPage();
     closeGenrePage();
+    closeOngoingPage();
+    closeCompletedPage();
   }
 });
 
