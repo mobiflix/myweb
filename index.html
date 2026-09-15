@@ -59,7 +59,12 @@
         </div>
         <p class="hero-description" id="banner-description"></p>
         <div class="hero-buttons">
-          <button class="btn-play" onclick="playBanner()"><i class="fa fa-play"></i> Play</button>
+          <button class="btn-play" onclick="playBanner()">
+            <i class="fa fa-play"></i> Play
+          </button>
+          <button class="btn-info" onclick="showBannerDetails()">
+            <i class="fa fa-info-circle"></i> More Info
+          </button>
         </div>
       </div>
     </div>
@@ -75,14 +80,34 @@
         <div class="providers-scroll" id="providers-list"></div>
       </div>
 
+      <!-- ===== TOP 10 MOVIES ===== -->
       <div class="row">
         <div class="row-header">
-          <h2>🔥 Trending Movies</h2>
+          <h2>🔥 Top 10 Movies Today</h2>
+          <button class="view-all-btn" onclick="openViewAll('movie')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-movies"></div>
+      </div>
+
+      <!-- ===== TOP 10 TV ===== -->
+      <div class="row">
+        <div class="row-header">
+          <h2>📺 Top 10 TV Shows Today</h2>
+          <button class="view-all-btn" onclick="openViewAll('tv')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-tv"></div>
+      </div>
+
+      <!-- ===== TRENDING MOVIES ===== -->
+      <div class="row">
+        <div class="row-header">
+          <h2>🎬 Trending Movies</h2>
           <button class="view-all-btn" onclick="openViewAll('movie')">View All →</button>
         </div>
         <div class="list horizontal-scroll" id="movies-list"></div>
       </div>
 
+      <!-- ===== TRENDING TV ===== -->
       <div class="row">
         <div class="row-header">
           <h2>📺 Trending TV Shows</h2>
@@ -90,6 +115,9 @@
         </div>
         <div class="list horizontal-scroll" id="tvshows-list"></div>
       </div>
+
+      <!-- ===== GENRE ROWS (dynamic, JS-rendered) ===== -->
+      <div id="genre-rows"></div>
 
     </div>
 
@@ -104,6 +132,21 @@
         <i class="fa fa-spinner fa-spin"></i> Loading more...
       </div>
       <div class="view-all-end" id="view-all-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== GENRE PAGE ===== -->
+    <div class="view-all-page" id="genre-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeGenrePage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2 id="genre-page-title">Genre</h2>
+      </div>
+      <div class="view-all-grid" id="genre-page-grid"></div>
+      <div class="view-all-loading" id="genre-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="genre-page-end" style="display:none;">
         🎬 You've reached the end
       </div>
     </div>
