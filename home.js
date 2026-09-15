@@ -116,8 +116,8 @@ async function fetchTopRated(type, page) {
   return { results: filterNonIndian(data.results), total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH: ONGOING TV SHOWS =====
-// Gumagamit ng discover filter para sa mga seryeng may bagong episode (hindi pa tapos)
+// ===== FETCH: ONGOING TV SHOWS (TAMANG STATUS) =====
+// Status 0 = Returning Series, 1 = Planned
 async function fetchOngoingTV(page) {
   const today = new Date().toISOString().split('T')[0];
   const url = `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
@@ -125,19 +125,20 @@ async function fetchOngoingTV(page) {
     `&page=${page}` +
     `&first_air_date.lte=${today}` +
     `&vote_count.gte=50` +
-    `&with_status=0|3` +
+    `&with_status=0|1` +
     `&without_original_language=${INDIAN_LANGS.join('|')}`;
   const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
 }
 
-// ===== FETCH: COMPLETED TV SHOWS =====
+// ===== FETCH: COMPLETED TV SHOWS (TAMANG STATUS) =====
+// Status 3 = Ended, 4 = Cancelled
 async function fetchCompletedTV(page) {
   const url = `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
     `&sort_by=popularity.desc` +
     `&page=${page}` +
-    `&with_status=2` +
+    `&with_status=3|4` +
     `&vote_count.gte=100` +
     `&without_original_language=${INDIAN_LANGS.join('|')}`;
   const res = await fetch(url);
@@ -1292,7 +1293,7 @@ async function init() {
 
     attachScrollListeners();
 
-    console.log('[MobiFlix] Ready.');
+    console.log('[MobiFlix] Ready. Ongoing:', ongoingData.results.length, 'Completed:', completedData.results.length);
   } catch (err) {
     console.error('[MobiFlix] Init error:', err);
   }
