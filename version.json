@@ -1,5 +1,5 @@
 {
-  "version": "v5",
+  "version": "v6",
   "released": "2026-09-15",
-  "notes": "Fixed Ongoing & Completed TV Show status filters"
+  "notes": "Removed Trending Movies and Trending TV Shows from homepage"
 }
