@@ -8,17 +8,15 @@
   <meta http-equiv="Expires" content="0">
   <title>MobiFlix</title>
 
-  <!-- CACHE BUSTING: v=3 -->
-  <link rel="stylesheet" href="home.css?v=3">
-  <link rel="manifest" href="manifest.json?v=3">
+  <link rel="stylesheet" href="home.css?v=4">
+  <link rel="manifest" href="manifest.json?v=4">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script defer src="auth.js?v=3"></script>
-  <script defer src="home.js?v=3"></script>
+  <script defer src="auth.js?v=4"></script>
+  <script defer src="home.js?v=4"></script>
 
-  <!-- AUTO-UPDATE CHECKER -->
   <script>
     (function() {
-      const CURRENT_VERSION = 'v3';
+      const CURRENT_VERSION = 'v4';
       const CHECK_INTERVAL = 60000;
 
       async function checkForUpdates() {
@@ -29,12 +27,10 @@
 
           if (data.version && data.version !== CURRENT_VERSION) {
             console.log('[MobiFlix] Bagong version:', data.version);
-
             if ('caches' in window) {
               const cacheNames = await caches.keys();
               await Promise.all(cacheNames.map(name => caches.delete(name)));
             }
-
             const url = new URL(window.location.href);
             url.searchParams.set('v', data.version);
             window.location.replace(url.toString());
@@ -139,6 +135,24 @@
         <div class="list horizontal-scroll" id="movies-list"></div>
       </div>
 
+      <!-- ONGOING TV SHOWS -->
+      <div class="row">
+        <div class="row-header">
+          <h2>🔴 Ongoing TV Shows</h2>
+          <button class="view-all-btn" onclick="openOngoingPage()">View All →</button>
+        </div>
+        <div class="list horizontal-scroll" id="ongoing-tv-list"></div>
+      </div>
+
+      <!-- COMPLETED TV SHOWS -->
+      <div class="row">
+        <div class="row-header">
+          <h2>✅ Completed TV Shows</h2>
+          <button class="view-all-btn" onclick="openCompletedPage()">View All →</button>
+        </div>
+        <div class="list horizontal-scroll" id="completed-tv-list"></div>
+      </div>
+
       <!-- TRENDING TV -->
       <div class="row">
         <div class="row-header">
@@ -147,9 +161,6 @@
         </div>
         <div class="list horizontal-scroll" id="tvshows-list"></div>
       </div>
-
-      <!-- GENRE ROWS (dynamic) -->
-      <div id="genre-rows"></div>
 
     </div>
 
@@ -180,6 +191,36 @@
       </div>
       <div class="view-all-end" id="genre-page-end" style="display:none;">
         🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== ONGOING TV PAGE ===== -->
+    <div class="view-all-page" id="ongoing-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeOngoingPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>🔴 Ongoing TV Shows</h2>
+      </div>
+      <div class="view-all-grid" id="ongoing-page-grid"></div>
+      <div class="view-all-loading" id="ongoing-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="ongoing-page-end" style="display:none;">
+        📺 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== COMPLETED TV PAGE ===== -->
+    <div class="view-all-page" id="completed-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeCompletedPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>✅ Completed TV Shows</h2>
+      </div>
+      <div class="view-all-grid" id="completed-page-grid"></div>
+      <div class="view-all-loading" id="completed-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="completed-page-end" style="display:none;">
+        📺 You've reached the end
       </div>
     </div>
 
@@ -242,15 +283,14 @@
       </div>
     </div>
 
-    <!-- ===== MORE PAGE ===== -->
+    <!-- ===== MORE PAGE (GENRES + LOGOUT) ===== -->
     <div class="more-page" id="more-page">
       <div class="view-all-header">
         <button class="back-btn" onclick="closeMorePage()"><i class="fa fa-arrow-left"></i> Back</button>
-        <h2>🎬 Browse</h2>
+        <h2>🎭 Genres</h2>
       </div>
-      <div class="more-list">
-        <a onclick="openViewAll('movie')">🔥 Movies</a>
-        <a onclick="openViewAll('tv')">📺 TV Shows</a>
+      <div class="more-list" id="more-genres-list"></div>
+      <div class="more-list" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
         <a onclick="handleLogout()" style="color:#e50914;">🚪 Log Out</a>
       </div>
     </div>
