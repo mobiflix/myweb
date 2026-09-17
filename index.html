@@ -8,15 +8,15 @@
   <meta http-equiv="Expires" content="0">
   <title>MobiFlix</title>
 
-  <link rel="stylesheet" href="home.css?v=39">
-  <link rel="manifest" href="manifest.json?v=39">
+  <link rel="stylesheet" href="home.css?v=40">
+  <link rel="manifest" href="manifest.json?v=40">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script defer src="auth.js?v=39"></script>
-  <script defer src="home.js?v=39"></script>
+  <script defer src="auth.js?v=40"></script>
+  <script defer src="home.js?v=40"></script>
 
   <script>
     (function() {
-      const CURRENT_VERSION = 'v39';
+      const CURRENT_VERSION = 'v40';
       const CHECK_INTERVAL = 60000;
 
       async function checkForUpdates() {
@@ -71,6 +71,16 @@
 
   <!-- ===== SNOW EFFECT CONTAINER ===== -->
   <div id="snow-container"></div>
+
+  <!-- ===== FIXED BACK BUTTON (DETAILS MODAL) ===== -->
+  <button class="fixed-back-btn" id="details-back-btn" onclick="closeModal()" style="display:none;">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
+
+  <!-- ===== FIXED BACK BUTTON (TRAILER MODAL) ===== -->
+  <button class="fixed-back-btn" id="trailer-back-btn" onclick="closeTrailer()" style="display:none;">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
 
   <!-- ===== BUONG APP ===== -->
   <div id="app-content">
@@ -898,12 +908,6 @@
     <div class="modal" id="modal">
       <div class="modal-content">
 
-        <div class="modal-back-bar">
-          <button class="modal-back-btn" onclick="closeModal()">
-            <i class="fa fa-arrow-left"></i> Back
-          </button>
-        </div>
-
         <div class="details-view" id="details-view">
           <div class="details-poster">
             <img id="modal-poster" src="" alt="" />
@@ -960,9 +964,6 @@
     <!-- ===== TRAILER MODAL ===== -->
     <div class="trailer-modal" id="trailer-modal">
       <div class="trailer-content">
-        <button class="trailer-close-btn" onclick="closeTrailer()" aria-label="Close trailer">
-          <i class="fa fa-arrow-left"></i>
-        </button>
         <div class="trailer-wrapper">
           <iframe id="trailer-iframe" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
