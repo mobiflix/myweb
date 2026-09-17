@@ -533,18 +533,35 @@ body {
 }
 .back-btn:hover { background: #e50914; border-color: #e50914; }
 
-.modal-back-bar { position: absolute; top: 12px; left: 16px; z-index: 10; }
-.modal-back-btn {
-  background: rgba(0,0,0,0.7);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff; padding: 8px 18px;
-  border-radius: 60px; font-size: 14px;
-  font-weight: 500; cursor: pointer;
-  transition: 0.2s; display: flex;
-  align-items: center; gap: 8px;
-  backdrop-filter: blur(6px);
+/* ===== MODAL BACK BAR — FIXED (HINDI NAWAWALA SA SCROLL) ===== */
+.modal-back-bar {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 999;
 }
-.modal-back-btn:hover { background: #e50914; border-color: #e50914; }
+
+.modal-back-btn {
+  background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 60px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+.modal-back-btn:hover {
+  background: #e50914;
+  border-color: #e50914;
+  transform: scale(1.05);
+}
 
 /* ===== GRID — 4 PER ROW ===== */
 .view-all-grid,
@@ -1115,27 +1132,31 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* ===== TRAILER CLOSE BTN — FIXED (LAGING NAKIKITA) ===== */
 .trailer-close-btn {
-  position: absolute;
-  top: -50px;
-  right: 0;
-  background: rgba(255,255,255,0.1);
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(0,0,0,0.85);
   border: 1px solid rgba(255,255,255,0.2);
   color: #fff;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   cursor: pointer;
   transition: 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
 }
 .trailer-close-btn:hover {
   background: #e50914;
   border-color: #e50914;
-  transform: scale(1.1);
+  transform: scale(1.1) rotate(90deg);
 }
 
 .trailer-wrapper {
@@ -2273,7 +2294,24 @@ body.locked #snow-container {
 
   .more-list a { font-size: 16px; padding: 14px 16px; }
 
-  .modal-back-btn { padding: 6px 14px; font-size: 13px; }
+  /* MODAL BACK BAR — MOBILE */
+  .modal-back-bar {
+    top: 10px;
+    left: 10px;
+  }
+  .modal-back-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  /* TRAILER CLOSE BTN — MOBILE */
+  .trailer-close-btn {
+    top: 12px;
+    right: 12px;
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+  }
 
   .episode-thumb { width: 100px; }
   .episode-name { font-size: 13px; }
@@ -2315,7 +2353,6 @@ body.locked #snow-container {
   .section-title { font-size: 16px; }
 
   .trailer-modal { padding: 10px; }
-  .trailer-close-btn { top: -45px; width: 38px; height: 38px; }
 
   .telegram-float {
     right: 14px;
