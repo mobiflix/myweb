@@ -1,5 +1,5 @@
 {
-  "version": "v39",
+  "version": "v40",
   "released": "2026-09-17",
-  "notes": "Fixed back button sa Details at Trailer modal - hindi na nawawala sa scroll"
+  "notes": "Fixed back button - nakalagay na sa labas ng modal at laging nasa upper-left ng screen"
 }
