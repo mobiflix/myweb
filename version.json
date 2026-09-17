@@ -1,5 +1,5 @@
 {
-  "version": "v38",
+  "version": "v39",
   "released": "2026-09-17",
-  "notes": "Fixed snow effect - unti-unti at dahan-dahang bumabagsak na snow"
+  "notes": "Fixed back button sa Details at Trailer modal - hindi na nawawala sa scroll"
 }
