@@ -2135,6 +2135,68 @@ body.locked { overflow: hidden; }
 
 body.locked .telegram-float { display: none; }
 
+/* ===== SNOW EFFECT ===== */
+#snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9997;
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: #fff;
+  font-size: 10px;
+  opacity: 0.8;
+  user-select: none;
+  pointer-events: none;
+  animation: snowfall linear infinite;
+  text-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-10px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(100vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+body.theme-light .snowflake {
+  color: #a0c4e8;
+  text-shadow: 0 0 5px rgba(160,196,232,0.5);
+}
+
+body.locked #snow-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .snowflake {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .snowflake {
+    font-size: 7px;
+  }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .view-all-grid, .my-list-grid { grid-template-columns: repeat(4, 1fr); }
