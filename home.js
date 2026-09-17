@@ -37,7 +37,7 @@ const PROVIDER_LOGOS = {
   'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg'
 };
 
-const ZXCSTREAM_MOVIE = 'https://vidbox.vc/movie/';
+const ZXCSTREAM_MOVIE = 'https://vidbox.vc/watch/movie';
 const ZXCSTREAM_TV = 'https://zxcstream.icu/watch/tv/';
 
 const GENRE_MAP = {
