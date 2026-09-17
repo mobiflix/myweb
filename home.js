@@ -196,6 +196,39 @@ function createSnow() {
 }
 
 // ============================================================
+// POPULATE COUNTRY DROPDOWNS
+// ============================================================
+
+function populateCountryDropdowns() {
+  const prefixes = [
+    'filter-',
+    'movies-filter-',
+    'series-filter-',
+    'provider-filter-',
+    'genre-filter-',
+    'vivamax-filter-'
+  ];
+
+  prefixes.forEach(function(prefix) {
+    const select = document.getElementById(prefix + 'country');
+    if (!select) return;
+
+    // Clear muna (para hindi ma-duplicate kung tumakbo ulit)
+    select.innerHTML = '';
+
+    // Idagdag lahat ng countries
+    COUNTRY_LIST.forEach(function(country) {
+      const option = document.createElement('option');
+      option.value = country.code;
+      option.textContent = country.name;
+      select.appendChild(option);
+    });
+  });
+
+  console.log('[MobiFlix] Country dropdowns populated ✅');
+}
+
+// ============================================================
 // POPSTATE HANDLER — FIXED BLACK SCREEN
 // ============================================================
 window.addEventListener('popstate', function(e) {
@@ -2476,6 +2509,7 @@ async function init() {
     renderProviders();
     renderContinueWatching();
     updateNotifBadge();
+    populateCountryDropdowns();
 
     const notifToggle = document.getElementById('notif-toggle');
     if (notifToggle) notifToggle.checked = isNotifEnabled();
