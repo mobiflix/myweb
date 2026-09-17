@@ -155,10 +155,12 @@ window.addEventListener('popstate', function(e) {
       setTimeout(function() { iframe.src = ''; }, 50);
     }
     trailerModal.classList.remove('open');
+    document.getElementById('trailer-back-btn').style.display = 'none';
 
     const detailsModal = document.getElementById('modal');
     if (detailsModal && detailsModal.style.display === 'flex') {
       detailsModal.style.display = 'none';
+      document.getElementById('details-back-btn').style.display = 'none';
     }
     document.body.style.overflow = '';
     return;
@@ -167,6 +169,7 @@ window.addEventListener('popstate', function(e) {
   const modal = document.getElementById('modal');
   if (modal && modal.style.display === 'flex') {
     modal.style.display = 'none';
+    document.getElementById('details-back-btn').style.display = 'none';
     document.body.style.overflow = '';
     return;
   }
@@ -308,6 +311,9 @@ function playTrailer() {
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 
+  // Ipakita ang fixed back button para sa trailer
+  document.getElementById('trailer-back-btn').style.display = 'flex';
+
   history.pushState({ mobiflixTrailer: true }, '');
 }
 
@@ -317,6 +323,9 @@ function closeTrailer() {
   iframe.src = 'about:blank';
   setTimeout(function() { iframe.src = ''; }, 50);
   modal.classList.remove('open');
+
+  // Itago ang fixed back button para sa trailer
+  document.getElementById('trailer-back-btn').style.display = 'none';
 
   const detailsModal = document.getElementById('modal');
   if (detailsModal && detailsModal.style.display === 'flex') {
@@ -1266,12 +1275,24 @@ function closeAllPagesOnly() {
       el.scrollTop = 0;
     }
   });
+
+  // Itago ang fixed back buttons
+  const detailsBackBtn = document.getElementById('details-back-btn');
+  if (detailsBackBtn) detailsBackBtn.style.display = 'none';
+  const trailerBackBtn = document.getElementById('trailer-back-btn');
+  if (trailerBackBtn) trailerBackBtn.style.display = 'none';
+
   document.body.style.overflow = '';
 }
 
 function closeModalOnly() {
   const modal = document.getElementById('modal');
   if (modal) modal.style.display = 'none';
+
+  // Itago ang fixed back button para sa details
+  const detailsBackBtn = document.getElementById('details-back-btn');
+  if (detailsBackBtn) detailsBackBtn.style.display = 'none';
+
   document.body.style.overflow = '';
 }
 
@@ -1740,6 +1761,9 @@ async function showDetails(item) {
   document.getElementById('modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 
+  // Ipakita ang fixed back button para sa details
+  document.getElementById('details-back-btn').style.display = 'flex';
+
   history.pushState({ mobiflixModal: true }, '');
 
   document.getElementById('cast-list').innerHTML = '<div style="color:#666;padding:10px 0;">Loading cast...</div>';
@@ -2076,6 +2100,12 @@ function goHome() {
     }
   });
 
+  // Itago ang fixed back buttons
+  const detailsBackBtn = document.getElementById('details-back-btn');
+  if (detailsBackBtn) detailsBackBtn.style.display = 'none';
+  const trailerBackBtn = document.getElementById('trailer-back-btn');
+  if (trailerBackBtn) trailerBackBtn.style.display = 'none';
+
   document.body.style.overflow = '';
   setActiveNav('home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2384,7 +2414,7 @@ async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
 
-    createSnow();  // <-- SIMULA ANG SNOW
+    createSnow();
 
     loadTheme();
     renderProviders();
