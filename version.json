@@ -1,5 +1,5 @@
 {
-  "version": "v41",
+  "version": "v42",
   "released": "2026-09-17",
-  "notes": "Added Country filter sa lahat ng pages"
+  "notes": "Fixed Country filter dropdown - populated na yung mga bansa"
 }
