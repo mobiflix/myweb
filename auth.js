@@ -6,7 +6,7 @@
 
 // 👇 DITO MO ILALAGAY YUNG MGA USERNAME AT PASSWORD
 const USERS = [
-  { username: 'mobiflix', password: '7777' }
+  { username: 'mobiflix', password: '8888' }
 ];
 
 // ============================================
