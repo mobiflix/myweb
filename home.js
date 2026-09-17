@@ -93,7 +93,6 @@ let completedPageState = {};
 // POPSTATE HANDLER — FIXED BLACK SCREEN
 // ============================================================
 window.addEventListener('popstate', function(e) {
-  // PRIORITY 1: Trailer modal — isara agad, huwag hintayin ang YouTube
   const trailerModal = document.getElementById('trailer-modal');
   if (trailerModal && trailerModal.classList.contains('open')) {
     const iframe = document.getElementById('trailer-iframe');
@@ -103,7 +102,6 @@ window.addEventListener('popstate', function(e) {
     }
     trailerModal.classList.remove('open');
 
-    // Isara NA RIN agad ang details modal para walang black screen
     const detailsModal = document.getElementById('modal');
     if (detailsModal && detailsModal.style.display === 'flex') {
       detailsModal.style.display = 'none';
@@ -112,7 +110,6 @@ window.addEventListener('popstate', function(e) {
     return;
   }
 
-  // PRIORITY 2: Details modal
   const modal = document.getElementById('modal');
   if (modal && modal.style.display === 'flex') {
     modal.style.display = 'none';
@@ -120,7 +117,6 @@ window.addEventListener('popstate', function(e) {
     return;
   }
 
-  // PRIORITY 3: Pages
   const openPages = [
     'search-modal', 'more-page', 'my-list-page', 'series-page',
     'movies-page', 'provider-page', 'genre-page', 'ongoing-page',
@@ -2327,6 +2323,61 @@ function viewAllScrollHandler() {
 }
 
 // ============================================================
+// SNOW EFFECT
+// ============================================================
+
+function createSnow() {
+  if (document.getElementById('snow-container')) return;
+
+  const container = document.createElement('div');
+  container.id = 'snow-container';
+  document.body.appendChild(container);
+
+  const snowChars = ['❄', '❅', '❆', '•', '*'];
+  const maxSnowflakes = 50;
+  let snowflakeCount = 0;
+
+  function createSnowflake() {
+    if (snowflakeCount >= maxSnowflakes) return;
+
+    const snowflake = document.createElement('div');
+    snowflake.className = 'snowflake';
+    snowflake.textContent = snowChars[Math.floor(Math.random() * snowChars.length)];
+
+    snowflake.style.left = Math.random() * 100 + '%';
+
+    const size = Math.random() * 12 + 6;
+    snowflake.style.fontSize = size + 'px';
+
+    const duration = Math.random() * 8 + 12;
+    snowflake.style.animationDuration = duration + 's';
+
+    const delay = Math.random() * 10;
+    snowflake.style.animationDelay = delay + 's';
+
+    snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+
+    container.appendChild(snowflake);
+    snowflakeCount++;
+
+    setTimeout(function() {
+      if (snowflake.parentNode) {
+        snowflake.parentNode.removeChild(snowflake);
+        snowflakeCount--;
+      }
+    }, (duration + delay) * 1000);
+  }
+
+  function startSnow() {
+    createSnowflake();
+    const nextDelay = Math.random() * 800 + 400;
+    setTimeout(startSnow, nextDelay);
+  }
+
+  startSnow();
+}
+
+// ============================================================
 // INIT
 // ============================================================
 
@@ -2334,6 +2385,7 @@ async function init() {
   try {
     console.log('[MobiFlix] Initializing...');
 
+    createSnow();
     loadTheme();
     renderProviders();
     renderContinueWatching();
