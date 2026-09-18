@@ -140,6 +140,8 @@ let seriesPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, i
 let genrePageState = {};
 let ongoingPageState = {};
 let completedPageState = {};
+let kdramaPageState = {};
+let animePageState = {};
 
 // ============================================================
 // SNOW EFFECT
@@ -213,10 +215,8 @@ function populateCountryDropdowns() {
     const select = document.getElementById(prefix + 'country');
     if (!select) return;
 
-    // Clear muna (para hindi ma-duplicate kung tumakbo ulit)
     select.innerHTML = '';
 
-    // Idagdag lahat ng countries
     COUNTRY_LIST.forEach(function(country) {
       const option = document.createElement('option');
       option.value = country.code;
@@ -262,7 +262,8 @@ window.addEventListener('popstate', function(e) {
   const openPages = [
     'search-modal', 'more-page', 'my-list-page', 'series-page',
     'movies-page', 'provider-page', 'genre-page', 'ongoing-page',
-    'completed-page', 'vivamax-page', 'view-all-page', 'user-profile-page'
+    'completed-page', 'vivamax-page', 'view-all-page', 'user-profile-page',
+    'kdrama-page', 'anime-page'
   ];
   for (let i = 0; i < openPages.length; i++) {
     const el = document.getElementById(openPages[i]);
@@ -332,6 +333,62 @@ async function fetchVivamaxMovies(page) {
   const res = await fetch(url);
   const data = await res.json();
   return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+// ===== KDRAMA (South Korean TV) =====
+async function fetchKdrama(page, mode) {
+  const base =
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
+    `&with_origin_country=KR` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}` +
+    `&page=${page}`;
+
+  let url;
+  if (mode === 'top10') {
+    url = base + `&sort_by=popularity.desc&vote_count.gte=30`;
+  } else {
+    url = base + `&sort_by=popularity.desc`;
+  }
+
+  const res = await fetch(url);
+  const data = await res.json();
+  return { results: data.results || [], total_pages: data.total_pages || 1 };
+}
+
+// ===== ANIME (Japanese Animation) =====
+async function fetchAnime(page, mode) {
+  const animeGenre = 16;
+  const origin = 'JP';
+
+  if (mode === 'top10') {
+    const url =
+      `${BASE_URL}/discover/tv?api_key=${API_KEY}` +
+      `&with_genres=${animeGenre}` +
+      `&with_origin_country=${origin}` +
+      `&sort_by=popularity.desc` +
+      `&vote_count.gte=30` +
+      `&page=${page}` +
+      `&without_original_language=${INDIAN_LANGS.join('|')}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return { results: data.results || [], total_pages: data.total_pages || 1 };
+  }
+
+  const mediaType = (page % 2 === 0) ? 'movie' : 'tv';
+  const apiPage = Math.floor(page / 2) + 1;
+  const url =
+    `${BASE_URL}/discover/${mediaType}?api_key=${API_KEY}` +
+    `&with_genres=${animeGenre}` +
+    `&with_origin_country=${origin}` +
+    `&sort_by=popularity.desc` +
+    `&page=${apiPage}` +
+    `&without_original_language=${INDIAN_LANGS.join('|')}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return {
+    results: (data.results || []).map(function(x) { x.media_type = mediaType; return x; }),
+    total_pages: data.total_pages || 1
+  };
 }
 
 async function fetchCredits(mediaType, id) {
@@ -1356,7 +1413,8 @@ function closeAllPagesOnly() {
   const pagesToClose = [
     'view-all-page', 'provider-page', 'movies-page', 'series-page',
     'my-list-page', 'more-page', 'search-modal', 'genre-page',
-    'ongoing-page', 'completed-page', 'vivamax-page', 'user-profile-page'
+    'ongoing-page', 'completed-page', 'vivamax-page', 'user-profile-page',
+    'kdrama-page', 'anime-page'
   ];
   pagesToClose.forEach(function(id) {
     const el = document.getElementById(id);
@@ -1394,6 +1452,8 @@ function closeMoviesPage() { closeAllPagesOnly(); setActiveNav('home'); }
 function closeSeriesPage() { closeAllPagesOnly(); setActiveNav('home'); }
 function closeMyListPage() { closeAllPagesOnly(); setActiveNav('home'); }
 function closeMorePage() { closeAllPagesOnly(); setActiveNav('home'); }
+function closeKdramaPage() { closeAllPagesOnly(); setActiveNav('home'); }
+function closeAnimePage() { closeAllPagesOnly(); setActiveNav('home'); }
 
 function closeSearchModal() {
   closeAllPagesOnly();
@@ -1706,6 +1766,138 @@ async function loadCompletedPageBatch() {
   finally {
     completedPageState.loading = false;
     document.getElementById('completed-page-loading').style.display = 'none';
+  }
+}
+
+// ============================================================
+// KDRAMA PAGE
+// ============================================================
+
+function openKdramaPage() {
+  closeAllPagesOnly();
+  const page = document.getElementById('kdrama-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  kdramaPageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  document.getElementById('kdrama-page-grid').innerHTML = '';
+  document.getElementById('kdrama-page-end').style.display = 'none';
+  document.getElementById('kdrama-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', kdramaPageScrollHandler);
+  page.addEventListener('scroll', kdramaPageScrollHandler, { passive: true });
+
+  setActiveNav('home');
+  loadKdramaPageBatch();
+}
+
+function kdramaPageScrollHandler() {
+  if (!kdramaPageState.initialized || kdramaPageState.loading || !kdramaPageState.hasMore) return;
+  const page = document.getElementById('kdrama-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) loadKdramaPageBatch();
+}
+
+async function loadKdramaPageBatch() {
+  if (kdramaPageState.loading || !kdramaPageState.hasMore) return;
+  kdramaPageState.loading = true;
+  document.getElementById('kdrama-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchKdrama(kdramaPageState.page, 'all');
+    kdramaPageState.maxPages = data.total_pages;
+    kdramaPageState.page += 1;
+
+    const grid = document.getElementById('kdrama-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (kdramaPageState.seenIds.has(item.id)) return;
+      kdramaPageState.seenIds.add(item.id);
+      item.media_type = 'tv';
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (kdramaPageState.page > kdramaPageState.maxPages) {
+      kdramaPageState.hasMore = false;
+      document.getElementById('kdrama-page-end').style.display = 'block';
+    }
+  } catch (err) { console.error(err); }
+  finally {
+    kdramaPageState.loading = false;
+    document.getElementById('kdrama-page-loading').style.display = 'none';
+  }
+}
+
+// ============================================================
+// ANIME PAGE
+// ============================================================
+
+function openAnimePage() {
+  closeAllPagesOnly();
+  const page = document.getElementById('anime-page');
+  page.classList.add('open');
+  page.scrollTop = 0;
+
+  animePageState = { page: 1, maxPages: 500, loading: false, hasMore: true, initialized: true, seenIds: new Set() };
+
+  document.getElementById('anime-page-grid').innerHTML = '';
+  document.getElementById('anime-page-end').style.display = 'none';
+  document.getElementById('anime-page-loading').style.display = 'none';
+
+  page.removeEventListener('scroll', animePageScrollHandler);
+  page.addEventListener('scroll', animePageScrollHandler, { passive: true });
+
+  setActiveNav('home');
+  loadAnimePageBatch();
+}
+
+function animePageScrollHandler() {
+  if (!animePageState.initialized || animePageState.loading || !animePageState.hasMore) return;
+  const page = document.getElementById('anime-page');
+  if (!page) return;
+  if (page.scrollTop + page.clientHeight >= page.scrollHeight - 300) loadAnimePageBatch();
+}
+
+async function loadAnimePageBatch() {
+  if (animePageState.loading || !animePageState.hasMore) return;
+  animePageState.loading = true;
+  document.getElementById('anime-page-loading').style.display = 'block';
+
+  try {
+    const data = await fetchAnime(animePageState.page, 'all');
+    animePageState.maxPages = data.total_pages;
+    animePageState.page += 1;
+
+    const grid = document.getElementById('anime-page-grid');
+    data.results.forEach(function(item) {
+      if (!item.poster_path) return;
+      if (animePageState.seenIds.has(item.id)) return;
+      animePageState.seenIds.add(item.id);
+      if (!item.media_type) item.media_type = 'tv';
+      const img = document.createElement('img');
+      img.src = `${IMG_W500}${item.poster_path}`;
+      img.alt = item.title || item.name;
+      img.loading = 'lazy';
+      img.dataset.id = item.id;
+      img.onclick = function() { showDetails(item); };
+      grid.appendChild(img);
+    });
+
+    if (animePageState.page > animePageState.maxPages) {
+      animePageState.hasMore = false;
+      document.getElementById('anime-page-end').style.display = 'block';
+    }
+  } catch (err) { console.error(err); }
+  finally {
+    animePageState.loading = false;
+    document.getElementById('anime-page-loading').style.display = 'none';
   }
 }
 
@@ -2180,7 +2372,8 @@ function goHome() {
   const pagesToClose = [
     'view-all-page', 'provider-page', 'movies-page', 'series-page',
     'my-list-page', 'more-page', 'search-modal', 'genre-page',
-    'ongoing-page', 'completed-page', 'vivamax-page', 'user-profile-page'
+    'ongoing-page', 'completed-page', 'vivamax-page', 'user-profile-page',
+    'kdrama-page', 'anime-page'
   ];
   pagesToClose.forEach(function(id) {
     const el = document.getElementById(id);
@@ -2514,12 +2707,14 @@ async function init() {
     const notifToggle = document.getElementById('notif-toggle');
     if (notifToggle) notifToggle.checked = isNotifEnabled();
 
-    const [moviesData, tvData, ongoingData, completedData, vivamaxData] = await Promise.all([
+    const [moviesData, tvData, ongoingData, completedData, vivamaxData, kdramaData, animeData] = await Promise.all([
       fetchTrending('movie', 1),
       fetchTrending('tv', 1),
       fetchOngoingTV(1),
       fetchCompletedTV(1),
-      fetchVivamaxMovies(1)
+      fetchVivamaxMovies(1),
+      fetchKdrama(1, 'top10'),
+      fetchAnime(1, 'top10')
     ]);
 
     if (moviesData.results.length > 0) {
@@ -2529,6 +2724,8 @@ async function init() {
 
     renderTop10(moviesData.results, 'top10-movies');
     renderTop10(tvData.results, 'top10-tv');
+    renderTop10(kdramaData.results, 'top10-kdrama');
+    renderTop10(animeData.results, 'top10-anime');
 
     vivamaxData.results.forEach(function(item) { item.media_type = 'movie'; });
     appendToList(vivamaxData.results, 'vivamax-list');
