@@ -44,8 +44,8 @@ const PROVIDER_LOGOS = {
   'Crunchyroll': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.svg'
 };
 
-const ZXCSTREAM_MOVIE = 'https://zxcstream.icu/watch/movie/';
-const ZXCSTREAM_TV = 'https://zxcstream.icu/watch/tv/';
+const ZXCSTREAM_MOVIE = 'https://vidstuck.xyz/embed/movie/';
+const ZXCSTREAM_TV = 'https://vidstuck.xyz/embed/tv/';
 
 // ===== HOME ROW CONFIG =====
 const HOME_ROWS = {
