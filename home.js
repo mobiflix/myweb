@@ -142,6 +142,67 @@ let ongoingPageState = {};
 let completedPageState = {};
 
 // ============================================================
+// BACKGROUND MUSIC
+// ============================================================
+
+let bgMusic = null;
+let musicStarted = false;
+
+function initBackgroundMusic() {
+  bgMusic = document.getElementById('bgMusic');
+  if (!bgMusic) {
+    console.warn('[MobiFlix] bgMusic element not found');
+    return;
+  }
+
+  bgMusic.volume = 0.4; // 40% volume
+  bgMusic.loop = true;
+
+  // Simulan ang music pagkatapos ng UNANG click ng user kahit saan sa page
+  document.addEventListener('click', function startMusicOnFirstClick() {
+    if (musicStarted) return;
+    musicStarted = true;
+
+    bgMusic.play().then(function() {
+      console.log('[MobiFlix] Background music started 🎵');
+    }).catch(function(err) {
+      console.warn('[MobiFlix] Music autoplay blocked:', err);
+    });
+
+    document.removeEventListener('click', startMusicOnFirstClick);
+  }, { once: true });
+
+  // Fallback: subukan din sa touchstart para sa mobile
+  document.addEventListener('touchstart', function startMusicOnFirstTouch() {
+    if (musicStarted) return;
+    musicStarted = true;
+
+    bgMusic.play().then(function() {
+      console.log('[MobiFlix] Background music started (touch) 🎵');
+    }).catch(function(err) {
+      console.warn('[MobiFlix] Music autoplay blocked:', err);
+    });
+
+    document.removeEventListener('touchstart', startMusicOnFirstTouch);
+  }, { once: true });
+}
+
+function pauseBackgroundMusic() {
+  if (bgMusic && !bgMusic.paused) {
+    bgMusic.pause();
+    console.log('[MobiFlix] Background music paused ⏸️');
+  }
+}
+
+function resumeBackgroundMusic() {
+  if (bgMusic && musicStarted && bgMusic.paused) {
+    bgMusic.play().then(function() {
+      console.log('[MobiFlix] Background music resumed ▶️');
+    }).catch(function() {});
+  }
+}
+
+// ============================================================
 // SNOW EFFECT
 // ============================================================
 
@@ -213,10 +274,8 @@ function populateCountryDropdowns() {
     const select = document.getElementById(prefix + 'country');
     if (!select) return;
 
-    // Clear muna (para hindi ma-duplicate kung tumakbo ulit)
     select.innerHTML = '';
 
-    // Idagdag lahat ng countries
     COUNTRY_LIST.forEach(function(country) {
       const option = document.createElement('option');
       option.value = country.code;
@@ -241,6 +300,9 @@ window.addEventListener('popstate', function(e) {
     }
     trailerModal.classList.remove('open');
     document.getElementById('trailer-back-btn').style.display = 'none';
+
+    // I-resume ang music pagkatapos ng trailer
+    resumeBackgroundMusic();
 
     const detailsModal = document.getElementById('modal');
     if (detailsModal && detailsModal.style.display === 'flex') {
@@ -390,6 +452,10 @@ async function fetchTrailer(mediaType, id) {
 
 function playTrailer() {
   if (!currentTrailerKey) return;
+
+  // PAUSE BACKGROUND MUSIC
+  pauseBackgroundMusic();
+
   const modal = document.getElementById('trailer-modal');
   const iframe = document.getElementById('trailer-iframe');
   iframe.src = `https://www.youtube.com/embed/${currentTrailerKey}?autoplay=1&rel=0`;
@@ -409,6 +475,9 @@ function closeTrailer() {
   modal.classList.remove('open');
 
   document.getElementById('trailer-back-btn').style.display = 'none';
+
+  // RESUME BACKGROUND MUSIC
+  resumeBackgroundMusic();
 
   const detailsModal = document.getElementById('modal');
   if (detailsModal && detailsModal.style.display === 'flex') {
@@ -996,6 +1065,9 @@ async function loadSeasonEpisodes(tvId, seasonNumber) {
 function playEpisode(tvId, seasonNumber, episodeNumber) {
   const url = `${ZXCSTREAM_TV}${tvId}/${seasonNumber}/${episodeNumber}`;
   console.log('[MobiFlix Episode]', url);
+
+  // PAUSE BACKGROUND MUSIC
+  pauseBackgroundMusic();
 
   markEpisodeWatched(tvId, seasonNumber, episodeNumber);
 
@@ -2003,6 +2075,9 @@ function toggleAddToList() {
 function playNow() {
   if (!currentItem) return;
 
+  // PAUSE BACKGROUND MUSIC
+  pauseBackgroundMusic();
+
   const isMovie = currentItem.media_type === 'movie' || (!currentItem.media_type && currentItem.title);
 
   let embedURL;
@@ -2504,6 +2579,7 @@ async function init() {
     console.log('[MobiFlix] Initializing...');
 
     createSnow();
+    initBackgroundMusic();
 
     loadTheme();
     renderProviders();
