@@ -75,7 +75,7 @@ const GENRE_LIST = [
   { id: 10768, name: 'War & Politics',   icon: '⚔️', media: 'tv' }
 ];
 
-// ===== COUNTRY LIST (Para sa Country filter) =====
+// ===== COUNTRY LIST =====
 const COUNTRY_LIST = [
   { code: '',    name: 'All Countries' },
   { code: 'US',  name: 'United States' },
@@ -142,49 +142,93 @@ let ongoingPageState = {};
 let completedPageState = {};
 
 // ============================================================
-// BACKGROUND MUSIC
+// BACKGROUND MUSIC — IMPROVED VERSION FOR MOBILE
 // ============================================================
 
 let bgMusic = null;
 let musicStarted = false;
+let musicInteractionListenersAttached = false;
+
+function tryPlayMusic() {
+  if (musicStarted || !bgMusic) return;
+
+  bgMusic.volume = 0.4;
+  bgMusic.loop = true;
+
+  const playPromise = bgMusic.play();
+
+  if (playPromise !== undefined) {
+    playPromise
+      .then(function() {
+        musicStarted = true;
+        console.log('[MobiFlix] Background music started 🎵');
+        removeMusicListeners();
+      })
+      .catch(function(err) {
+        console.log('[MobiFlix] Play attempt failed:', err.name);
+        // Hindi pa nag-play — hintayin ang susunod na interaction
+      });
+  }
+}
+
+function removeMusicListeners() {
+  if (!musicInteractionListenersAttached) return;
+
+  document.removeEventListener('click', tryPlayMusic, true);
+  document.removeEventListener('touchstart', tryPlayMusic, true);
+  document.removeEventListener('touchend', tryPlayMusic, true);
+  document.removeEventListener('pointerdown', tryPlayMusic, true);
+  document.removeEventListener('pointerup', tryPlayMusic, true);
+  document.removeEventListener('keydown', tryPlayMusic, true);
+  document.removeEventListener('scroll', tryPlayMusic, true);
+
+  musicInteractionListenersAttached = false;
+}
 
 function initBackgroundMusic() {
   bgMusic = document.getElementById('bgMusic');
+
   if (!bgMusic) {
-    console.warn('[MobiFlix] bgMusic element not found');
+    console.warn('[MobiFlix] bgMusic element NOT FOUND in HTML');
     return;
   }
 
-  bgMusic.volume = 0.4; // 40% volume
+  console.log('[MobiFlix] bgMusic element found ✅');
+
+  bgMusic.volume = 0.4;
   bgMusic.loop = true;
+  bgMusic.preload = 'auto';
 
-  // Simulan ang music pagkatapos ng UNANG click ng user kahit saan sa page
-  document.addEventListener('click', function startMusicOnFirstClick() {
-    if (musicStarted) return;
-    musicStarted = true;
+  // I-load muna yung file para siguradong ready
+  bgMusic.load();
 
-    bgMusic.play().then(function() {
-      console.log('[MobiFlix] Background music started 🎵');
-    }).catch(function(err) {
-      console.warn('[MobiFlix] Music autoplay blocked:', err);
-    });
+  // Error handling
+  bgMusic.addEventListener('error', function() {
+    console.error('[MobiFlix] Music file error:', bgMusic.error);
+    alert('❌ Hindi ma-load ang music file!\n\nCheck kung nandun yung:\nmusic/background.mp3');
+  });
 
-    document.removeEventListener('click', startMusicOnFirstClick);
-  }, { once: true });
+  bgMusic.addEventListener('canplaythrough', function() {
+    console.log('[MobiFlix] Music ready to play ✅');
+  });
 
-  // Fallback: subukan din sa touchstart para sa mobile
-  document.addEventListener('touchstart', function startMusicOnFirstTouch() {
-    if (musicStarted) return;
-    musicStarted = true;
+  // Attach listeners sa LAHAT ng interaction types (mobile + desktop)
+  if (!musicInteractionListenersAttached) {
+    document.addEventListener('click', tryPlayMusic, true);
+    document.addEventListener('touchstart', tryPlayMusic, true);
+    document.addEventListener('touchend', tryPlayMusic, true);
+    document.addEventListener('pointerdown', tryPlayMusic, true);
+    document.addEventListener('pointerup', tryPlayMusic, true);
+    document.addEventListener('keydown', tryPlayMusic, true);
+    document.addEventListener('scroll', tryPlayMusic, true);
 
-    bgMusic.play().then(function() {
-      console.log('[MobiFlix] Background music started (touch) 🎵');
-    }).catch(function(err) {
-      console.warn('[MobiFlix] Music autoplay blocked:', err);
-    });
+    musicInteractionListenersAttached = true;
+    console.log('[MobiFlix] Music listeners attached ✅');
+  }
 
-    document.removeEventListener('touchstart', startMusicOnFirstTouch);
-  }, { once: true });
+  // Extra fallback: subukan pagkatapos ng 1s at 3s (kung naka-allow na)
+  setTimeout(tryPlayMusic, 1000);
+  setTimeout(tryPlayMusic, 3000);
 }
 
 function pauseBackgroundMusic() {
@@ -288,7 +332,7 @@ function populateCountryDropdowns() {
 }
 
 // ============================================================
-// POPSTATE HANDLER — FIXED BLACK SCREEN
+// POPSTATE HANDLER
 // ============================================================
 window.addEventListener('popstate', function(e) {
   const trailerModal = document.getElementById('trailer-modal');
@@ -300,8 +344,6 @@ window.addEventListener('popstate', function(e) {
     }
     trailerModal.classList.remove('open');
     document.getElementById('trailer-back-btn').style.display = 'none';
-
-    // I-resume ang music pagkatapos ng trailer
     resumeBackgroundMusic();
 
     const detailsModal = document.getElementById('modal');
@@ -453,7 +495,6 @@ async function fetchTrailer(mediaType, id) {
 function playTrailer() {
   if (!currentTrailerKey) return;
 
-  // PAUSE BACKGROUND MUSIC
   pauseBackgroundMusic();
 
   const modal = document.getElementById('trailer-modal');
@@ -476,7 +517,6 @@ function closeTrailer() {
 
   document.getElementById('trailer-back-btn').style.display = 'none';
 
-  // RESUME BACKGROUND MUSIC
   resumeBackgroundMusic();
 
   const detailsModal = document.getElementById('modal');
@@ -1066,7 +1106,6 @@ function playEpisode(tvId, seasonNumber, episodeNumber) {
   const url = `${ZXCSTREAM_TV}${tvId}/${seasonNumber}/${episodeNumber}`;
   console.log('[MobiFlix Episode]', url);
 
-  // PAUSE BACKGROUND MUSIC
   pauseBackgroundMusic();
 
   markEpisodeWatched(tvId, seasonNumber, episodeNumber);
@@ -2075,7 +2114,6 @@ function toggleAddToList() {
 function playNow() {
   if (!currentItem) return;
 
-  // PAUSE BACKGROUND MUSIC
   pauseBackgroundMusic();
 
   const isMovie = currentItem.media_type === 'movie' || (!currentItem.media_type && currentItem.title);
@@ -2579,6 +2617,8 @@ async function init() {
     console.log('[MobiFlix] Initializing...');
 
     createSnow();
+
+    // Initialize music EARLY para mabilis mag-attach ng listeners
     initBackgroundMusic();
 
     loadTheme();
@@ -2624,7 +2664,7 @@ async function init() {
 }
 
 // ============================================================
-// SIMULAN AGAD — HUWAG HINTAYIN ANG INIT
+// SIMULAN AGAD
 // ============================================================
 
 function startSnowWhenReady() {
