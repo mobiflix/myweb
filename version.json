@@ -1,5 +1,5 @@
 {
-  "version": "v45",
-  "released": "2026-09-18",
-  "notes": "Fix sa bottom nav - Movies at Series ngayon ay nagbubukas ng View All page na may tamang highlight."
+  "version": "v46",
+  "released": "2026-09-19",
+  "notes": "Trailer ngayon ay bubukas sa bagong tab."
 }
