@@ -142,7 +142,7 @@ let ongoingPageState = {};
 let completedPageState = {};
 
 // ============================================================
-// BACKGROUND MUSIC — IMPROVED VERSION FOR MOBILE
+// BACKGROUND MUSIC — CLICK + SCROLL
 // ============================================================
 
 let bgMusic = null;
@@ -177,10 +177,8 @@ function removeMusicListeners() {
   document.removeEventListener('click', tryPlayMusic, true);
   document.removeEventListener('touchstart', tryPlayMusic, true);
   document.removeEventListener('touchend', tryPlayMusic, true);
-  document.removeEventListener('pointerdown', tryPlayMusic, true);
-  document.removeEventListener('pointerup', tryPlayMusic, true);
-  document.removeEventListener('keydown', tryPlayMusic, true);
   document.removeEventListener('scroll', tryPlayMusic, true);
+  document.removeEventListener('wheel', tryPlayMusic, true);
 
   musicInteractionListenersAttached = false;
 }
@@ -212,23 +210,17 @@ function initBackgroundMusic() {
     console.log('[MobiFlix] Music ready to play ✅');
   });
 
-  // Attach listeners sa LAHAT ng interaction types (mobile + desktop)
+  // Attach listeners — CLICK at SCROLL (pareho tutugtog)
   if (!musicInteractionListenersAttached) {
     document.addEventListener('click', tryPlayMusic, true);
     document.addEventListener('touchstart', tryPlayMusic, true);
     document.addEventListener('touchend', tryPlayMusic, true);
-    document.addEventListener('pointerdown', tryPlayMusic, true);
-    document.addEventListener('pointerup', tryPlayMusic, true);
-    document.addEventListener('keydown', tryPlayMusic, true);
     document.addEventListener('scroll', tryPlayMusic, true);
+    document.addEventListener('wheel', tryPlayMusic, true);
 
     musicInteractionListenersAttached = true;
-    console.log('[MobiFlix] Music listeners attached ✅');
+    console.log('[MobiFlix] Music listeners attached (click + scroll) ✅');
   }
-
-  // Extra fallback: subukan pagkatapos ng 1s at 3s (kung naka-allow na)
-  setTimeout(tryPlayMusic, 1000);
-  setTimeout(tryPlayMusic, 3000);
 }
 
 function pauseBackgroundMusic() {
