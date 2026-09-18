@@ -142,7 +142,7 @@ let ongoingPageState = {};
 let completedPageState = {};
 
 // ============================================================
-// BACKGROUND MUSIC — CLICK + SCROLL
+// BACKGROUND MUSIC — PLAY SA UNANG TOUCH
 // ============================================================
 
 let bgMusic = null;
@@ -166,7 +166,6 @@ function tryPlayMusic() {
       })
       .catch(function(err) {
         console.log('[MobiFlix] Play attempt failed:', err.name);
-        // Hindi pa nag-play — hintayin ang susunod na interaction
       });
   }
 }
@@ -177,8 +176,10 @@ function removeMusicListeners() {
   document.removeEventListener('click', tryPlayMusic, true);
   document.removeEventListener('touchstart', tryPlayMusic, true);
   document.removeEventListener('touchend', tryPlayMusic, true);
-  document.removeEventListener('scroll', tryPlayMusic, true);
+  document.removeEventListener('touchmove', tryPlayMusic, true);
   document.removeEventListener('wheel', tryPlayMusic, true);
+  document.removeEventListener('keydown', tryPlayMusic, true);
+  document.removeEventListener('pointerdown', tryPlayMusic, true);
 
   musicInteractionListenersAttached = false;
 }
@@ -196,30 +197,34 @@ function initBackgroundMusic() {
   bgMusic.volume = 0.4;
   bgMusic.loop = true;
   bgMusic.preload = 'auto';
-
-  // I-load muna yung file para siguradong ready
   bgMusic.load();
 
-  // Error handling
   bgMusic.addEventListener('error', function() {
     console.error('[MobiFlix] Music file error:', bgMusic.error);
-    alert('❌ Hindi ma-load ang music file!\n\nCheck kung nandun yung:\nmusic/background.mp3');
   });
 
   bgMusic.addEventListener('canplaythrough', function() {
-    console.log('[MobiFlix] Music ready to play ✅');
+    console.log('[MobiFlix] Music ready ✅');
   });
 
-  // Attach listeners — CLICK at SCROLL (pareho tutugtog)
   if (!musicInteractionListenersAttached) {
+    // CLICK / TAP — pinaka-una
     document.addEventListener('click', tryPlayMusic, true);
     document.addEventListener('touchstart', tryPlayMusic, true);
     document.addEventListener('touchend', tryPlayMusic, true);
-    document.addEventListener('scroll', tryPlayMusic, true);
+    document.addEventListener('pointerdown', tryPlayMusic, true);
+
+    // SCROLL SA MOBILE — pag gumalaw ang daliri
+    document.addEventListener('touchmove', tryPlayMusic, true);
+
+    // SCROLL SA DESKTOP
     document.addEventListener('wheel', tryPlayMusic, true);
 
+    // KEYBOARD
+    document.addEventListener('keydown', tryPlayMusic, true);
+
     musicInteractionListenersAttached = true;
-    console.log('[MobiFlix] Music listeners attached (click + scroll) ✅');
+    console.log('[MobiFlix] Music listeners attached ✅');
   }
 }
 
