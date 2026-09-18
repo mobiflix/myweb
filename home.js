@@ -142,7 +142,7 @@ let ongoingPageState = {};
 let completedPageState = {};
 
 // ============================================================
-// BACKGROUND MUSIC — PLAY SA UNANG TOUCH
+// BACKGROUND MUSIC — TOUCHEND TRIGGER (scroll + release)
 // ============================================================
 
 let bgMusic = null;
@@ -174,12 +174,9 @@ function removeMusicListeners() {
   if (!musicInteractionListenersAttached) return;
 
   document.removeEventListener('click', tryPlayMusic, true);
-  document.removeEventListener('touchstart', tryPlayMusic, true);
   document.removeEventListener('touchend', tryPlayMusic, true);
-  document.removeEventListener('touchmove', tryPlayMusic, true);
   document.removeEventListener('wheel', tryPlayMusic, true);
   document.removeEventListener('keydown', tryPlayMusic, true);
-  document.removeEventListener('pointerdown', tryPlayMusic, true);
 
   musicInteractionListenersAttached = false;
 }
@@ -208,23 +205,20 @@ function initBackgroundMusic() {
   });
 
   if (!musicInteractionListenersAttached) {
-    // CLICK / TAP — pinaka-una
+    // CLICK — desktop click at mobile tap
     document.addEventListener('click', tryPlayMusic, true);
-    document.addEventListener('touchstart', tryPlayMusic, true);
+
+    // TOUCHEND — pag-release ng daliri (kahit nag-scroll muna bago release)
     document.addEventListener('touchend', tryPlayMusic, true);
-    document.addEventListener('pointerdown', tryPlayMusic, true);
 
-    // SCROLL SA MOBILE — pag gumalaw ang daliri
-    document.addEventListener('touchmove', tryPlayMusic, true);
-
-    // SCROLL SA DESKTOP
+    // WHEEL — desktop mouse scroll
     document.addEventListener('wheel', tryPlayMusic, true);
 
-    // KEYBOARD
+    // KEYDOWN — keyboard (desktop)
     document.addEventListener('keydown', tryPlayMusic, true);
 
     musicInteractionListenersAttached = true;
-    console.log('[MobiFlix] Music listeners attached ✅');
+    console.log('[MobiFlix] Music listeners attached (click + touchend) ✅');
   }
 }
 
