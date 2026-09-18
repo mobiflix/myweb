@@ -1,5 +1,5 @@
 {
-  "version": "v42",
-  "released": "2026-09-17",
-  "notes": "Fixed Country filter dropdown - populated na yung mga bansa"
+  "version": "v43",
+  "released": "2026-09-18",
+  "notes": "Added background music (auto-play after first click, 40% volume, pause on Trailer/Play Now)"
 }
