@@ -1,5 +1,5 @@
 {
-  "version": "v42",
-  "released": "2026-09-17",
-  "notes": "Fixed Country filter dropdown - populated na yung mga bansa"
+  "version": "v43",
+  "released": "2026-09-18",
+  "notes": "Idinagdag ang Top 10 KDrama Today at Top 10 Anime Today na may View All pages"
 }
