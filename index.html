@@ -8,15 +8,15 @@
   <meta http-equiv="Expires" content="0">
   <title>MobiFlix</title>
 
-  <link rel="stylesheet" href="home.css?v=42">
-  <link rel="manifest" href="manifest.json?v=42">
+  <link rel="stylesheet" href="home.css?v=43">
+  <link rel="manifest" href="manifest.json?v=43">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script defer src="auth.js?v=42"></script>
-  <script defer src="home.js?v=42"></script>
+  <script defer src="auth.js?v=43"></script>
+  <script defer src="home.js?v=43"></script>
 
   <script>
     (function() {
-      const CURRENT_VERSION = 'v42';
+      const CURRENT_VERSION = 'v43';
       const CHECK_INTERVAL = 60000;
 
       async function checkForUpdates() {
@@ -1060,6 +1060,11 @@
   <a href="https://telegram.me/mobiflixhub" target="_blank" rel="noopener" class="telegram-float" aria-label="Join our Telegram group">
     <i class="fa-brands fa-telegram"></i>
   </a>
+
+  <!-- ===== BACKGROUND MUSIC ===== -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="music/background.mp3" type="audio/mpeg">
+  </audio>
 
 </body>
 </html>
