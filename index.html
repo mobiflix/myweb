@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>MobiFlix</title>
+
+  <link rel="stylesheet" href="home.css?v=43">
+  <link rel="manifest" href="manifest.json?v=43">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script defer src="auth.js?v=43"></script>
+  <script defer src="home.js?v=43"></script>
+
+  <script>
+    (function() {
+      const CURRENT_VERSION = 'v43';
+      const CHECK_INTERVAL = 60000;
+
+      async function checkForUpdates() {
+        try {
+          const res = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+
+          if (data.version && data.version !== CURRENT_VERSION) {
+            console.log('[MobiFlix] New version:', data.version);
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              await Promise.all(cacheNames.map(name => caches.delete(name)));
+            }
+            const url = new URL(window.location.href);
+            url.searchParams.set('v', data.version);
+            window.location.replace(url.toString());
+          }
+        } catch (e) {}
+      }
+
+      checkForUpdates();
+      window.addEventListener('focus', checkForUpdates);
+      setInterval(checkForUpdates, CHECK_INTERVAL);
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- ===== LOGIN SCREEN ===== -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-bg"></div>
+    <div class="login-box">
+      <a href="#" class="login-logo">Mobi<span>Flix</span></a>
+      <h2>Sign In</h2>
+      <form id="login-form">
+        <div class="login-field">
+          <i class="fa fa-user"></i>
+          <input type="text" id="login-username" placeholder="Username" autocomplete="username" />
+        </div>
+        <div class="login-field">
+          <i class="fa fa-lock"></i>
+          <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" />
+        </div>
+        <div class="login-error" id="login-error" style="display:none;"></div>
+        <button type="submit" class="login-btn">Sign In</button>
+      </form>
+      <p class="login-note">Enter your username and password to continue.</p>
+    </div>
+  </div>
+
+  <!-- ===== SNOW EFFECT CONTAINER ===== -->
+  <div id="snow-container"></div>
+
+  <!-- ===== FIXED BACK BUTTON (DETAILS MODAL) ===== -->
+  <button class="fixed-back-btn" id="details-back-btn" onclick="closeModal()" style="display:none;">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
+
+  <!-- ===== FIXED BACK BUTTON (TRAILER MODAL) ===== -->
+  <button class="fixed-back-btn" id="trailer-back-btn" onclick="closeTrailer()" style="display:none;">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
+
+  <!-- ===== BUONG APP ===== -->
+  <div id="app-content">
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="index.html" class="logo">Mobi<span>Flix</span></a>
+      </div>
+      <div class="nav-right">
+        <button class="nav-icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i class="fa fa-moon" id="theme-toggle-icon"></i>
+        </button>
+        <button class="nav-icon-btn" onclick="openNotifications()" aria-label="Notifications" style="position:relative;">
+          <i class="fa fa-bell"></i>
+          <span class="notif-badge" id="notif-badge" style="display:none;"></span>
+        </button>
+        <button class="nav-icon-btn" onclick="openSearchModal()" aria-label="Search">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ===== HERO BANNER ===== -->
+    <div class="hero" id="banner">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 id="banner-title">Loading...</h1>
+        <div class="hero-meta" id="banner-meta">
+          <span class="hero-rating" id="banner-rating"></span>
+          <span class="hero-year" id="banner-year"></span>
+          <span class="hero-type" id="banner-type"></span>
+        </div>
+        <p class="hero-description" id="banner-description"></p>
+        <div class="hero-buttons">
+          <button class="btn-play" onclick="playBanner()"><i class="fa fa-play"></i> Play</button>
+          <button class="btn-info" onclick="showBannerDetails()"><i class="fa fa-info-circle"></i> More Info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONTENT ROWS ===== -->
+    <div class="content">
+
+      <div class="row" id="continue-watching-row" style="display:none;">
+        <div class="row-header">
+          <h2>▶️ Continue Watching</h2>
+        </div>
+        <div class="continue-scroll" id="continue-watching-list"></div>
+      </div>
+
+      <div class="row providers-row">
+        <div class="row-header">
+          <h2>📡 Streaming Providers</h2>
+        </div>
+        <div class="providers-scroll" id="providers-list"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-header">
+          <h2>🔥 Top 10 Movies This Week</h2>
+          <button class="view-all-btn" onclick="openViewAll('movies')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-movies"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-header">
+          <h2>📺 Top 10 TV Shows This Week</h2>
+          <button class="view-all-btn" onclick="openViewAll('tv')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-tv"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-header">
+          <h2>🇰🇷 Top 10 KDrama This Week</h2>
+          <button class="view-all-btn" onclick="openViewAll('kdrama')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-kdrama"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-header">
+          <h2>🎌 Top 10 Anime This Week</h2>
+          <button class="view-all-btn" onclick="openViewAll('anime')">View All →</button>
+        </div>
+        <div class="top10-scroll" id="top10-anime"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-header">
+          <h2>🔞 Vivamax Movies</h2>
+          <button class="view-all-btn" onclick="openVivamaxPage()">View All →</button>
+        </div>
+        <div class="list horizontal-scroll" id="vivamax-list"></div>
+      </div>
+
+    </div>
+
+    <!-- ===== VIEW ALL PAGE ===== -->
+    <div class="view-all-page" id="view-all-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeViewAll()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2 id="view-all-title">Movies</h2>
+        <button class="filter-btn" onclick="toggleFilters('view-all')">
+          <i class="fa fa-sliders"></i> Filters
+        </button>
+      </div>
+
+      <div class="filter-panel" id="view-all-filter-panel" style="display:none;">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Year</label>
+            <select id="filter-year">
+              <option value="">Any Year</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+              <option value="2012">2012</option>
+              <option value="2011">2011</option>
+              <option value="2010">2010</option>
+              <option value="2009">2009</option>
+              <option value="2008">2008</option>
+              <option value="2007">2007</option>
+              <option value="2006">2006</option>
+              <option value="2005">2005</option>
+              <option value="2004">2004</option>
+              <option value="2003">2003</option>
+              <option value="2002">2002</option>
+              <option value="2001">2001</option>
+              <option value="2000">2000</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select id="filter-rating">
+              <option value="">Any Rating</option>
+              <option value="9">9+ ⭐</option>
+              <option value="8">8+ ⭐</option>
+              <option value="7">7+ ⭐</option>
+              <option value="6">6+ ⭐</option>
+              <option value="5">5+ ⭐</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Genre</label>
+            <select id="filter-genre">
+              <option value="">All Genres</option>
+              <option value="28">Action</option>
+              <option value="35">Comedy</option>
+              <option value="18">Drama</option>
+              <option value="27">Horror</option>
+              <option value="10749">Romance</option>
+              <option value="878">Sci-Fi</option>
+              <option value="53">Thriller</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Country</label>
+            <select id="filter-country">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="filter-sort">
+              <option value="popularity.desc">Most Watched (Default)</option>
+              <option value="primary_release_date.desc">Newest to Oldest</option>
+              <option value="primary_release_date.asc">Oldest to Newest</option>
+              <option value="vote_average.desc">Highest Rated</option>
+              <option value="vote_average.asc">Lowest Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="filter-apply-btn" onclick="applyFilters('view-all')">
+            <i class="fa fa-check"></i> Apply
+          </button>
+          <button class="filter-clear-btn" onclick="clearFilters('view-all')">
+            <i class="fa fa-times"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="view-all-grid" id="view-all-grid"></div>
+      <div class="view-all-loading" id="view-all-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="view-all-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== VIVAMAX PAGE ===== -->
+    <div class="view-all-page" id="vivamax-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeVivamaxPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>🔞 Vivamax Movies</h2>
+        <button class="filter-btn" onclick="toggleFilters('vivamax')">
+          <i class="fa fa-sliders"></i> Filters
+        </button>
+      </div>
+
+      <div class="filter-panel" id="vivamax-filter-panel" style="display:none;">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Year</label>
+            <select id="vivamax-filter-year">
+              <option value="">Any Year</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+              <option value="2012">2012</option>
+              <option value="2011">2011</option>
+              <option value="2010">2010</option>
+              <option value="2009">2009</option>
+              <option value="2008">2008</option>
+              <option value="2007">2007</option>
+              <option value="2006">2006</option>
+              <option value="2005">2005</option>
+              <option value="2004">2004</option>
+              <option value="2003">2003</option>
+              <option value="2002">2002</option>
+              <option value="2001">2001</option>
+              <option value="2000">2000</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select id="vivamax-filter-rating">
+              <option value="">Any Rating</option>
+              <option value="9">9+ ⭐</option>
+              <option value="8">8+ ⭐</option>
+              <option value="7">7+ ⭐</option>
+              <option value="6">6+ ⭐</option>
+              <option value="5">5+ ⭐</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Genre</label>
+            <select id="vivamax-filter-genre">
+              <option value="">All Genres</option>
+              <option value="28">Action</option>
+              <option value="35">Comedy</option>
+              <option value="18">Drama</option>
+              <option value="27">Horror</option>
+              <option value="10749">Romance</option>
+              <option value="53">Thriller</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Country</label>
+            <select id="vivamax-filter-country">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="vivamax-filter-sort">
+              <option value="primary_release_date.desc">Newest to Oldest (Default)</option>
+              <option value="primary_release_date.asc">Oldest to Newest</option>
+              <option value="popularity.desc">Popularity</option>
+              <option value="vote_average.desc">Highest Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="filter-apply-btn" onclick="applyFilters('vivamax')">
+            <i class="fa fa-check"></i> Apply
+          </button>
+          <button class="filter-clear-btn" onclick="clearFilters('vivamax')">
+            <i class="fa fa-times"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="view-all-grid" id="vivamax-page-grid"></div>
+      <div class="view-all-loading" id="vivamax-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="vivamax-page-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== GENRE PAGE ===== -->
+    <div class="view-all-page" id="genre-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeGenrePage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2 id="genre-page-title">Genre</h2>
+        <button class="filter-btn" onclick="toggleFilters('genre')">
+          <i class="fa fa-sliders"></i> Filters
+        </button>
+      </div>
+
+      <div class="filter-panel" id="genre-filter-panel" style="display:none;">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Year</label>
+            <select id="genre-filter-year">
+              <option value="">Any Year</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+              <option value="2012">2012</option>
+              <option value="2011">2011</option>
+              <option value="2010">2010</option>
+              <option value="2009">2009</option>
+              <option value="2008">2008</option>
+              <option value="2007">2007</option>
+              <option value="2006">2006</option>
+              <option value="2005">2005</option>
+              <option value="2004">2004</option>
+              <option value="2003">2003</option>
+              <option value="2002">2002</option>
+              <option value="2001">2001</option>
+              <option value="2000">2000</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select id="genre-filter-rating">
+              <option value="">Any Rating</option>
+              <option value="9">9+ ⭐</option>
+              <option value="8">8+ ⭐</option>
+              <option value="7">7+ ⭐</option>
+              <option value="6">6+ ⭐</option>
+              <option value="5">5+ ⭐</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Country</label>
+            <select id="genre-filter-country">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="genre-filter-sort">
+              <option value="popularity.desc">Popularity (Default)</option>
+              <option value="primary_release_date.desc">Newest to Oldest</option>
+              <option value="primary_release_date.asc">Oldest to Newest</option>
+              <option value="vote_average.desc">Highest Rated</option>
+              <option value="vote_average.asc">Lowest Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="filter-apply-btn" onclick="applyFilters('genre')">
+            <i class="fa fa-check"></i> Apply
+          </button>
+          <button class="filter-clear-btn" onclick="clearFilters('genre')">
+            <i class="fa fa-times"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="view-all-grid" id="genre-page-grid"></div>
+      <div class="view-all-loading" id="genre-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="genre-page-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== ONGOING TV PAGE ===== -->
+    <div class="view-all-page" id="ongoing-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeOngoingPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>🔴 Ongoing TV Shows</h2>
+      </div>
+      <div class="view-all-grid" id="ongoing-page-grid"></div>
+      <div class="view-all-loading" id="ongoing-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="ongoing-page-end" style="display:none;">
+        📺 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== COMPLETED TV PAGE ===== -->
+    <div class="view-all-page" id="completed-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeCompletedPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>✅ Completed TV Shows</h2>
+      </div>
+      <div class="view-all-grid" id="completed-page-grid"></div>
+      <div class="view-all-loading" id="completed-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="completed-page-end" style="display:none;">
+        📺 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== PROVIDER PAGE ===== -->
+    <div class="view-all-page" id="provider-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeProviderPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2 id="provider-page-title">Provider</h2>
+        <button class="filter-btn" onclick="toggleFilters('provider')">
+          <i class="fa fa-sliders"></i> Filters
+        </button>
+      </div>
+
+      <div class="filter-panel" id="provider-filter-panel" style="display:none;">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Year</label>
+            <select id="provider-filter-year">
+              <option value="">Any Year</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+              <option value="2012">2012</option>
+              <option value="2011">2011</option>
+              <option value="2010">2010</option>
+              <option value="2009">2009</option>
+              <option value="2008">2008</option>
+              <option value="2007">2007</option>
+              <option value="2006">2006</option>
+              <option value="2005">2005</option>
+              <option value="2004">2004</option>
+              <option value="2003">2003</option>
+              <option value="2002">2002</option>
+              <option value="2001">2001</option>
+              <option value="2000">2000</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select id="provider-filter-rating">
+              <option value="">Any Rating</option>
+              <option value="9">9+ ⭐</option>
+              <option value="8">8+ ⭐</option>
+              <option value="7">7+ ⭐</option>
+              <option value="6">6+ ⭐</option>
+              <option value="5">5+ ⭐</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Genre</label>
+            <select id="provider-filter-genre">
+              <option value="">All Genres</option>
+              <option value="28">Action</option>
+              <option value="35">Comedy</option>
+              <option value="18">Drama</option>
+              <option value="27">Horror</option>
+              <option value="10749">Romance</option>
+              <option value="878">Sci-Fi</option>
+              <option value="53">Thriller</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Country</label>
+            <select id="provider-filter-country">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="provider-filter-sort">
+              <option value="popularity.desc">Popularity (Default)</option>
+              <option value="primary_release_date.desc">Newest to Oldest</option>
+              <option value="primary_release_date.asc">Oldest to Newest</option>
+              <option value="vote_average.desc">Highest Rated</option>
+              <option value="vote_average.asc">Lowest Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="filter-apply-btn" onclick="applyFilters('provider')">
+            <i class="fa fa-check"></i> Apply
+          </button>
+          <button class="filter-clear-btn" onclick="clearFilters('provider')">
+            <i class="fa fa-times"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="view-all-grid" id="provider-page-grid"></div>
+      <div class="view-all-loading" id="provider-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="provider-page-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== MY LIST PAGE ===== -->
+    <div class="my-list-page" id="my-list-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeMyListPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>🔖 My List</h2>
+      </div>
+      <div class="my-list-grid" id="my-list-grid"></div>
+      <div class="my-list-empty" id="my-list-empty" style="display:none;">
+        <i class="fa fa-bookmark-o"></i>
+        <p>You haven't added anything to your list yet.</p>
+        <p style="font-size: 13px; color: #666; margin-top: 8px;">Go to any movie and click "Add to List".</p>
+      </div>
+    </div>
+
+    <!-- ===== GENRE PAGE (dating "More") ===== -->
+    <div class="more-page" id="more-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeMorePage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>🎭 Genres</h2>
+      </div>
+      <div class="more-list" id="more-genres-list"></div>
+    </div>
+
+    <!-- ===== PERSON PAGE (para sa cast click) ===== -->
+    <div class="view-all-page" id="person-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closePersonPage()"><i class="fa fa-arrow-left"></i> Back</button>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img id="person-avatar" style="width:42px; height:42px; border-radius:50%; object-fit:cover; background:#1a1a1a; border:2px solid rgba(255,255,255,0.1);" alt="" />
+          <h2 id="person-page-title">Person</h2>
+        </div>
+      </div>
+      <div class="view-all-grid" id="person-page-grid"></div>
+      <div class="view-all-loading" id="person-page-loading" style="display:none;">
+        <i class="fa fa-spinner fa-spin"></i> Loading more...
+      </div>
+      <div class="view-all-end" id="person-page-end" style="display:none;">
+        🎬 You've reached the end
+      </div>
+    </div>
+
+    <!-- ===== USER PROFILE PAGE ===== -->
+    <div class="user-profile-page" id="user-profile-page">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeUserProfile()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>👤 Profile</h2>
+      </div>
+
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <i class="fa fa-user"></i>
+        </div>
+        <div class="profile-info">
+          <h3 id="profile-username">User</h3>
+          <p>MobiFlix Member</p>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3 class="profile-section-title">
+          <i class="fa fa-history"></i> Watch History
+        </h3>
+        <div class="history-grid" id="history-grid"></div>
+        <div class="history-empty" id="history-empty" style="display:none;">
+          <i class="fa fa-film"></i>
+          <p>You haven't watched anything yet.</p>
+          <p style="font-size: 12px; color: #666; margin-top: 6px;">Start watching to see your history here.</p>
+        </div>
+        <button class="clear-history-btn" id="clear-history-btn" onclick="clearHistory()" style="display:none;">
+          <i class="fa fa-trash"></i> Clear History
+        </button>
+      </div>
+
+      <div class="profile-section">
+        <h3 class="profile-section-title">
+          <i class="fa fa-palette"></i> Theme
+        </h3>
+        <div class="theme-options" id="theme-options">
+          <div class="theme-option active" data-theme="default" onclick="setTheme('default')">
+            <div class="theme-preview theme-preview-default"></div>
+            <span>Dark</span>
+          </div>
+          <div class="theme-option" data-theme="light" onclick="setTheme('light')">
+            <div class="theme-preview theme-preview-light"></div>
+            <span>Light</span>
+          </div>
+          <div class="theme-option" data-theme="dark-blue" onclick="setTheme('dark-blue')">
+            <div class="theme-preview theme-preview-blue"></div>
+            <span>Blue</span>
+          </div>
+          <div class="theme-option" data-theme="dark-purple" onclick="setTheme('dark-purple')">
+            <div class="theme-preview theme-preview-purple"></div>
+            <span>Purple</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3 class="profile-section-title">
+          <i class="fa fa-bell"></i> Notifications
+        </h3>
+        <label class="switch-row">
+          <span>New release & episode alerts</span>
+          <input type="checkbox" id="notif-toggle" onchange="toggleNotifications()" checked>
+          <span class="switch"></span>
+        </label>
+      </div>
+
+      <div class="profile-section">
+        <button class="profile-logout-btn" onclick="handleLogout()">
+          <i class="fa fa-sign-out-alt"></i> Log Out
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ===== SEARCH PAGE ===== -->
+    <div class="search-modal" id="search-modal">
+      <div class="view-all-header">
+        <button class="back-btn" onclick="closeSearchModal()"><i class="fa fa-arrow-left"></i> Back</button>
+        <h2>Search</h2>
+      </div>
+      <div class="search-container">
+        <i class="fa fa-search"></i>
+        <input type="text" id="search-input" placeholder="Search for a movie or TV show..." oninput="searchTMDB()" />
+      </div>
+      <div class="results" id="search-results"></div>
+    </div>
+
+    <!-- ===== NOTIFICATIONS PANEL ===== -->
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-header">
+        <h2>🔔 Notifications</h2>
+        <button class="notif-close-btn" onclick="closeNotifications()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="notif-list" id="notif-list"></div>
+      <div class="notif-empty" id="notif-empty" style="display:none;">
+        <i class="fa fa-bell-slash"></i>
+        <p>No notifications yet.</p>
+      </div>
+    </div>
+
+    <!-- ===== DETAILS MODAL ===== -->
+    <div class="modal" id="modal">
+      <div class="modal-content">
+
+        <div class="details-view" id="details-view">
+          <div class="details-poster">
+            <img id="modal-poster" src="" alt="" />
+            <div class="details-poster-overlay"></div>
+          </div>
+
+          <div class="details-body">
+            <h2 id="modal-title"></h2>
+
+            <div class="details-meta">
+              <span class="details-rating" id="modal-rating-num"></span>
+              <span class="details-sep">|</span>
+              <span class="details-year" id="modal-year-num"></span>
+              <span class="details-sep">|</span>
+              <span class="details-runtime" id="modal-runtime"></span>
+            </div>
+
+            <div class="details-buttons">
+              <button class="btn-play-now" onclick="playNow()">
+                <i class="fa fa-play"></i> Play Now
+              </button>
+              <button class="btn-trailer" onclick="playTrailer()" id="btn-trailer" style="display:none;">
+                <i class="fa fa-film"></i> Trailer
+              </button>
+              <button class="btn-add-list" onclick="toggleAddToList()">
+                <i class="fa fa-bookmark" id="bookmark-icon"></i> <span id="bookmark-text">Add to List</span>
+              </button>
+            </div>
+
+            <p class="details-description" id="modal-description"></p>
+
+            <div class="episodes-section" id="episodes-section" style="display:none;">
+              <h3 class="section-title">📺 Episodes</h3>
+              <div class="season-selector" id="season-selector"></div>
+              <div class="episodes-list" id="episodes-list"></div>
+            </div>
+
+            <div class="cast-section" id="cast-section">
+              <h3 class="section-title">🎭 Cast</h3>
+              <div class="cast-scroll" id="cast-list"></div>
+            </div>
+
+            <div class="similar-section" id="similar-section">
+              <h3 class="section-title">✨ You May Also Like</h3>
+              <div class="similar-scroll" id="similar-list"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== TRAILER MODAL ===== -->
+    <div class="trailer-modal" id="trailer-modal">
+      <div class="trailer-content">
+        <div class="trailer-wrapper">
+          <iframe id="trailer-iframe" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p>&copy; 2026 MobiFlix. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Disclaimer</a>
+          <a href="#">About Us</a>
+          <a href="#">Contact Us</a>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /#app-content -->
+
+  <!-- ===== BOTTOM NAVIGATION BAR ===== -->
+  <div class="bottom-nav">
+    <a class="bottom-nav-item active" onclick="goHome()">
+      <i class="fa fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openMoviesPage()">
+      <i class="fa fa-film"></i>
+      <span>Movies</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openSeriesPage()">
+      <i class="fa fa-tv"></i>
+      <span>Series</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openMorePage()">
+      <i class="fa fa-masks-theater"></i>
+      <span>Genre</span>
+    </a>
+    <a class="bottom-nav-item" onclick="openUserProfile()">
+      <i class="fa fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+
+  <!-- ===== TELEGRAM FLOAT BUTTON ===== -->
+  <a href="https://telegram.me/mobiflixhub" target="_blank" rel="noopener" class="telegram-float" aria-label="Join our Telegram group">
+    <i class="fa-brands fa-telegram"></i>
+  </a>
+
+</body>
+</html>
