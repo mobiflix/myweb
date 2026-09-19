@@ -1,5 +1,5 @@
 {
-  "version": "v57",
+  "version": "v58",
   "released": "2026-09-19",
-  "notes": "Trailer page (trailer.html) + bagong player domain (zxcstream.icu)."
+  "notes": "Trailer fallback para sa YouTube embed restrictions."
 }
