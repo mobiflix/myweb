@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>MobiFlix Trailer</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trailer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #0b0b0b;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .trailer-back-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .trailer-back-btn:hover {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    .trailer-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+      text-align: center;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 12px;
+    }
+
+    .trailer-header-spacer {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .trailer-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trailer-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1400px;
+      padding-bottom: 56.25%;
+      height: 0;
+      background: #000;
+    }
+
+    .trailer-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+    }
+
+    .trailer-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #666;
+      font-size: 14px;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 5;
+    }
+
+    .trailer-loading i {
+      font-size: 32px;
+      color: #e50914;
+    }
+
+    .trailer-error {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+
+    .trailer-error i {
+      font-size: 48px;
+      color: #e50914;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .trailer-error p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .trailer-error a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #e50914;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .trailer-error a:hover {
+      background: #ff0a16;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .trailer-header { padding: 10px 12px; }
+      .trailer-title { font-size: 14px; }
+      .trailer-back-btn { padding: 7px 14px; font-size: 13px; }
+      .trailer-header-spacer { width: 70px; }
+    }
+
+    @media (max-width: 480px) {
+      .trailer-header-spacer { width: 60px; }
+      .trailer-back-btn { padding: 6px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="trailer-header">
+    <a href="index.html" class="trailer-back-btn" onclick="goBack(event)">
+      <i class="fa fa-arrow-left"></i> Back
+    </a>
+    <h1 class="trailer-title" id="trailer-title">Trailer</h1>
+    <div class="trailer-header-spacer"></div>
+  </div>
+
+  <div class="trailer-body">
+    <div class="trailer-loading" id="trailer-loading">
+      <i class="fa fa-spinner fa-spin"></i>
+      <span>Loading trailer...</span>
+    </div>
+    <div class="trailer-wrapper" id="trailer-wrapper" style="display:none;">
+      <iframe
+        id="trailer-iframe"
+        src=""
+        frameborder="0"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
+  </div>
+
+  <script>
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function goBack(e) {
+      e.preventDefault();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoKey = getParam('key');
+      const title = getParam('title');
+
+      const iframe = document.getElementById('trailer-iframe');
+      const loading = document.getElementById('trailer-loading');
+      const wrapper = document.getElementById('trailer-wrapper');
+      const titleEl = document.getElementById('trailer-title');
+
+      if (title) {
+        const decoded = decodeURIComponent(title);
+        titleEl.textContent = decoded;
+        document.title = decoded + ' — Trailer — MobiFlix';
+      }
+
+      if (!videoKey) {
+        wrapper.style.display = 'none';
+        loading.style.display = 'flex';
+        loading.innerHTML = '<div class="trailer-error">' +
+          '<i class="fa fa-exclamation-triangle"></i>' +
+          '<p>Invalid trailer URL. Missing video key.</p>' +
+          '<a href="index.html">Go Back to Home</a>' +
+          '</div>';
+        return;
+      }
+
+      const embedURL = 'https://www.youtube.com/embed/' + videoKey + '?autoplay=1&rel=0&modestbranding=1';
+
+      console.log('[MobiFlix Trailer] Loading:', embedURL);
+
+      iframe.src = embedURL;
+
+      iframe.onload = function() {
+        loading.style.display = 'none';
+        wrapper.style.display = 'block';
+      };
+
+      setTimeout(function() {
+        if (loading.style.display !== 'none') {
+          loading.style.display = 'none';
+          wrapper.style.display = 'block';
+        }
+      }, 3000);
+    });
+  </script>
+
+</body>
+</html>
