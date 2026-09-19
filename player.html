@@ -23,60 +23,6 @@
       border: none;
       background: #000;
     }
-    .top-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .top-bar.hidden { opacity: 0; pointer-events: none; }
-    .top-bar button {
-      pointer-events: auto;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 60px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: 0.2s;
-      font-family: inherit;
-    }
-    .top-bar button:hover {
-      background: #e50914;
-      border-color: #e50914;
-    }
-    .title-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 10;
-      padding: 14px 18px;
-      background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
-      color: #fff;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .title-bar.hidden { opacity: 0; }
-    .title-bar h1 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 2px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
-    }
-    .title-bar p {
-      font-size: 12px;
-      color: #bbb;
-    }
     .loading-overlay {
       position: fixed;
       inset: 0;
@@ -90,23 +36,12 @@
       transition: opacity 0.4s;
     }
     .loading-overlay.hidden { opacity: 0; pointer-events: none; }
-    @media (max-width: 480px) {
-      .title-bar h1 { font-size: 14px; }
-      .title-bar p { font-size: 11px; }
-      .top-bar button { padding: 7px 13px; font-size: 13px; }
-    }
   </style>
 </head>
 <body>
 
   <div class="loading-overlay" id="loading-overlay">
     <i class="fa fa-spinner fa-spin"></i>
-  </div>
-
-  <div class="top-bar" id="top-bar">
-    <button onclick="closePlayer()">
-      <i class="fa fa-arrow-left"></i> Back
-    </button>
   </div>
 
   <iframe
@@ -117,11 +52,6 @@
     referrerpolicy="no-referrer"
   ></iframe>
 
-  <div class="title-bar" id="title-bar">
-    <h1 id="player-title">Loading...</h1>
-    <p id="player-subtitle"></p>
-  </div>
-
   <script>
     (function() {
       const params = new URLSearchParams(window.location.search);
@@ -129,8 +59,6 @@
       const id = params.get('id') || '';
       const season = params.get('season') || '';
       const episode = params.get('episode') || '';
-      const title = params.get('title') || 'MobiFlix';
-      const year = params.get('year') || '';
 
       const MOVIE_BASE = 'https://zxcstream.icu/watch/movie/';
       const TV_BASE = 'https://zxcstream.icu/watch/tv/';
@@ -147,49 +75,33 @@
         embedURL = `${MOVIE_BASE}${id}`;
       }
 
-      document.getElementById('player-frame').src = embedURL;
-      document.getElementById('player-title').textContent = title;
-      document.getElementById('player-subtitle').textContent =
-        type === 'tv'
-          ? (season && episode ? `Season ${season} • Episode ${episode}` : 'TV Show')
-          : (year ? `Movie • ${year}` : 'Movie');
+      // ✅ Auto-play — idagdag ang autoplay params
+      const separator = embedURL.includes('?') ? '&' : '?';
+      embedURL = embedURL + separator + 'autoplay=1&autoPlay=1&muted=0&playsinline=1';
 
       const frame = document.getElementById('player-frame');
+      frame.src = embedURL;
+
       frame.addEventListener('load', function() {
         setTimeout(function() {
           document.getElementById('loading-overlay').classList.add('hidden');
         }, 600);
       });
 
+      // Fallback: itago ang loading pagkatapos ng 4 seconds
       setTimeout(function() {
         document.getElementById('loading-overlay').classList.add('hidden');
       }, 4000);
 
-      let hideTimer = setTimeout(hideBars, 4000);
+      // ✅ I-try i-auto-play sa iframe kung posible
+      frame.addEventListener('load', function() {
+        try {
+          // Subukang mag-send ng play command sa iframe (kung same-origin)
+          frame.contentWindow.postMessage({ type: 'play' }, '*');
+        } catch (e) {}
+      });
 
-      function hideBars() {
-        document.getElementById('top-bar').classList.add('hidden');
-        document.getElementById('title-bar').classList.add('hidden');
-      }
-
-      function showBars() {
-        document.getElementById('top-bar').classList.remove('hidden');
-        document.getElementById('title-bar').classList.remove('hidden');
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(hideBars, 4000);
-      }
-
-      document.addEventListener('mousemove', showBars);
-      document.addEventListener('touchstart', showBars);
-
-      window.closePlayer = function() {
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          window.location.href = 'index.html';
-        }
-      };
-
+      // I-lock sa landscape kung mobile
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function() {});
       }
