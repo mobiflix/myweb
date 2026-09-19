@@ -121,6 +121,105 @@
       color: #e50914;
     }
 
+    /* ===== FALLBACK PANEL ===== */
+    .trailer-fallback {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0b0b0b 0%, #1a0000 100%);
+      padding: 40px 20px;
+      text-align: center;
+      z-index: 20;
+    }
+
+    .trailer-fallback-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #e50914;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(229,9,20,0.4);
+    }
+
+    .trailer-fallback-icon i {
+      font-size: 36px;
+      color: #fff;
+    }
+
+    .trailer-fallback h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .trailer-fallback p {
+      font-size: 15px;
+      color: #aaa;
+      margin-bottom: 28px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .trailer-fallback-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-watch-youtube {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: #ff0000;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      transition: 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-watch-youtube:hover {
+      background: #cc0000;
+      transform: scale(1.03);
+    }
+
+    .btn-watch-youtube i {
+      font-size: 20px;
+    }
+
+    .btn-go-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.2s;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+    }
+
+    .btn-go-back:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.4);
+    }
+
     .trailer-error {
       text-align: center;
       padding: 40px 20px;
@@ -160,11 +259,16 @@
       .trailer-title { font-size: 14px; }
       .trailer-back-btn { padding: 7px 14px; font-size: 13px; }
       .trailer-header-spacer { width: 70px; }
+      .trailer-fallback h2 { font-size: 18px; }
+      .trailer-fallback p { font-size: 14px; }
+      .btn-watch-youtube, .btn-go-back { padding: 12px 22px; font-size: 14px; }
     }
 
     @media (max-width: 480px) {
       .trailer-header-spacer { width: 60px; }
       .trailer-back-btn { padding: 6px 12px; font-size: 12px; }
+      .trailer-fallback h2 { font-size: 16px; }
+      .btn-watch-youtube, .btn-go-back { padding: 11px 18px; font-size: 13px; }
     }
   </style>
 </head>
@@ -184,6 +288,7 @@
       <i class="fa fa-spinner fa-spin"></i>
       <span>Loading trailer...</span>
     </div>
+
     <div class="trailer-wrapper" id="trailer-wrapper" style="display:none;">
       <iframe
         id="trailer-iframe"
@@ -194,9 +299,29 @@
         referrerpolicy="no-referrer"
       ></iframe>
     </div>
+
+    <!-- ===== FALLBACK PANEL (lalabas kung hindi mag-load ang trailer) ===== -->
+    <div class="trailer-fallback" id="trailer-fallback" style="display:none;">
+      <div class="trailer-fallback-icon">
+        <i class="fa fa-film"></i>
+      </div>
+      <h2>Trailer Not Available</h2>
+      <p>This trailer can't be played inside the app. Watch it directly on YouTube instead.</p>
+      <div class="trailer-fallback-buttons">
+        <a href="#" class="btn-watch-youtube" id="btn-watch-youtube" target="_blank" rel="noopener">
+          <i class="fa-brands fa-youtube"></i> Watch on YouTube
+        </a>
+        <a href="index.html" class="btn-go-back" onclick="goBack(event)">
+          <i class="fa fa-arrow-left"></i> Go Back
+        </a>
+      </div>
+    </div>
   </div>
 
   <script>
+    let fallbackTimer = null;
+    let trailerLoaded = false;
+
     function getParam(name) {
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
@@ -211,6 +336,19 @@
       }
     }
 
+    function showFallback() {
+      if (trailerLoaded) return;
+      const loading = document.getElementById('trailer-loading');
+      const wrapper = document.getElementById('trailer-wrapper');
+      const fallback = document.getElementById('trailer-fallback');
+
+      if (loading) loading.style.display = 'none';
+      if (wrapper) wrapper.style.display = 'none';
+      if (fallback) fallback.style.display = 'flex';
+
+      console.log('[MobiFlix Trailer] Fallback shown');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const videoKey = getParam('key');
       const title = getParam('title');
@@ -219,6 +357,7 @@
       const loading = document.getElementById('trailer-loading');
       const wrapper = document.getElementById('trailer-wrapper');
       const titleEl = document.getElementById('trailer-title');
+      const watchBtn = document.getElementById('btn-watch-youtube');
 
       if (title) {
         const decoded = decodeURIComponent(title);
@@ -227,33 +366,66 @@
       }
 
       if (!videoKey) {
-        wrapper.style.display = 'none';
-        loading.style.display = 'flex';
-        loading.innerHTML = '<div class="trailer-error">' +
-          '<i class="fa fa-exclamation-triangle"></i>' +
-          '<p>Invalid trailer URL. Missing video key.</p>' +
-          '<a href="index.html">Go Back to Home</a>' +
-          '</div>';
+        loading.style.display = 'none';
+        document.getElementById('trailer-fallback').style.display = 'flex';
         return;
       }
 
-      const embedURL = 'https://www.youtube.com/embed/' + videoKey + '?autoplay=1&rel=0&modestbranding=1';
+      // I-set ang YouTube link para sa fallback button
+      const youtubeURL = 'https://www.youtube.com/watch?v=' + videoKey;
+      if (watchBtn) watchBtn.href = youtubeURL;
+
+      // Buuin ang embed URL
+      const embedURL = 'https://www.youtube.com/embed/' + videoKey +
+        '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
 
       console.log('[MobiFlix Trailer] Loading:', embedURL);
 
+      // Simulan ang fallback timer — 5 segundo
+      fallbackTimer = setTimeout(function() {
+        if (!trailerLoaded) {
+          console.log('[MobiFlix Trailer] Timeout — showing fallback');
+          showFallback();
+        }
+      }, 5000);
+
+      // I-load ang iframe
       iframe.src = embedURL;
 
       iframe.onload = function() {
+        trailerLoaded = true;
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+
         loading.style.display = 'none';
         wrapper.style.display = 'block';
+
+        console.log('[MobiFlix Trailer] Loaded ✅');
+
+        // I-check kung may error sa loob ng iframe (limited lang ang kaya nating i-detect)
+        // Karaniwan, kung may error 153, hindi talaga naglo-load ang iframe
+        // Kaya nag-fa-fallback tayo kapag may error message na lumabas
+
+        setTimeout(function() {
+          // I-detect kung ang iframe ay blank/error
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (doc && doc.body && doc.body.innerHTML.length < 100) {
+              // Masyadong maliit ang content — malamang error
+              console.log('[MobiFlix Trailer] Empty iframe detected — showing fallback');
+              showFallback();
+            }
+          } catch (e) {
+            // Cross-origin — hindi natin ma-access ang content
+            // Manatili sa iframe
+          }
+        }, 2000);
       };
 
-      setTimeout(function() {
-        if (loading.style.display !== 'none') {
-          loading.style.display = 'none';
-          wrapper.style.display = 'block';
-        }
-      }, 3000);
+      // I-handle ang iframe errors
+      iframe.onerror = function() {
+        console.log('[MobiFlix Trailer] Iframe error');
+        showFallback();
+      };
     });
   </script>
 
