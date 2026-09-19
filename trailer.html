@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>MobiFlix Trailer</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trailer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #0b0b0b;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .trailer-back-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .trailer-back-btn:hover {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    .trailer-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+      text-align: center;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 12px;
+    }
+
+    .trailer-header-spacer {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .trailer-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      overflow-y: auto;
+    }
+
+    .trailer-iframe-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      height: 0;
+      background: #000;
+      flex-shrink: 0;
+    }
+
+    .trailer-iframe-container iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+    }
+
+    /* ===== YOUTUBE FALLBACK BUTTON ===== */
+    .youtube-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      background: #0b0b0b;
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+      flex-shrink: 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .youtube-fallback p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 20px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .btn-watch-youtube {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      background: #ff0000;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      transition: 0.2s;
+      box-shadow: 0 4px 20px rgba(255,0,0,0.3);
+    }
+
+    .btn-watch-youtube:hover {
+      background: #cc0000;
+      transform: scale(1.05);
+      box-shadow: 0 6px 30px rgba(255,0,0,0.5);
+    }
+
+    .btn-watch-youtube i {
+      font-size: 22px;
+    }
+
+    /* ===== ERROR PANEL ===== */
+    .trailer-error-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .trailer-error-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #e50914;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(229,9,20,0.4);
+    }
+
+    .trailer-error-icon i {
+      font-size: 36px;
+      color: #fff;
+    }
+
+    .trailer-error-panel h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .trailer-error-panel p {
+      font-size: 15px;
+      color: #aaa;
+      margin-bottom: 28px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .btn-go-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.2s;
+      border: 1px solid rgba(255,255,255,0.2);
+      margin-top: 12px;
+    }
+
+    .btn-go-back:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    @media (max-width: 768px) {
+      .trailer-header { padding: 10px 12px; }
+      .trailer-title { font-size: 14px; }
+      .trailer-back-btn { padding: 7px 14px; font-size: 13px; }
+      .trailer-header-spacer { width: 70px; }
+      .btn-watch-youtube { padding: 12px 24px; font-size: 14px; }
+      .trailer-error-panel h2 { font-size: 18px; }
+    }
+
+    @media (max-width: 480px) {
+      .trailer-header-spacer { width: 60px; }
+      .trailer-back-btn { padding: 6px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="trailer-header">
+    <a href="index.html" class="trailer-back-btn" onclick="goBack(event)">
+      <i class="fa fa-arrow-left"></i> Back
+    </a>
+    <h1 class="trailer-title" id="trailer-title">Trailer</h1>
+    <div class="trailer-header-spacer"></div>
+  </div>
+
+  <div class="trailer-body">
+
+    <div class="trailer-iframe-container" id="trailer-iframe-container">
+      <iframe
+        id="trailer-iframe"
+        src=""
+        frameborder="0"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+      ></iframe>
+    </div>
+
+    <!-- Fallback button — lalabas pagkatapos ng 4 segundo -->
+    <div class="youtube-fallback" id="youtube-fallback" style="display:none;">
+      <p>Kung hindi mag-play ang trailer, i-tap ang button sa ibaba para panoorin sa YouTube.</p>
+      <a href="#" class="btn-watch-youtube" id="btn-watch-youtube" target="_blank" rel="noopener">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
+    </div>
+
+    <!-- Error panel — lalabas kung walang video key -->
+    <div class="trailer-error-panel" id="trailer-error-panel" style="display:none;">
+      <div class="trailer-error-icon">
+        <i class="fa fa-exclamation-triangle"></i>
+      </div>
+      <h2>Trailer Not Found</h2>
+      <p>Hindi available ang trailer na ito. Bumalik ka na lang sa home page.</p>
+      <a href="index.html" class="btn-go-back" onclick="goBack(event)">
+        <i class="fa fa-arrow-left"></i> Go Back
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function goBack(e) {
+      e.preventDefault();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoKey = getParam('key');
+      const title = getParam('title');
+
+      const iframe = document.getElementById('trailer-iframe');
+      const titleEl = document.getElementById('trailer-title');
+      const fallback = document.getElementById('youtube-fallback');
+      const errorPanel = document.getElementById('trailer-error-panel');
+      const iframeContainer = document.getElementById('trailer-iframe-container');
+      const watchBtn = document.getElementById('btn-watch-youtube');
+
+      if (title) {
+        const decoded = decodeURIComponent(title);
+        titleEl.textContent = decoded;
+        document.title = decoded + ' — Trailer — MobiFlix';
+      }
+
+      if (!videoKey) {
+        iframeContainer.style.display = 'none';
+        errorPanel.style.display = 'flex';
+        return;
+      }
+
+      // I-set ang YouTube link
+      const youtubeURL = 'https://www.youtube.com/watch?v=' + videoKey;
+      if (watchBtn) watchBtn.href = youtubeURL;
+
+      // I-load ang iframe
+      const embedURL = 'https://www.youtube.com/embed/' + videoKey +
+        '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+
+      console.log('[MobiFlix Trailer] Loading:', embedURL);
+      iframe.src = embedURL;
+
+      // Pagkatapos ng 4 na segundo, ipakita ang fallback button
+      // (para kung hindi mag-play ang trailer dahil sa error 153, may option pa rin)
+      setTimeout(function() {
+        if (fallback) {
+          fallback.style.display = 'flex';
+          console.log('[MobiFlix Trailer] Fallback button shown');
+        }
+      }, 4000);
+    });
+  </script>
+
+</body>
+</html>
