@@ -60,8 +60,9 @@
       const season = params.get('season') || '';
       const episode = params.get('episode') || '';
 
-      const MOVIE_BASE = 'https://zxcstream.icu/watch/movie/';
-      const TV_BASE = 'https://zxcstream.icu/watch/tv/';
+      // ✅ BAGONG PLAYER URLS
+      const MOVIE_BASE = 'https://vidstuck.xyz/embed/movie/';
+      const TV_BASE = 'https://vidstuck.xyz/embed/tv/';
 
       let embedURL = '';
 
@@ -75,7 +76,7 @@
         embedURL = `${MOVIE_BASE}${id}`;
       }
 
-      // ✅ Auto-play — idagdag ang autoplay params
+      // Auto-play params
       const separator = embedURL.includes('?') ? '&' : '?';
       embedURL = embedURL + separator + 'autoplay=1&autoPlay=1&muted=0&playsinline=1';
 
@@ -93,10 +94,9 @@
         document.getElementById('loading-overlay').classList.add('hidden');
       }, 4000);
 
-      // ✅ I-try i-auto-play sa iframe kung posible
+      // Subukang mag-send ng play command sa iframe
       frame.addEventListener('load', function() {
         try {
-          // Subukang mag-send ng play command sa iframe (kung same-origin)
           frame.contentWindow.postMessage({ type: 'play' }, '*');
         } catch (e) {}
       });
