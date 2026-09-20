@@ -51,7 +51,7 @@
       const season = params.get('season') || '';
       const episode = params.get('episode') || '';
 
-      // ✅ BLANGKONG TITLE para walang nakaharang
+      // ✅ BLANGKONG TITLE
       document.title = '';
 
       const MOVIE_BASE = 'https://vidstuck.xyz/embed/movie/';
@@ -69,7 +69,8 @@
         embedURL = `${MOVIE_BASE}${id}`;
       }
 
-      const subtitleParams = [
+      // ✅ DAGDAG NA PARAMETERS PARA SA FULLSCREEN + HIDE TITLE
+      const extraParams = [
         'autoplay=1',
         'muted=0',
         'playsinline=1',
@@ -80,51 +81,94 @@
         'sub=1',
         'caption=en',
         'captions=1',
-        'default_subtitle=en'
+        'default_subtitle=en',
+        // Fullscreen + hide UI params (subukan natin lahat)
+        'fullscreen=1',
+        'hideTitle=1',
+        'hide_title=1',
+        'noTitle=1',
+        'no_title=1',
+        'title=0',
+        'showTitle=0',
+        'show_title=0',
+        'controls=0',
+        'hideUI=1',
+        'hide_ui=1',
+        'overlay=0',
+        'showOverlay=0',
+        'chromeless=1',
+        'embed=1',
+        'fs=1',
+        'full=1'
       ];
 
       const separator = embedURL.includes('?') ? '&' : '?';
-      embedURL = embedURL + separator + subtitleParams.join('&');
+      embedURL = embedURL + separator + extraParams.join('&');
 
       const frame = document.getElementById('player-frame');
       frame.src = embedURL;
 
-      function sendSubtitleCommands() {
-        try {
-          const commands = [
-            { type: 'setSubtitle', lang: 'en', enabled: true },
-            { type: 'subtitle', enabled: true, lang: 'en' },
-            { type: 'enableSubtitle', lang: 'en' },
-            { type: 'cc', enabled: true, lang: 'en' },
-            { type: 'captions', enabled: true, lang: 'en' },
-            { action: 'setSubtitle', language: 'en' },
-            { type: 'play' }
-          ];
-          commands.forEach(function(cmd) {
-            try { frame.contentWindow.postMessage(cmd, '*'); } catch (e) {}
-          });
-        } catch (e) {}
-      }
+      // ============================================================
+      // ✅ MGA POSTMESSAGE COMMANDS — subukan lahat ng posibleng API
+      // ============================================================
+      function sendAllCommands() {
+        if (!frame.contentWindow) return;
 
-      // ✅ FULLSCREEN + HIDE TITLE COMMANDS
-      function sendFullscreenCommands() {
-        try {
-          const commands = [
-            { type: 'fullscreen' },
-            { action: 'fullscreen' },
-            { event: 'fullscreen' },
-            { type: 'hideTitle' },
-            { action: 'hideTitle' },
-            { type: 'hideUI' },
-            { action: 'hideUI' },
-            { type: 'toggleControls', visible: false },
-            { action: 'hideOverlay' },
-            { type: 'enterFullscreen' }
-          ];
-          commands.forEach(function(cmd) {
-            try { frame.contentWindow.postMessage(cmd, '*'); } catch (e) {}
-          });
-        } catch (e) {}
+        const commands = [
+          // Subtitle commands
+          { type: 'setSubtitle', lang: 'en', enabled: true },
+          { type: 'subtitle', enabled: true, lang: 'en' },
+          { type: 'enableSubtitle', lang: 'en' },
+          { type: 'cc', enabled: true, lang: 'en' },
+          { type: 'captions', enabled: true, lang: 'en' },
+
+          // Fullscreen commands
+          { type: 'fullscreen' },
+          { action: 'fullscreen' },
+          { event: 'fullscreen' },
+          { type: 'enterFullscreen' },
+          { action: 'enterFullscreen' },
+          { event: 'enterFullscreen' },
+          { type: 'requestFullscreen' },
+          { action: 'requestFullscreen' },
+
+          // Hide title / UI commands
+          { type: 'hideTitle' },
+          { action: 'hideTitle' },
+          { event: 'hideTitle' },
+          { type: 'hide_title' },
+          { action: 'hide_title' },
+          { type: 'toggleTitle', visible: false },
+          { type: 'setTitleVisibility', visible: false },
+          { type: 'hideOverlay' },
+          { action: 'hideOverlay' },
+          { type: 'hideUI' },
+          { action: 'hideUI' },
+          { type: 'toggleControls', visible: false },
+          { type: 'hideControls' },
+          { action: 'hideControls' },
+          { type: 'chromeless' },
+          { action: 'chromeless' },
+
+          // Player commands
+          { type: 'play' },
+          { event: 'play' },
+          { action: 'play' },
+
+          // Vidstack-specific (vidstuck uses vidstack player)
+          { type: 'vds-fullscreen-enter' },
+          { type: 'vds-hide-title' },
+          { type: 'vds-toggle-controls', visible: false },
+          { event: 'vds-request-fullscreen' },
+          { detail: { fullscreen: true } },
+          { detail: { hidden: true } }
+        ];
+
+        commands.forEach(function(cmd) {
+          try {
+            frame.contentWindow.postMessage(cmd, '*');
+          } catch (e) {}
+        });
       }
 
       frame.addEventListener('load', function() {
@@ -132,58 +176,62 @@
           document.getElementById('loading-overlay').classList.add('hidden');
         }, 600);
 
-        sendSubtitleCommands();
-        setTimeout(sendSubtitleCommands, 1500);
-        setTimeout(sendSubtitleCommands, 3000);
-        setTimeout(sendSubtitleCommands, 5000);
+        // Ipadala agad
+        sendAllCommands();
+        setTimeout(sendAllCommands, 1000);
+        setTimeout(sendAllCommands, 2500);
+        setTimeout(sendAllCommands, 5000);
       });
 
       setTimeout(function() {
         document.getElementById('loading-overlay').classList.add('hidden');
       }, 4000);
 
+      // ============================================================
+      // ✅ LISTEN SA MGA RESPONSE NG IFRAME
+      // ============================================================
       window.addEventListener('message', function(event) {
         const data = event.data;
         if (!data) return;
         if (typeof data === 'object') {
           if (data.event === 'ready' || data.type === 'ready') {
-            sendSubtitleCommands();
+            sendAllCommands();
           }
         }
       });
 
-      // ✅ FULLSCREEN LISTENER — kapag pumasok sa fullscreen, itago ang title
-      function handleFullscreenChange() {
+      // ============================================================
+      // ✅ FULLSCREEN LISTENER — kapag pumasok sa fullscreen, i-apply lahat
+      // ============================================================
+      function onFullscreenChange() {
         const isFullscreen = document.fullscreenElement ||
                             document.webkitFullscreenElement ||
                             document.mozFullScreenElement ||
                             document.msFullscreenElement;
 
         if (isFullscreen) {
-          // ✅ I-reset ang title
           document.title = '';
-          // ✅ Ipadala ang commands sa iframe
-          sendFullscreenCommands();
-          // ✅ Ulitin para siguradong mahuli
-          setTimeout(sendFullscreenCommands, 500);
-          setTimeout(sendFullscreenCommands, 1500);
-          setTimeout(sendFullscreenCommands, 3000);
+          sendAllCommands();
+          setTimeout(sendAllCommands, 300);
+          setTimeout(sendAllCommands, 800);
+          setTimeout(sendAllCommands, 1500);
+          setTimeout(sendAllCommands, 3000);
         }
       }
 
-      document.addEventListener('fullscreenchange', handleFullscreenChange);
-      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+      document.addEventListener('fullscreenchange', onFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+      document.addEventListener('mozfullscreenchange', onFullscreenChange);
+      document.addEventListener('MSFullscreenChange', onFullscreenChange);
 
-      // ✅ Ipadala din ang commands every 5 seconds (para sa slow loaders)
+      // ✅ Ipadala din every 3 seconds kapag fullscreen
       setInterval(function() {
         const isFullscreen = document.fullscreenElement ||
                             document.webkitFullscreenElement;
         if (isFullscreen) {
-          sendFullscreenCommands();
+          sendAllCommands();
         }
-      }, 5000);
+      }, 3000);
 
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function() {});
