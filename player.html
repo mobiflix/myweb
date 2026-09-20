@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>MobiFlix Player</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,6 +38,8 @@
     src=""
     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
     allowfullscreen
+    webkitallowfullscreen
+    mozallowfullscreen
     referrerpolicy="no-referrer"
   ></iframe>
 
@@ -46,6 +50,9 @@
       const id = params.get('id') || '';
       const season = params.get('season') || '';
       const episode = params.get('episode') || '';
+
+      // ✅ BLANGKONG TITLE para walang nakaharang
+      document.title = '';
 
       const MOVIE_BASE = 'https://vidstuck.xyz/embed/movie/';
       const TV_BASE = 'https://vidstuck.xyz/embed/tv/';
@@ -99,6 +106,27 @@
         } catch (e) {}
       }
 
+      // ✅ FULLSCREEN + HIDE TITLE COMMANDS
+      function sendFullscreenCommands() {
+        try {
+          const commands = [
+            { type: 'fullscreen' },
+            { action: 'fullscreen' },
+            { event: 'fullscreen' },
+            { type: 'hideTitle' },
+            { action: 'hideTitle' },
+            { type: 'hideUI' },
+            { action: 'hideUI' },
+            { type: 'toggleControls', visible: false },
+            { action: 'hideOverlay' },
+            { type: 'enterFullscreen' }
+          ];
+          commands.forEach(function(cmd) {
+            try { frame.contentWindow.postMessage(cmd, '*'); } catch (e) {}
+          });
+        } catch (e) {}
+      }
+
       frame.addEventListener('load', function() {
         setTimeout(function() {
           document.getElementById('loading-overlay').classList.add('hidden');
@@ -123,6 +151,39 @@
           }
         }
       });
+
+      // ✅ FULLSCREEN LISTENER — kapag pumasok sa fullscreen, itago ang title
+      function handleFullscreenChange() {
+        const isFullscreen = document.fullscreenElement ||
+                            document.webkitFullscreenElement ||
+                            document.mozFullScreenElement ||
+                            document.msFullscreenElement;
+
+        if (isFullscreen) {
+          // ✅ I-reset ang title
+          document.title = '';
+          // ✅ Ipadala ang commands sa iframe
+          sendFullscreenCommands();
+          // ✅ Ulitin para siguradong mahuli
+          setTimeout(sendFullscreenCommands, 500);
+          setTimeout(sendFullscreenCommands, 1500);
+          setTimeout(sendFullscreenCommands, 3000);
+        }
+      }
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+      // ✅ Ipadala din ang commands every 5 seconds (para sa slow loaders)
+      setInterval(function() {
+        const isFullscreen = document.fullscreenElement ||
+                            document.webkitFullscreenElement;
+        if (isFullscreen) {
+          sendFullscreenCommands();
+        }
+      }, 5000);
 
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function() {});
