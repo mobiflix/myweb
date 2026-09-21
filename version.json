@@ -1,5 +1,5 @@
 {
-  "version": "v61",
+  "version": "v62",
   "released": "2026-09-21",
   "notes": "Inayos ang sorting — lahat ng movies, TV series, Korean series, animation, at providers ay naka-sort na by YEAR (newest to oldest). Kapag nag-click ka ng Streaming Provider o Movies, agad makikita ang mga latest animation at movies sa unahan. Default sort ay primary_release_date.desc."
 }
