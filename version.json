@@ -1,0 +1,5 @@
+{
+  "version": "v58",
+  "released": "2026-09-21",
+  "notes": "Removed Paramount+ & Crunchyroll, added AMC+. Provider click set to popularity. Top 10 Movies & TV Series now trending in Philippines with popularity default. Removed Add to List from details, added genre display. Filtered out game shows, reality, variety, talk, soap, music, documentary, news, politics."
+}
