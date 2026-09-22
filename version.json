@@ -1,5 +1,0 @@
-{
-  "version": "v59",
-  "released": "2026-09-22",
-  "notes": "Fix sa filters — pwede nang i-apply kahit sort lang ang binago. Gumagana na ang 1, 2, o 3 filters."
-}
