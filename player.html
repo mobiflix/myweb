@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>MobiFlix — Player</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #0b0b0b;
+      overflow: hidden;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ===== PLAYER TOP BAR ===== */
+    .player-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 16px;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .player-back-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .player-back-btn:hover {
+      background: #e50914;
+      border-color: #e50914;
+      transform: scale(1.03);
+    }
+
+    .player-title {
+      flex: 1;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .player-logo {
+      color: #e50914;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .player-logo span { color: #fff; }
+
+    /* ===== IFRAME ===== */
+    .player-frame {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: calc(100% - 56px);
+      border: none;
+      background: #000;
+    }
+
+    /* ===== LOADING ===== */
+    .player-loading {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      background: #0b0b0b;
+      color: #e50914;
+      font-size: 42px;
+      z-index: 50;
+      transition: opacity 0.4s;
+    }
+    .player-loading.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .player-loading-text {
+      color: #888;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== ERROR STATE ===== */
+    .player-error {
+      color: #666;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    .player-error i {
+      font-size: 48px;
+      color: #e50914;
+      display: block;
+      margin-bottom: 16px;
+    }
+    .player-error button {
+      margin-top: 16px;
+      padding: 12px 26px;
+      border-radius: 8px;
+      border: none;
+      background: #e50914;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+    .player-error button:hover {
+      background: #ff0a16;
+      transform: scale(1.03);
+    }
+
+    /* ===== OPEN IN NEW TAB BUTTON ===== */
+    .player-open-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 60px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .player-open-btn:hover {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+      .player-topbar { height: 50px; padding: 0 12px; gap: 10px; }
+      .player-back-btn { padding: 7px 14px; font-size: 13px; }
+      .player-title { font-size: 13px; }
+      .player-logo { font-size: 15px; }
+      .player-open-btn { padding: 7px 12px; font-size: 12px; }
+      .player-frame { top: 50px; height: calc(100% - 50px); }
+      .player-loading { top: 50px; }
+    }
+
+    @media (max-width: 480px) {
+      .player-title { display: none; }
+      .player-logo { font-size: 14px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===== TOP BAR ===== -->
+  <div class="player-topbar">
+    <button class="player-back-btn" onclick="goBack()">
+      <i class="fa fa-arrow-left"></i> Back
+    </button>
+    <div class="player-title" id="player-title">Loading...</div>
+    <button class="player-open-btn" onclick="openInNewTab()" title="Buksan sa bagong tab">
+      <i class="fa fa-external-link-alt"></i>
+    </button>
+    <a href="index.html" class="player-logo">Mobi<span>Flix</span></a>
+  </div>
+
+  <!-- ===== LOADING ===== -->
+  <div class="player-loading" id="player-loading">
+    <i class="fa fa-spinner fa-spin"></i>
+    <div class="player-loading-text">
+      <i class="fa fa-circle-notch fa-spin"></i> Loading stream...
+    </div>
+  </div>
+
+  <!-- ===== IFRAME PLAYER ===== -->
+  <iframe
+    id="player-frame"
+    class="player-frame"
+    src="about:blank"
+    allowfullscreen
+    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+    referrerpolicy="no-referrer"
+  ></iframe>
+
+  <script>
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    const MOVIE_EMBED_BASE = 'https://cinejoy.pk/watch/movie/';
+    const TV_EMBED_BASE = 'https://cinejoy.pk/watch/tv/';
+
+    const frame = document.getElementById('player-frame');
+    const loadingEl = document.getElementById('player-loading');
+    const titleEl = document.getElementById('player-title');
+
+    let embedURL = null;
+
+    // ============================================================
+    // PARSE URL PARAMS
+    // ============================================================
+    function getParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        id: params.get('id'),
+        type: params.get('type') || 'movie',
+        season: params.get('season'),
+        episode: params.get('episode'),
+        title: params.get('title') || ''
+      };
+    }
+
+    // ============================================================
+    // BUILD EMBED URL
+    // ============================================================
+    function buildEmbedURL() {
+      const p = getParams();
+
+      if (!p.id) return null;
+
+      let url;
+      if (p.type === 'tv') {
+        if (p.season && p.episode) {
+          url = `${TV_EMBED_BASE}${p.id}/${p.season}/${p.episode}`;
+        } else {
+          url = `${TV_EMBED_BASE}${p.id}`;
+        }
+      } else {
+        url = `${MOVIE_EMBED_BASE}${p.id}`;
+      }
+
+      return url;
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function init() {
+      const p = getParams();
+      embedURL = buildEmbedURL();
+
+      if (!embedURL) {
+        loadingEl.innerHTML =
+          '<div class="player-error">' +
+          '<i class="fa fa-exclamation-triangle"></i>' +
+          'Invalid player link.<br>' +
+          '<button onclick="goBack()">Go Back</button>' +
+          '</div>';
+        return;
+      }
+
+      // Set title
+      if (p.title) {
+        const decoded = decodeURIComponent(p.title);
+        titleEl.textContent = decoded;
+        document.title = `${decoded} — MobiFlix`;
+      } else {
+        titleEl.textContent = p.type === 'tv' ? 'TV Show' : 'Movie';
+      }
+
+      console.log('[MobiFlix Player] Loading:', embedURL);
+
+      // Load iframe
+      frame.src = embedURL;
+
+      // Hide loading pagkatapos mag-load
+      frame.addEventListener('load', function() {
+        setTimeout(function() {
+          loadingEl.classList.add('hide');
+        }, 500);
+      });
+
+      // Fallback: itago ang loading pagkatapos ng 8 seconds
+      setTimeout(function() {
+        loadingEl.classList.add('hide');
+      }, 8000);
+    }
+
+    // ============================================================
+    // BACK BUTTON
+    // ============================================================
+    function goBack() {
+      const p = getParams();
+
+      // Bumalik sa details page
+      if (p.id) {
+        window.location.href = `details.html?id=${p.id}&type=${p.type}`;
+        return;
+      }
+
+      // Fallback sa index
+      if (document.referrer && document.referrer.indexOf(location.host) !== -1) {
+        history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    // ============================================================
+    // OPEN IN NEW TAB (fallback kung blocked ang iframe)
+    // ============================================================
+    function openInNewTab() {
+      if (!embedURL) return;
+      window.open(embedURL, '_blank');
+    }
+
+    // ============================================================
+    // START
+    // ============================================================
+    init();
+  </script>
+</body>
+</html>
