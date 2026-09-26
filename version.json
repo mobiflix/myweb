@@ -1,0 +1,5 @@
+{
+  "version": "v60",
+  "released": "2026-09-24",
+  "notes": "Inalis ang auto-refresh pagka-login. Dinagdag ang auto-refresh tuwing babalik sa homepage (galing view all, genre, provider, search, profile, my list). May Telegram note at float button na sa login screen."
+}
